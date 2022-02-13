@@ -14,8 +14,8 @@ jobs:
         git clone https://github.com/fscarmen/tools git1
         git clone https://github.com/fscarmen/warp_unlock git2
         git clone https://github.com/fscarmen/warp git3
-    - name: Deploy git
-      uses: JamesIves/github-pages-deploy-action@4.2.3
+    - name: Deploy git1
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
         git-config-email: action@github.com
@@ -26,7 +26,7 @@ jobs:
         clean: true
         single-commit: false
     - name: Deploy git2
-      uses: JamesIves/github-pages-deploy-action@4.2.3
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
         git-config-email: action@github.com
@@ -37,7 +37,7 @@ jobs:
         clean: true
         single-commit: false
     - name: Deploy git3
-      uses: JamesIves/github-pages-deploy-action@4.2.3
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
         git-config-email: action@github.com
