@@ -20,6 +20,8 @@ jobs:
         git clone https://github.com/xiaoyang-sde/rocket-booster-template git7
         git clone https://github.com/cloudflare/workers-chat-demo git8
         git clone https://github.com/SharzyL/pastebin-worker git9
+        cd git7 && mv .github github
+        cd git9 && mv .github github
     - name: Deploy git1
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
