@@ -10,6 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Git Clone Repository
+      continue-on-error: true
       run: |
         git clone https://github.com/fscarmen/tools git1
         git clone https://github.com/fscarmen/warp_unlock git2
@@ -21,9 +22,10 @@ jobs:
         git clone https://github.com/cloudflare/workers-chat-demo git8
         git clone https://github.com/SharzyL/pastebin-worker git9
         cd git7 && mv .github github
-        cd ../git9 && mv .github github
+        cd ~/git9 && mv .github github
     - name: Deploy git1
       uses: JamesIves/github-pages-deploy-action@v4.2.3
+      continue-on-error: true
       with:
         git-config-name: GitHub Action
         git-config-email: action@github.com
@@ -35,6 +37,7 @@ jobs:
         single-commit: false
     - name: Deploy git2
       uses: JamesIves/github-pages-deploy-action@v4.2.3
+      continue-on-error: true      
       with:
         git-config-name: GitHub Action
         git-config-email: action@github.com
@@ -45,6 +48,7 @@ jobs:
         clean: true
         single-commit: false
     - name: Deploy git3
+      continue-on-error: true
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
@@ -56,6 +60,7 @@ jobs:
         clean: true
         single-commit: false
     - name: Deploy git4
+      continue-on-error: true
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
@@ -67,6 +72,7 @@ jobs:
         clean: true
         single-commit: false
     - name: Deploy git5
+      continue-on-error: true
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
@@ -78,6 +84,7 @@ jobs:
         clean: true
         single-commit: false
     - name: Deploy git6
+      continue-on-error: true
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
@@ -89,6 +96,7 @@ jobs:
         clean: true
         single-commit: false
     - name: Deploy git7
+      continue-on-error: true
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
@@ -100,6 +108,7 @@ jobs:
         clean: true
         single-commit: false
     - name: Deploy git8
+      continue-on-error: true
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
@@ -111,6 +120,7 @@ jobs:
         clean: true
         single-commit: false
     - name: Deploy git9
+      continue-on-error: true
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
         git-config-name: GitHub Action
