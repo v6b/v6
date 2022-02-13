@@ -17,6 +17,8 @@ $ install -Dm755 pb ~/.local/bin
 
 **Zsh completion**: download `_pb` in a folder within your zsh `fpath` 
 
+**fish completion**: download `pb.fish` in a folder within your fish `fish_complete_path` 
+
 **Usage**: 
 
 ```text
@@ -60,7 +62,7 @@ Options:
     -l, --lang LANG         highlight the paste with language 'LANG' in a web page
     -m, --mime MIME         set the 'Content-Type' header according to mime-type MIME
     -o, --output FILE       output the paste in file 'FILE'
-    -u, --url               make a 301 URL redirection
+    -u, --url               make a 302 URL redirection
 
   delete options:
     none
