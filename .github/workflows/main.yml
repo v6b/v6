@@ -1,0 +1,54 @@
+name: sync
+on:
+  schedule:
+    - cron: 30 */2 * * *
+  workflow_dispatch:
+    inputs:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/fscarmen/tools git1
+        git clone https://github.com/fscarmen/warp_unlock git2
+        git clone https://github.com/fscarmen/warp git3
+    - name: Deploy git
+      uses: JamesIves/github-pages-deploy-action@4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git1
+        target-folder: tools
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+    - name: Deploy git2
+      uses: JamesIves/github-pages-deploy-action@4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git2
+        target-folder: warp_unlock
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+    - name: Deploy git3
+      uses: JamesIves/github-pages-deploy-action@4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git3
+        target-folder: warp
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 1
+        keep_minimum_runs: 1
