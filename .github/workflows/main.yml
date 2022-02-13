@@ -95,7 +95,7 @@ jobs:
         folder: git7
         target-folder: rocket-booster-template
         commit-message: Action Update
-        clean: false
+        clean: true
         single-commit: false
     - name: Deploy git8
       uses: JamesIves/github-pages-deploy-action@v4.2.3
@@ -117,7 +117,7 @@ jobs:
         folder: git9
         target-folder: pastebin-worker
         commit-message: Action Update
-        clean: false
+        clean: true
         single-commit: false
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
