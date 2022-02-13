@@ -1,7 +1,7 @@
 name: sync
 on:
   schedule:
-    - cron: 30 */2 * * *
+    - cron: 30 */4 * * *
   workflow_dispatch:
     inputs:
 jobs:
@@ -16,6 +16,7 @@ jobs:
         git clone https://github.com/fscarmen/warp git3
         git clone https://github.com/xyTom/Url-Shorten-Worker git4
         git clone -b gh-pages https://github.com/xyTom/Url-Shorten-Worker git5
+        git clone https://github.com/realByg/cfworker-kv-image-hosting git6
     - name: Deploy git1
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
@@ -68,6 +69,17 @@ jobs:
         branch: main
         folder: git5
         target-folder: url-shorten-worker-pages
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+    - name: Deploy git6
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git6
+        target-folder: cfworker-kv-image-hosting
         commit-message: Action Update
         clean: true
         single-commit: false
