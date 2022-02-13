@@ -17,6 +17,8 @@ jobs:
         git clone https://github.com/xyTom/Url-Shorten-Worker git4
         git clone -b gh-pages https://github.com/xyTom/Url-Shorten-Worker git5
         git clone https://github.com/realByg/cfworker-kv-image-hosting git6
+        git clone https://github.com/xiaoyang-sde/rocket-booster-template git7
+        git clone https://github.com/cloudflare/workers-chat-demo git8
     - name: Deploy git1
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
@@ -80,6 +82,28 @@ jobs:
         branch: main
         folder: git6
         target-folder: cfworker-kv-image-hosting
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+    - name: Deploy git7
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git7
+        target-folder: rocket-booster-template
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+    - name: Deploy git8
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git8
+        target-folder: workers-chat-demo
         commit-message: Action Update
         clean: true
         single-commit: false
