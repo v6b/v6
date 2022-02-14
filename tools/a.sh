@@ -16,13 +16,13 @@ wgcf_install(){
 	esac
 
 	# 安装 docker, 拉取镜像+创建容器
-	{ 
+
 	green " \n Install docker \n " && ! systemctl is-active docker >/dev/null 2>&1 && curl -sSL get.docker.com | sh
 
 	docker run -dit --restart=always --name wgcf --sysctl net.ipv6.conf.all.disable_ipv6=0 --device /dev/net/tun --privileged --cap-add net_admin --cap-add sys_module --log-opt max-size=1m -v /etc/wireguard:/etc/wireguard -v /lib/modules:/lib/modules fscarmen/netflix_unlock:amd64
-	}&
 
-	{
+
+
 	# 判断 wgcf 的最新版本,如因 github 接口问题未能获取，默认 v2.2.11
 	latest=$(wget -qO- -4 "https://api.github.com/repos/ViRb3/wgcf/releases/latest" | grep "tag_name" | head -n 1 | cut -d : -f2 | sed 's/[ \"v,]//g')
 	latest=${latest:-'2.2.11'}
@@ -34,7 +34,7 @@ wgcf_install(){
 
 	# 注册 WARP 账户 ( wgcf-account.toml 使用默认值加加快速度)。如有 WARP+ 账户，修改 license 并升级，并把设备名等信息保存到 /etc/wireguard/info.log
 	mkdir -p /etc/wireguard/ >/dev/null 2>&1
-	echo -e "wg-quick up wgcf\n/etc/wireguard/gost -L :1080" > /etc/wireguard/run.sh; chmod +x /etc/wireguard/run.sh
+	echo -e "wg-quick up wgcf\ncrond\n/etc/wireguard/gost -L :1080" > /etc/wireguard/run.sh; chmod +x /etc/wireguard/run.sh
 	until [[ -e wgcf-account.toml ]] >/dev/null 2>&1; do
 		wgcf register --accept-tos >/dev/null 2>&1 && break
 	done
@@ -69,14 +69,12 @@ wgcf_install(){
 	[[ -e wgcf-profile.conf ]] && sed -i "s/MTU.*/MTU = $MTU/g" wgcf-profile.conf
 	sed -i "s/^.*\:\:\/0/#&/g;s/engage.cloudflareclient.com/162.159.192.1/g" wgcf-profile.conf
 	mv wgcf-profile.conf /etc/wireguard/wgcf.conf
-	}&
 
-	wait
 	wget -4q https://github.com/ginuerzh/gost/releases/download/v2.11.1/gost-linux-amd64-2.11.1.gz
 	gzip -d gost-linux-amd64-2.11.1.gz
 	mv gost-linux-amd64-2.11.1 /etc/wireguard/gost
 	chmod +x /etc/wireguard/gost
-	docker exec -it wgcf /etc/wireguard/run.sh
+	docker exec -it wgcf bash /etc/wireguard/run.sh &
 	rm -rf wgcf-profile.conf /usr/local/bin/wgcf gost-linux-amd64
 }
 
@@ -102,11 +100,8 @@ input_tg(){
 # 生成解锁文件
 export_unlock_file(){
 
-input_region
-
-input_tg
-
 # 生成解锁情况文件和 docker 运行文件
+mkdir -p /etc/wireguard/ >/dev/null 2>&1
 echo 'null' > /etc/wireguard/status.log
 
 # 生成 warp_unlock.sh 文件，判断当前流媒体解锁状态，遇到不解锁时更换 WARP IP，直至刷成功。5分钟后还没有刷成功，将不会重复该进程而浪费系统资源
@@ -199,5 +194,9 @@ EOF
 green " All is ok "
 }
 
-wgcf_install &
+input_region
+
+input_tg
 export_unlock_file
+wgcf_install
+
