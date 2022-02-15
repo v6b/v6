@@ -1,0 +1,201 @@
+name: sync
+
+on:
+  schedule:
+    - cron: 30 */4 * * *
+  workflow_dispatch:
+
+jobs:
+
+  build1:
+    name:1
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/fscarmen/tools git1
+    - name: Deploy git1
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git1
+        target-folder: tools
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+
+  build2:
+    name:2
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/fscarmen/warp_unlock git2
+    - name: Deploy git2
+      uses: JamesIves/github-pages-deploy-action@v4.2.3    
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git2
+        target-folder: warp_unlock
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+
+ build3:
+    name:3
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/fscarmen/warp git3
+    - name: Deploy git3
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git3
+        target-folder: warp
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+
+  build4:
+    name:4
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/xyTom/Url-Shorten-Worker git4
+    - name: Deploy git4
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git4
+        target-folder: url-shorten-worker
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+
+  build5:
+    name:5
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone -b gh-pages https://github.com/xyTom/Url-Shorten-Worker git5
+    - name: Deploy git5
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git5
+        target-folder: url-shorten-worker-pages
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+
+  build6:
+    name:6
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/realByg/cfworker-kv-image-hosting git6
+    - name: Deploy git6
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git6
+        target-folder: cfworker-kv-image-hosting
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+
+  build7:
+    name:7
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/xiaoyang-sde/rocket-booster-template git7
+        cd git7 && mv .github github
+    - name: Deploy git7
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git7
+        target-folder: rocket-booster-template
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+
+  build8:
+    name:8
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/cloudflare/workers-chat-demo git8
+    - name: Deploy git8
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git8
+        target-folder: workers-chat-demo
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+
+  build9:
+    name:9
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/SharzyL/pastebin-worker git9
+        cd git9 && mv .github github
+    - name: Deploy git9
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git9
+        target-folder: pastebin-worker
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+
+  Delete:
+    name:delete
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 0
+        keep_minimum_runs: 0
