@@ -42,7 +42,7 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
- build3:
+  build3:
     name: 3
     runs-on: ubuntu-latest
     steps:
