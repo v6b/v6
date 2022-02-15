@@ -1,7 +1,7 @@
 name: test
 on:
   schedule:
-    - cron: 30 */4 * * *
+    - cron: 30 */2 * * *
   workflow_dispatch:
 jobs:
   build1:
@@ -165,7 +165,7 @@ jobs:
     - name: Git Clone Repository
       run: |
         git clone https://github.com/SharzyL/pastebin-worker git9
-        cd git && mv .github github
+        cd git9 && mv .github github
     - name: Deploy git9
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
