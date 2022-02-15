@@ -179,7 +179,6 @@ jobs:
         single-commit: false
   Delete:
     name: delete
-    needs: [build1, build2, build3, build4, build5, build6, build7, build8, build9]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
