@@ -1,8 +1,10 @@
 name: sync
+
 on:
   schedule:
     - cron: 30 */4 * * *
   workflow_dispatch:
+
 jobs:
   build1:
     runs-on: ubuntu-latest
@@ -22,7 +24,6 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
-
   build2:
     runs-on: ubuntu-latest
     steps:
@@ -41,7 +42,6 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
-
  build3:
     runs-on: ubuntu-latest
     steps:
@@ -60,7 +60,6 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
-
   build4:
     runs-on: ubuntu-latest
     steps:
@@ -79,7 +78,6 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
-
   build5:
     runs-on: ubuntu-latest
     steps:
@@ -98,7 +96,6 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
-
   build6:
     runs-on: ubuntu-latest
     steps:
@@ -117,7 +114,6 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
-
   build7:
     runs-on: ubuntu-latest
     steps:
@@ -137,7 +133,6 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
-
   build8:
     runs-on: ubuntu-latest
     steps:
@@ -156,7 +151,6 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
-
   build9:
     runs-on: ubuntu-latest
     steps:
@@ -176,7 +170,6 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
-
   Delete:
     runs-on: ubuntu-latest
     steps:
