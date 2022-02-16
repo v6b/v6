@@ -97,7 +97,7 @@ bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unl
 bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/docker.sh)
 ```
 
-先安装 Docker, 其 IP 为 172.17.0.2 
+先安装 Docker, 其 IP 为 172.17.0.2 ，获取```docker exec -it wgcf ip route get  172.17.0.1 | grep -oP 'src \K\S+'```
 并安装 [mack-a 八合一脚本](https://github.com/mack-a/v2ray-agent)。编辑  ```/etc/v2ray-agent/xray/conf/10_ipv4_outbounds.json```
 
 ```
