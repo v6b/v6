@@ -6,7 +6,7 @@ ENV   PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
 
 WORKDIR ${DIR}
 
-RUN      apk add --no-cache tzdata net-tools iproute2 openresolv wireguard-tools openrc iptables curl \
+RUN      apk add --no-cache tzdata net-tools iproute2 openresolv wireguard-tools iptables curl \
       && rm -rf /var/cache/apk/* \
       && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
       && echo "Asia/Shanghai" > /etc/timezone \
