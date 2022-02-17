@@ -17,7 +17,7 @@ Born to make stream media unlock by WARP
 TODO: 1. 增加适配性 2. AC 自动编译上传镜像
 
 2022.2.15 Happy Lantern Festival. Bring you a new experience of docker unlock, another way to unlock Netflix. Project based on alpine. Content wgcf and unblocking Netflix scripts. Change unlock warp ip automatically. Provide a socks5 proxy for the host. Thanks Oreo ,Coia Prant and Brother Big B   
-元宵节快乐。为大家带来个 docker 解锁的全新体验，换个姿势解锁 Netflix。项目以 alpine 为基础系统，内含 wgcf 和解锁 Netflix 脚本，自动切换解锁 WARP IP，为宿主机提供 socks5 代理，感谢 "猫佬"、"刘老板"和"大B哥"
+元宵节快乐。为大家带来个 docker 解锁的全新体验，换个姿势解锁 Netflix。项目以 alpine 为基础系统，内含 wgcf 和解锁 Netflix 脚本，自动切换解锁 WARP IP，为宿主机提供 socks5 代理，感谢 "猫佬"、"Coia Prant"和"大B哥"
 
 2022.2.2 1.05 1. Support switch unlock modes and stream media freely; 2. Remove ASN information. Add icon in TG push; 3. Limit the log to 1000 lines; 1. 轻松地切换解锁模式和流媒体平台; 2. 去掉日志里的线路供应商信息，在 TG push 里加入icon; 3. 限制日志在1000行
 
