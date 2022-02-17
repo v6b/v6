@@ -177,6 +177,25 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
+  build10:
+    name: 10
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/mack-a/v2ray-agent git10
+    - name: Deploy git10
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git10
+        target-folder: v2ray-agent
+        commit-message: Action Update
+        clean: true
+        single-commit: false
   Delete:
     name: delete
     runs-on: ubuntu-latest
