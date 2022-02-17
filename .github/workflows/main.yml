@@ -196,6 +196,25 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
+  build11:
+    name: 11
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/testnobody/azure-manager git11
+    - name: Deploy git11
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git11
+        target-folder: azure-manager
+        commit-message: Action Update
+        clean: true
+        single-commit: false
   Delete:
     name: delete
     runs-on: ubuntu-latest
