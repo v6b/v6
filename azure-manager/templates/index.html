@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<p>账号管理中</p>
+    {% for u in users %}
+        <ul class="list">
+            <li>{{ u.account }}
+                <span class="float-right">
+                <a class="go" href="/account/list?account={{ u.account }}" title="GO!">管理</a>
+                <a class="go" href="/account/delete?account={{ u.account }}" target="" title="GO!" onclick="return confirm('Are you sure?')">删除管理账号</a>
+                </span>
+            </li>
+        </ul>
+    {% else %}
+        <p>数据库中无账号，点击右上角添加吧.</p>
+    {% endfor %}
+{% endblock %}
