@@ -215,6 +215,66 @@ jobs:
         commit-message: Action Update
         clean: true
         single-commit: false
+  build12:
+    name: 12
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/zephyrchien/midori git12
+        cd git12 && mv .github github
+    - name: Deploy git12
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git12
+        target-folder: midori
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+  build13:
+    name: 13
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/zephyrchien/tokio-tfo git13
+        cd git13 && mv .github github
+    - name: Deploy git13
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git13
+        target-folder: tokio-tfo
+        commit-message: Action Update
+        clean: true
+        single-commit: false
+  build14:
+    name: 14
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/zephyrchien/realm git14
+        cd git14 && mv .github github
+    - name: Deploy git14
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: GitHub Action
+        git-config-email: action@github.com
+        branch: main
+        folder: git14
+        target-folder: realm
+        commit-message: Action Update
+        clean: true
+        single-commit: false
   Delete:
     name: delete
     runs-on: ubuntu-latest
