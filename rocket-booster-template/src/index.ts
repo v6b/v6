@@ -1,22 +1,21 @@
-import useProxy from 'rocket-booster';
+import useReflare from 'reflare';
 
-addEventListener('fetch', (event) => {
-  const proxy = useProxy();
-  proxy.use('/', {
+const handleRequest = async (
+  request: Request,
+): Promise<Response> => {
+  const reflare = await useReflare();
+
+  reflare.push({
+    path: '/*',
     upstream: {
       domain: 'httpbin.org',
       protocol: 'https',
     },
-
-    firewall: [
-      {
-        field: 'country',
-        operator: 'in',
-        value: ['CN', 'KP', 'SY', 'PK', 'CU'],
-      },
-    ],
   });
 
-  const response = proxy.apply(event.request);
-  event.respondWith(response);
+  return reflare.handle(request);
+};
+
+addEventListener('fetch', (event) => {
+  event.respondWith(handleRequest(event.request));
 });

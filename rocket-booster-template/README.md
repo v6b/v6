@@ -1,42 +1,27 @@
-![Header](https://raw.githubusercontent.com/xiaoyang-sde/rocket-booster/master/.github/img/header.jpg)
+![Header](https://raw.githubusercontent.com/xiaoyang-sde/reflare/master/.github/img/header.jpg)
 
-:rocket: The template to kickstart rocket-booster workers. The `src/index.js` file contains the code and configuration of the template. Documentation and examples for `rocket-booster` can be found [here](https://github.com/xiaoyang-sde/rocket-booster).
+:rocket: The template to deploy Reflare to [Cloudflare Workers](https://developers.cloudflare.com/workers/). The `src/index.ts` file contains the route definitions of Reflare. The documentation of Reflare can be found [here](https://github.com/xiaoyang-sde/reflare).
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/xiaoyang-sde/rocket-booster-template)
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/xiaoyang-sde/reflare-template)
 
-## Build and Deploy
+## Installation
 
-- [Install Wrangler CLI](https://github.com/cloudflare/wrangler#installation)
+[Install `wrangler` CLI](https://github.com/cloudflare/wrangler#installation) and authorize `wrangler` with Cloudflare account.
 
-```sh
+```console
 npm install -g @cloudflare/wrangler
+wrangler login
 ```
 
-- Generate from [rocket-booster-template](https://github.com/xiaoyang-sde/rocket-booster-template)
+Generate a new project from [reflare-template](https://github.com/xiaoyang-sde/reflare-template) and install the dependencies.
 
-```sh
-wrangler generate booster https://github.com/xiaoyang-sde/rocket-booster-template
-```
-
-- Install dependencies
-
-```sh
-cd booster
+```console
+wrangler generate reflare-app https://github.com/xiaoyang-sde/reflare-template
+cd reflare-app
 npm install
 ```
 
-- Authenticate Wrangler with a Cloudflare API Token
+Edit or add route definitions in `src/index.ts`. Please read the examples and route definition section below for more details.
 
-```sh
-wrangler login
-wrangler config
-```
-
-- Edit the configuration object in `src/index.js`
-
-- Build and publish to Cloudflare Workers
-
-```sh
-wrangler build
-wrangler publish
-```
+- Run `npm run dev` to preview Reflare with local development server provided by [Miniflare](https://miniflare.dev).
+- Run `npm run deploy` to publish Reflare on Cloudflare Workers.
