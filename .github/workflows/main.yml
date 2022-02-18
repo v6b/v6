@@ -125,7 +125,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Git Clone Repository
       run: |
-        git clone https://github.com/xiaoyang-sde/rocket-booster-template git7
+        git clone https://github.com/xiaoyang-sde/reflare-template git7
         cd git7 && mv .github github
     - name: Deploy git7
       uses: JamesIves/github-pages-deploy-action@v4.2.3
