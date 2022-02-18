@@ -4,11 +4,14 @@ use std::fmt::{Display, Formatter};
 pub const DEFAULT_LOG_FILE: &str = "stdout";
 
 // default timeout
-pub const TCP_TIMEOUT: u64 = 300;
-pub const UDP_TIMEOUT: u64 = 30;
+pub const TCP_TIMEOUT: usize = 300;
+pub const UDP_TIMEOUT: usize = 30;
 
 // default haproxy proxy-protocol version
 pub const PROXY_PROTOCOL_VERSION: usize = 2;
+
+// default haproxy proxy-protocol version
+pub const PROXY_PROTOCOL_TIMEOUT: usize = 5;
 
 // https://github.com/rust-lang/rust/blob/master/library/std/src/sys_common/io.rs#L1
 pub const DEFAULT_BUF_SIZE: usize = if cfg!(target_os = "espidf") {

@@ -70,7 +70,7 @@ Using [Cross](https://github.com/cross-rs/cross) is also a simple and good enoug
 ## Usage
 
 ```shell
-Realm 1.5.x [udp][zero-copy][trust-dns][multi-thread]
+Realm 1.5.x [udp][zero-copy][trust-dns][proxy-protocol][multi-thread]
 A high efficiency relay tool
 
 USAGE:
@@ -85,11 +85,11 @@ FLAGS:
     -z, --splice     force enable tcp zero copy
 
 OPTIONS:
-    -n, --nofile <limit>    set nofile limit
-    -c, --config <path>     use config file
-    -l, --listen <addr>     listen address
-    -r, --remote <addr>     remote address
-    -x, --through <addr>    send through ip or address
+    -n, --nofile <limit>       set nofile limit
+    -c, --config <path>        use config file
+    -l, --listen <address>     listen address
+    -r, --remote <address>     remote address
+    -x, --through <address>    send through ip or address
 
 LOG OPTIONS:
         --log-level <level>    override log level
@@ -102,6 +102,12 @@ DNS OPTIONS:
         --dns-cache-size <number>    override dns cache size
         --dns-protocol <protocol>    override dns protocol
         --dns-servers <servers>      override dns servers
+
+PROXY OPTIONS:
+        --send-proxy                       send proxy protocol header
+        --send-proxy-version <version>     send proxy protocol version
+        --accept-proxy                     accept proxy protocol header
+        --accept-proxy-timeout <second>    accept proxy protocol timeout
 
 TIMEOUT OPTIONS:
         --tcp-timeout <second>    override tcp timeout
@@ -152,7 +158,7 @@ remote = "www.google.com:443"
 
 <details>
 <summary>JSON Example</summary>
-<pre>
+<p>
 
 ```json
 {
@@ -169,12 +175,12 @@ remote = "www.google.com:443"
 }
 ```
 
-</pre>
+</p>
 </details>
 
 <details>
 <summary>Recommended Configuration</summary>
-<pre>
+<p>
 
 ```toml
 [log]
@@ -192,11 +198,9 @@ remote = "1.1.1.1:443"
 [[endpoints]]
 listen = "0.0.0.0:10000"
 remote = "www.google.com:443"
-
-
 ```
 
-</pre>
+</p>
 </details>
 
 ## global
@@ -324,7 +328,7 @@ Require the `udp` feature
 
 Start listening on a udp endpoint and forward packets to the remote peer.
 
-It will dynamically allocate local endpoints and establish udp associations. Once timeout, the endpoints will be deallocated and the association will be terminated. See also: [network.udp_timeout](#networkudptimeout-unsigned-int)
+It will dynamically allocate local endpoints and establish udp associations. Once timeout, the endpoints will be deallocated and the association will be terminated. See also: [network.udp_timeout](#networkudp_timeout-unsigned-int)
 
 Due to the receiver side not limiting access to the association, the relay works like a full-cone NAT.
 
@@ -368,7 +372,7 @@ default: 30
 
 Requires the `proxy-protocol` feature
 
-Send haproxy PROXY header once the connection established. Both `v1` and `v2` are supported, see [send_proxy_version](#networksendproxyversion-unsigned-int).
+Send haproxy PROXY header once the connection established. Both `v1` and `v2` are supported, see [send_proxy_version](#networksend_proxy_version-unsigned-int).
 
 You should make sure the remote peer also speaks proxy-protocol.
 
@@ -378,7 +382,7 @@ default: false
 
 Requires the `proxy-protocol` feature
 
-This option has no effect unless [send_proxy](#networksendproxy-bool) is enabled.
+This option has no effect unless [send_proxy](#networksend_proxy-bool) is enabled.
 
 value:
 

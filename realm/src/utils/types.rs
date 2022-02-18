@@ -12,8 +12,10 @@ pub enum RemoteAddr {
 
 #[derive(Clone, Copy)]
 pub struct HaproxyOpts {
-    pub send_proxy: usize,
-    pub accept_proxy: usize,
+    pub send_proxy: bool,
+    pub accept_proxy: bool,
+    pub send_proxy_version: usize,
+    pub accept_proxy_timeout: usize,
 }
 
 #[derive(Clone, Copy)]
@@ -21,8 +23,8 @@ pub struct ConnectOpts {
     pub use_udp: bool,
     pub fast_open: bool,
     pub zero_copy: bool,
-    pub tcp_timeout: u64,
-    pub udp_timeout: u64,
+    pub tcp_timeout: usize,
+    pub udp_timeout: usize,
     pub haproxy_opts: HaproxyOpts,
     pub send_through: Option<SocketAddr>,
 }
