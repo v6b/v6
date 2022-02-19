@@ -15,12 +15,12 @@ jobs:
     - name: Deploy git1
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git1
         target-folder: tools
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build2:
@@ -34,12 +34,12 @@ jobs:
     - name: Deploy git2
       uses: JamesIves/github-pages-deploy-action@v4.2.3    
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git2
         target-folder: warp_unlock
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build3:
@@ -53,12 +53,12 @@ jobs:
     - name: Deploy git3
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git3
         target-folder: warp
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build4:
@@ -72,12 +72,12 @@ jobs:
     - name: Deploy git4
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git4
         target-folder: url-shorten-worker
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build5:
@@ -91,12 +91,12 @@ jobs:
     - name: Deploy git5
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git5
         target-folder: url-shorten-worker-pages
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build6:
@@ -110,12 +110,12 @@ jobs:
     - name: Deploy git6
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git6
         target-folder: cfworker-kv-image-hosting
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build7:
@@ -130,12 +130,12 @@ jobs:
     - name: Deploy git7
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git7
         target-folder: rocket-booster-template
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build8:
@@ -149,12 +149,12 @@ jobs:
     - name: Deploy git8
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git8
         target-folder: workers-chat-demo
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build9:
@@ -169,12 +169,12 @@ jobs:
     - name: Deploy git9
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git9
         target-folder: pastebin-worker
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build10:
@@ -188,12 +188,12 @@ jobs:
     - name: Deploy git10
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git10
         target-folder: v2ray-agent
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build11:
@@ -207,12 +207,12 @@ jobs:
     - name: Deploy git11
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git11
         target-folder: azure-manager
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build12:
@@ -227,12 +227,12 @@ jobs:
     - name: Deploy git12
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git12
         target-folder: midori
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build13:
@@ -247,12 +247,12 @@ jobs:
     - name: Deploy git13
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git13
         target-folder: tokio-tfo
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   build14:
@@ -267,12 +267,12 @@ jobs:
     - name: Deploy git14
       uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        git-config-name: GitHub Action
-        git-config-email: action@github.com
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
         branch: main
         folder: git14
         target-folder: realm
-        commit-message: Action Update
+        commit-message: Update
         clean: true
         single-commit: false
   Delete:
