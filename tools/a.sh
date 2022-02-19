@@ -2,7 +2,9 @@
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/sbin:/bin
 export LANG=en_US.UTF-8
 
-# 自定义字体彩色，read 函数，友道翻译函数
+WORKDIR='/etc/wireguard'
+
+# 自定义字体彩色，read 函数
 red(){ echo -e "\033[31m\033[01m$1\033[0m"; }
 green(){ echo -e "\033[32m\033[01m$1\033[0m"; }
 yellow(){ echo -e "\033[33m\033[01m$1\033[0m"; }
@@ -16,8 +18,10 @@ TODAY=$(expr "$COUNT" : '.*\s\([0-9]\{1,\}\)\s/.*') && TOTAL=$(expr "$COUNT" : '
 
 wgcf_install(){
 	# 判断处理器架构
-	ARCHITECTURE=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
-	
+	case $(tr '[:upper:]' '[:lower:]' <<< "$(arch)") in
+	aarch64 ) ARCHITECTURE=arm64;;	x86_64 ) ARCHITECTURE=amd64;;	* ) red " Curren architecture $(arch) is not supported. Feedback: [https://github.com/fscarmen/warp/issues] " && exit 1;;
+	esac
+
 	# 判断 wgcf 的最新版本,如因 github 接口问题未能获取，默认 v2.2.11
 	green " \n Install WGCF \n "
 	latest=$(wget -qO- -4 "https://api.github.com/repos/ViRb3/wgcf/releases/latest" | grep "tag_name" | head -n 1 | cut -d : -f2 | sed 's/[ \"v,]//g')
@@ -29,12 +33,12 @@ wgcf_install(){
 	chmod +x /usr/local/bin/wgcf
 
 	# 注册 WARP 账户 ( wgcf-account.toml 使用默认值加加快速度)。如有 WARP+ 账户，修改 license 并升级
-	until [[ -e wgcf-account.toml ]] >/dev/null 2>&1; do
+	until [ -e wgcf-account.toml ] >/dev/null 2>&1; do
 		wgcf register --accept-tos >/dev/null 2>&1 && break
 	done
 
 	# 生成 Wire-Guard 配置文件 (wgcf.conf)
-	[[ -e wgcf-account.toml ]] && wgcf generate -p wgcf.conf >/dev/null 2>&1
+	[ -e wgcf-account.toml ] && wgcf generate -p $WORKDIR/wgcf.conf >/dev/null 2>&1
 
 	# 反复测试最佳 MTU。 Wireguard Header：IPv4=60 bytes,IPv6=80 bytes，1280 ≤1 MTU ≤ 1420。 ping = 8(ICMP回显示请求和回显应答报文格式长度) + 20(IP首部) 。
 	# 详细说明：<[WireGuard] Header / MTU sizes for Wireguard>：https://lists.zx2c4.com/pipermail/wireguard/2017-December/002201.html
@@ -58,8 +62,8 @@ wgcf_install(){
 
 	MTU=$((MTU+28-80))
 
-	[[ -e wgcf.conf ]] && sed -i "s/MTU.*/MTU = $MTU/g" wgcf.conf
-	sed -i "s/^.*\:\:\/0/#&/g;s/engage.cloudflareclient.com/162.159.192.1/g" wgcf.conf
+	[ -e wgcf.conf ] && sed -i "s/MTU.*/MTU = $MTU/g" $WORKDIR/wgcf.conf
+	sed -i "s/^.*\:\:\/0/#&/g;s/engage.cloudflareclient.com/162.159.192.1/g" $WORKDIR/wgcf.conf
 }
 
 # 期望解锁地区
@@ -83,10 +87,10 @@ input_tg(){
 
 # 生成解锁文件
 export_unlock_file(){
-
+[ ! -d $WORKDIR ] && mkdir $WORKDIR
 
 # 生成 warp_unlock.sh 文件，判断当前流媒体解锁状态，遇到不解锁时更换 WARP IP，直至刷成功。5分钟后还没有刷成功，将不会重复该进程而浪费系统资源
-cat <<EOF > warp_unlock.sh
+cat <<EOF > $WORKDIR/warp_unlock.sh
 EXPECT="$EXPECT"
 TOKEN="$TOKEN"
 USERID="$USERID"
@@ -120,8 +124,8 @@ REGION[0]=\${REGION[0]:-'US'}
 fi
 echo "\${REGION[0]}" | grep -qi "\$EXPECT" && R[0]="\$UNLOCK_STATUS" || R[0]="\$NOT_UNLOCK_STATUS"
 CONTENT="Netflix: \${R[0]}."
-[[ -n "\$CUSTOM" ]] && [[ \${R[0]} != \$(sed -n '1p' /etc/wireguard/status.log) ]] && tg_message
-sed -i "1s/.*/\${R[0]}/" /etc/wireguard/status.log
+[[ -n "\$CUSTOM" ]] && [[ \${R[0]} != \$(sed -n '1p' $WORKDIR/status.log) ]] && tg_message
+sed -i "1s/.*/\${R[0]}/" $WORKDIR/status.log
 }
 
 ip
@@ -143,9 +147,9 @@ docker_build(){
 	# 安装 docker, 拉取镜像+创建容器
 	! systemctl is-active docker >/dev/null 2>&1 && green " \n Install docker \n " && curl -sSL get.docker.com | sh
 	
-	wget -O Dockerfile https://raw.githubusercontent.com/fscarmen/warp_unlock/main/Dockerfile
+	wget -O Dockerfile https://github.com/fscarmen/tools/raw/main/Dockerfile
 	docker build -t fscarmen/netfilx_unlock .
-	docker run -dit --restart=always --name wgcf --sysctl net.ipv6.conf.all.disable_ipv6=0 --device /dev/net/tun --privileged --cap-add net_admin --cap-add sys_module --log-opt max-size=1m -v /lib/modules:/lib/modules fscarmen/netfilx_unlock:latest
+	docker run -dit --restart=always --name wgcf --sysctl net.ipv6.conf.all.disable_ipv6=0 --device /dev/net/tun --privileged --cap-add net_admin --cap-add sys_module --log-opt max-size=1m -v /lib/modules:/lib/modules -v $WORKDIR:$WORKDIR fscarmen/netfilx_unlock:latest
 	rm -rf wgcf.conf wgcf-account.toml Dockerfile warp_unlock.sh /usr/local/bin/wgcf
 	green " \n Done! \n "
 }
