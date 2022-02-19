@@ -14,7 +14,7 @@ Born to make stream media unlock by WARP
 * * *
 
 ## 更新信息和 TODO
-TODO: 1. 增加适配性 2. AC 自动编译上传镜像
+2022.2.20 AC 交叉编译（cross-compilation）上传镜像，支持 AMD64 和 ARM64
 
 2022.2.15 Happy Lantern Festival. Bring you a new experience of docker unlock, another way to unlock Netflix. Project based on alpine. Content wgcf and unblocking Netflix scripts. Change unlock warp ip automatically. Provide a socks5 proxy for the host. Thanks Oreo ,Coia Prant and Brother Big B   
 元宵节快乐。为大家带来个 docker 解锁的全新体验，换个姿势解锁 Netflix。项目以 alpine 为基础系统，内含 wgcf 和解锁 Netflix 脚本，自动切换解锁 WARP IP，为宿主机提供 socks5 代理，感谢 "猫佬"、"Coia Prant"和"大B哥"
@@ -144,7 +144,8 @@ bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/doc
 技术文章和相关项目（排名不分先后）:
 * luoxue-bot 解锁 Netflix: https://github.com/luoxue-bot/warp_auto_change_ip
 * lmc999 查各大流媒体解锁情况: https://github.com/lmc999/RegionRestrictionCheck
-* ginuerzh 的 socks+http 代理:https://github.com/ginuerzh/gost/
+* ginuerzh 的 socks+http 代理: https://github.com/ginuerzh/gost/
+* 跨平台构建 Docker 镜像新姿势，x86、arm 一把梭: https://cloud.tencent.com/developer/article/1543689
 
 服务提供（排名不分先后）:
 * CloudFlare Warp(+): https://1.1.1.1/
