@@ -1,5 +1,5 @@
-![realm](https://github.com/zephyrchien/realm/workflows/ci/badge.svg)
-![realm](https://github.com/zephyrchien/realm/workflows/release/badge.svg)
+![realm](../../workflows/ci/badge.svg)
+![realm](../../workflows/release/badge.svg)
 
 [中文说明](https://zhb.me/realm)
 
@@ -68,7 +68,7 @@ Or have a look at [Cross](https://github.com/cross-rs/cross), it makes things ea
 ## Usage
 
 ```shell
-Realm 1.5.x [udp][zero-copy][trust-dns][proxy-protocol][multi-thread]
+Realm 2.0.0 [udp][zero-copy][trust-dns][proxy-protocol][multi-thread]
 A high efficiency relay tool
 
 USAGE:
