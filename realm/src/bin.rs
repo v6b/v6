@@ -21,7 +21,7 @@ cfg_if! {
 }
 
 fn main() {
-    let conf = || {
+    let conf = (|| {
         if let Ok(conf_str) = env::var(ENV_CONFIG) {
             if let Ok(conf) = FullConf::from_conf_str(&conf_str) {
                 return conf;
@@ -32,19 +32,21 @@ fn main() {
         match cmd::scan() {
             CmdInput::Endpoint(ep, opts) => {
                 let mut conf = FullConf::default();
-                conf.add_endpoint(ep).apply_global_opts(opts);
+                conf.add_endpoint(ep)
+                    .apply_global_opts()
+                    .apply_cmd_opts(opts);
                 conf
             }
             CmdInput::Config(conf, opts) => {
                 let mut conf = FullConf::from_conf_file(&conf);
-                conf.apply_global_opts(opts);
+                conf.apply_global_opts().apply_cmd_opts(opts);
                 conf
             }
             CmdInput::None => std::process::exit(0),
         }
-    };
+    })();
 
-    start_from_conf(conf());
+    start_from_conf(conf);
 }
 
 fn start_from_conf(full: FullConf) {
@@ -60,11 +62,8 @@ fn start_from_conf(full: FullConf) {
 
     let eps: Vec<Endpoint> = eps_conf
         .into_iter()
-        .map(|epc| {
-            let ep = epc.build();
-            println!("inited: {}", &ep);
-            ep
-        })
+        .map(|epc| epc.build())
+        .inspect(|x| println!("inited: {}", &x))
         .collect();
 
     execute(eps);
