@@ -111,6 +111,9 @@ PROXY OPTIONS:
 TIMEOUT OPTIONS:
         --tcp-timeout <second>    override tcp timeout
         --udp-timeout <second>    override udp timeout
+
+SUBCOMMANDS:
+    convert    convert your legacy configuration into an advanced one
 ```
 
 Start from command line arguments:
@@ -137,6 +140,12 @@ REALM_CONF='{"endpoints":[{"local":"127.0.0.1:5000","remote":"1.1.1.1:443"}]}' r
 # or
 export REALM_CONF=`cat config.json | jq -c `
 realm
+```
+
+Convert a legacy config file:
+
+```shell
+realm convert old.json
 ```
 
 ## Configuration
@@ -359,7 +368,7 @@ default: 300
 
 Terminate udp association after `timeout`.
 
-The timeout value mut be properly configured in case of memory leak. Do not use a large `timeout`!
+The timeout value must be properly configured in case of memory leak. Do not use a large `timeout`!
 
 default: 30
 
@@ -415,7 +424,7 @@ Remote address, supported formats:
 
 #### endpoint.through: string
 
-TCP: Bind a specific `ip` before openning a connection
+TCP: Bind a specific `ip` before opening a connection
 
 UDP: Bind a specific `ip` or `address` before sending packet
 
