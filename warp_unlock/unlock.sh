@@ -227,20 +227,20 @@ case "${STATUS[@]}" in
       * ) wget -N https://cdn.jsdelivr.net/gh/fscarmen/warp/menu.sh && bash menu.sh; exit;;
      esac;;
 '0 0 1' ) PROXYSOCKS5=$(ss -nltp | grep warp | grep -oP '127.0*\S+')
-     NIC="-s4m8 --socks5 $PROXYSOCKS5"
+     NIC="-ks4m8 --socks5 $PROXYSOCKS5"
      RESTART="socks5_restart";;
-'0 1 0' ) NIC='-s6m8'; RESTART="wgcf_restart";;
-'1 0 0' ) NIC='-s4m8'; RESTART="wgcf_restart";;
+'0 1 0' ) NIC='-ks6m8'; RESTART="wgcf_restart";;
+'1 0 0' ) NIC='-ks4m8'; RESTART="wgcf_restart";;
 '1 1 0' ) yellow " ${T[${L}23]} " && reading " ${T[${L}3]} " CHOOSE3
       case "$CHOOSE3" in
-      2 ) NIC='-s6m8'; RESTART="wgcf_restart";;
-      * ) NIC='-s4m8'; RESTART="wgcf_restart";;
+      2 ) NIC='-ks6m8'; RESTART="wgcf_restart";;
+      * ) NIC='-ks4m8'; RESTART="wgcf_restart";;
       esac;;
 '0 1 1' ) yellow " ${T[${L}6]} " && reading " ${T[${L}3]} " CHOOSE3
       case "$CHOOSE3" in
-      2 ) NIC='-s6m8'; RESTART="wgcf_restart";;
+      2 ) NIC='-ks6m8'; RESTART="wgcf_restart";;
       * ) PROXYSOCKS5=$(ss -nltp | grep warp | grep -oP '127.0*\S+')
-          NIC="-s4m8 --socks5 $PROXYSOCKS5"
+          NIC="-ks4m8 --socks5 $PROXYSOCKS5"
 	  RESTART="socks5_restart";;
       esac;;
  esac
@@ -263,7 +263,7 @@ UNLOCK_SELECT=$(for ((e=0; e<"$SUPPORT_NUM"; e++)); do
 # 期望解锁地区
 input_region(){
 	if [[ -z "$EXPECT" ]]; then
-	REGION=$(curl -sm8 https://ip.gs/country-iso 2>/dev/null)
+	REGION=$(curl -ksm8 https://ip.gs/country-iso 2>/dev/null)
 	reading " $(eval echo "${T[${L}13]}") " EXPECT
 	until [[ -z $EXPECT || $EXPECT = [Yy] || $EXPECT =~ ^[A-Za-z]{2}$ ]]; do
 		reading " $(eval echo "${T[${L}13]}") " EXPECT

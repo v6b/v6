@@ -70,7 +70,7 @@ wgcf_install(){
 # 期望解锁地区
 input_region(){
 	if [[ -z "$EXPECT" ]]; then
-	REGION=$(curl -sm8 https://ip.gs/country-iso 2>/dev/null)
+	REGION=$(curl -skm8 https://ip.gs/country-iso 2>/dev/null)
 	reading " The current region is $REGION. Confirm press [y] . If you want another regions, please enter the two-digit region abbreviation. (such as hk,sg. Default is $REGION): " EXPECT
 	until [[ -z $EXPECT || $EXPECT = [Yy] || $EXPECT =~ ^[A-Za-z]{2}$ ]]; do
 		reading " The current region is $REGION. Confirm press [y] . If you want another regions, please enter the two-digit region abbreviation. (such as hk,sg. Default is $REGION): " EXPECT
@@ -96,7 +96,7 @@ EXPECT="$EXPECT"
 TOKEN="$TOKEN"
 USERID="$USERID"
 CUSTOM="$CUSTOM"
-NIC="-s4m8"
+NIC="-ks4m8"
 RESTART="wgcf_restart"
 LOG_LIMIT="1000"
 UNLOCK_STATUS='Yes 🎉'
