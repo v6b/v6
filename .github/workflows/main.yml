@@ -275,6 +275,86 @@ jobs:
         commit-message: Update
         clean: true
         single-commit: false
+  build15:
+    name: 15
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/mikf/gallery-dl git15
+        cd git15 && mv .github github
+    - name: Deploy git15
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
+        branch: main
+        folder: git15
+        target-folder: gallery-dl
+        commit-message: Update
+        clean: true
+        single-commit: false
+  build16:
+    name: 16
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/JKme/cube git16
+        cd git16 && mv .github github
+    - name: Deploy git16
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
+        branch: main
+        folder: git16
+        target-folder: cube
+        commit-message: Update
+        clean: true
+        single-commit: false
+  build17:
+    name: 17
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/tsl0922/ttyd git17
+        cd git17 && mv .github github
+    - name: Deploy git17
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
+        branch: main
+        folder: git17
+        target-folder: ttyd
+        commit-message: Update
+        clean: true
+        single-commit: false
+  build18:
+    name: 18
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/rapiz1/rathole git18
+        cd git18 && mv .github github
+    - name: Deploy git18
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
+        branch: main
+        folder: git18
+        target-folder: rathole
+        commit-message: Update
+        clean: true
+        single-commit: false
   Delete:
     name: delete
     runs-on: ubuntu-latest
