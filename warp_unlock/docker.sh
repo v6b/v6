@@ -151,7 +151,7 @@ container_build(){
 
 	# 清理临时文件
 	rm -rf wgcf-account.toml /usr/local/bin/wgcf
-	green " \n Done! \n "
+	green " \n Done! The script runs on today: $TODAY. Total: $TOTAL \n "
 }
 
 
