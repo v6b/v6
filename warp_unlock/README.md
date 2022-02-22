@@ -14,6 +14,11 @@ Born to make stream media unlock by WARP
 * * *
 
 ## 更新信息和 TODO
+TODO: 增加 pm2 和 systemd 两种方式，把解锁进程捧在手心
+
+![image](https://user-images.githubusercontent.com/62703343/155180337-89d98964-6284-4e70-8243-6d978ad94a11.png)
+
+
 2022.2.20 AC 交叉编译（cross-compilation）上传镜像，支持 AMD64 和 ARM64
 
 2022.2.15 Happy Lantern Festival. Bring you a new experience of docker unlock, another way to unlock Netflix. Project based on alpine. Content wgcf and unblocking Netflix scripts. Change unlock warp ip automatically. Provide a socks5 proxy for the host. Thanks Oreo ,Coia Prant and Brother Big B   
