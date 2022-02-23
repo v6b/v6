@@ -1,11 +1,10 @@
-use log::{info, warn, error};
+use log::{debug, info, warn, error};
 use futures::future::join_all;
 
 mod tcp;
 use tcp::TcpListener;
 
-use crate::utils::Endpoint;
-use crate::utils::{EndpointRef, RemoteAddrRef, ConnectOptsRef};
+use crate::utils::{Ref, Endpoint, RemoteAddr, ConnectOpts};
 
 pub async fn run(endpoints: Vec<Endpoint>) {
     let mut workers = Vec::with_capacity(compute_workers(&endpoints));
@@ -19,7 +18,7 @@ pub async fn run(endpoints: Vec<Endpoint>) {
     join_all(workers).await;
 }
 
-pub async fn run_tcp(endpoint: EndpointRef) {
+pub async fn run_tcp(endpoint: Ref<Endpoint>) {
     let Endpoint {
         listen,
         remote,
@@ -27,18 +26,18 @@ pub async fn run_tcp(endpoint: EndpointRef) {
         ..
     } = endpoint.as_ref();
 
-    let remote: RemoteAddrRef = remote.into();
-    let opts: ConnectOptsRef = opts.into();
+    let remote: Ref<RemoteAddr> = remote.into();
+    let opts: Ref<ConnectOpts> = opts.into();
 
     let lis = TcpListener::bind(*listen)
         .await
-        .unwrap_or_else(|e| panic!("unable to bind {}: {}", &listen, &e));
+        .unwrap_or_else(|e| panic!("[tcp]unable to bind {}: {}", &listen, e));
 
     loop {
         let (stream, addr) = match lis.accept().await {
             Ok(x) => x,
             Err(e) => {
-                error!("[tcp]failed to accept: {}", &e);
+                error!("[tcp]failed to accept: {}", e);
                 continue;
             }
         };
@@ -55,10 +54,7 @@ pub async fn run_tcp(endpoint: EndpointRef) {
 
         tokio::spawn(async move {
             match tcp::connect_and_relay(stream, remote, opts).await {
-                Ok((up, dl)) => info!(
-                    "[tcp]{} finish, upload: {}b, download: {}b",
-                    msg, up, dl
-                ),
+                Ok(..) => debug!("[tcp]{}, finish", msg),
                 Err(e) => error!("[tcp]{}, error: {}", msg, e),
             }
         });
@@ -69,7 +65,9 @@ pub async fn run_tcp(endpoint: EndpointRef) {
 mod udp;
 
 #[cfg(feature = "udp")]
-pub async fn run_udp(endpoint: EndpointRef) {
+pub async fn run_udp(endpoint: Ref<Endpoint>) {
+    use tokio::net::UdpSocket;
+
     let Endpoint {
         listen,
         remote,
@@ -77,9 +75,22 @@ pub async fn run_udp(endpoint: EndpointRef) {
         ..
     } = endpoint.as_ref();
 
-    if let Err(e) = udp::associate_and_relay(listen, remote, opts.into()).await
-    {
-        panic!("udp forward exit: {}", &e);
+    let sock_map = udp::new_sock_map();
+    let listen_sock = UdpSocket::bind(listen)
+        .await
+        .unwrap_or_else(|e| panic!("[udp]unable to bind {}: {}", &listen, e));
+
+    loop {
+        if let Err(e) = udp::associate_and_relay(
+            &sock_map,
+            &listen_sock,
+            remote,
+            opts.into(),
+        )
+        .await
+        {
+            error!("[udp]error: {}", e);
+        }
     }
 }
 

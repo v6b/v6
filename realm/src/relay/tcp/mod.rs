@@ -22,15 +22,14 @@ use log::debug;
 use tokio::net::TcpSocket;
 
 use crate::utils::socket;
-use crate::utils::ConnectOpts;
-use crate::utils::{RemoteAddrRef, ConnectOptsRef};
+use crate::utils::{Ref, RemoteAddr, ConnectOpts};
 
 #[allow(unused_variables)]
 pub async fn connect_and_relay(
     mut inbound: TcpStream,
-    remote: RemoteAddrRef,
-    conn_opts: ConnectOptsRef,
-) -> Result<(u64, u64)> {
+    remote: Ref<RemoteAddr>,
+    conn_opts: Ref<ConnectOpts>,
+) -> Result<()> {
     let ConnectOpts {
         fast_open,
         zero_copy,
@@ -79,5 +78,9 @@ pub async fn connect_and_relay(
     #[cfg(not(all(target_os = "linux", feature = "zero-copy")))]
     let res = zio::bidi_copy_buffer(&mut inbound, &mut outbound).await;
 
-    res
+    if let Err(e) = res {
+        debug!("[tcp]forward error: {}, ignored", e);
+    }
+
+    Ok(())
 }
