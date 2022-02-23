@@ -7,7 +7,7 @@ Born to make stream media unlock by WARP
 
 - [更新信息和 TODO](README.md#更新信息和-todo)
 - [脚本特点](README.md#脚本特点)
-- [VPS 运行脚本](README.md#VPS-运行脚本)
+- [VPS 运行脚本(附 TG bot 创建方法)](README.md#VPS-运行脚本)
 - [Docker 自动解锁方案](README.md#Docker-自动解锁方案)
 - [鸣谢](README.md#鸣谢下列作者的文章和项目)
 
@@ -29,7 +29,7 @@ TODO: 增加 pm2 和 systemd 两种方式，把解锁进程捧在手心
 2022.1.31 1.04 1. Support push the logs to Telegram. 1. 日志结果输出到 Telegram.
 
 2022.1.30 1.03 1. Suppport pass parameter. You can run like this:```bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -E -A us -4 -N nd -M 2```; 2. Improve log details     
-1. 支持传参，你可以这样运行脚本:  ```bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -E -A us -4 -N nd -M2```; 2. 把日志详细
+1. 支持传参，你可以这样运行脚本:  ```bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -E -A us -4 -N nd -M 2```; 2. 把日志详细
 
 2022.1.29 1.02 1. Support Disney+ 1. 支持 Disney+
 
@@ -56,7 +56,7 @@ beta 2022.1.26 Media unlock daemon. Check it every 5 minutes. If unlocked, the s
 
 <img src="https://user-images.githubusercontent.com/62703343/152547440-5abecca0-7dbe-41d1-bdfd-b09b2e459b87.png" width="50%" />
 
-## VPA 运行脚本
+## VPS 运行脚本
 
 ### 1.菜单方式 (menu)
 ```
@@ -90,6 +90,9 @@ For example 2: Display and uninstall in English
 ```
 bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -E -U
 ```
+
+### TG bot 创建方法
+转自 北纬37度的大飛 [如何申请Telegram机器人 | 推送通知](https://w37fhy.cn/2364.html)
 
 ## Docker 自动解锁方案
 
