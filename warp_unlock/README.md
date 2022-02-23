@@ -14,10 +14,7 @@ Born to make stream media unlock by WARP
 * * *
 
 ## 更新信息和 TODO
-TODO: 增加 pm2 和 systemd 两种方式，把解锁进程捧在手心
-
-![image](https://user-images.githubusercontent.com/62703343/155180337-89d98964-6284-4e70-8243-6d978ad94a11.png)
-
+2022.2.23 1.06 1. Add two modes to unlock: systemd service and pm2 daemon; 1. 增加两个解锁模式: systemd 服务和 pm2 进程守护
 
 2022.2.20 AC 交叉编译（cross-compilation）上传镜像，支持 AMD64 和 ARM64
 
@@ -154,6 +151,9 @@ bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/doc
 * lmc999 查各大流媒体解锁情况: https://github.com/lmc999/RegionRestrictionCheck
 * ginuerzh 的 socks+http 代理: https://github.com/ginuerzh/gost/
 * 跨平台构建 Docker 镜像新姿势，x86、arm 一把梭: https://cloud.tencent.com/developer/article/1543689
+* Linux 利用systemd开机自启shell脚本: https://blog.csdn.net/qq_41539778/article/details/109361023
+* 让你的傻妞稳稳地和机器人GG拍拖！: https://mp.weixin.qq.com/s/77rGQUKg_n5Kz2MqlAUmzw
+* 如何高速安装pm2来守护您的进程？: https://www.kejiwanjia.com/jiaocheng/51930.html
 
 服务提供（排名不分先后）:
 * CloudFlare Warp(+): https://1.1.1.1/
