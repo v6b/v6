@@ -45,7 +45,7 @@ beta 2022.1.26 Media unlock daemon. Check it every 5 minutes. If unlocked, the s
 
 ## 脚本特点
 * 支持多种主流串流影视检测，可以单选或多选
-* 多种方式解锁: 1.每 5 分钟检测一次状态; 2. screen 后台运行; 3. nohup & 后台运行 (已经是天花板，有本事来 [issue](https://github.com/fscarmen/warp_unlock/issues) 挑战)
+* 多种方式解锁: 1.crontab 每 5 分钟检测一次状态; 2. screen 后台运行; 3. nohup & 后台运行; 4. systemd service 进程守护; 5. pm2 daemon 进程守护
 * 支持 WARP Socks5 Proxy 检测和更换 IP 
 * 日志输出
 
