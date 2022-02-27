@@ -45,16 +45,17 @@ beta 2022.1.26 Media unlock daemon. Check it every 5 minutes. If unlocked, the s
 
 ## 脚本特点
 * 支持多种主流串流影视检测，可以单选或多选
-* 多种方式解锁: 1.crontab 每 5 分钟检测一次状态; 2. screen 后台运行; 3. nohup & 后台运行; 4. systemd service 进程守护; 5. pm2 daemon 进程守护
 * 支持 WARP Socks5 Proxy 检测和更换 IP 
 * 日志输出
-  | Mode模式 | Dependencies 依赖 | Resident Process 常驻进程 | Maximum detection interval time 最大检测间隔时长 | 推荐度 |
+* 多种方式解锁: 1.crontab 每 5 分钟检测一次状态; 2. screen 后台运行; 3. nohup & 后台运行; 4. systemd service 进程守护; 5. pm2 daemon 进程守护
+
+  | Mode<br>模式 | Dependencies<br>依赖 | Resident Process<br>常驻进程 | Maximum detection interval time<br>最大检测间隔时长 | recommendation<br>推荐度 |
   | ------- | ------- | ------- | ------- | ------- |
-  | 1 crontab || No 否| 5 min | ⭐⭐⭐⭐⭐ |
-  | 2 systemd || Yes 是 | 60 min | ⭐⭐⭐⭐ |
-  | 3 nohunp || Yes 是 | 60 min | ⭐⭐⭐⭐ |
-  | 4 screen | screen | Yes 是 | 60 min | ⭐⭐⭐ |
-  | 5 pm2| nodejs npm pm2 | Yes 是 | 60 min | ⭐⭐ |
+  | 1 crontab |❌| ❌| 5 min | ⭐⭐⭐⭐⭐ |
+  | 2 systemd |❌| ✅ | 60 min | ⭐⭐⭐⭐ |
+  | 3 nohup |❌| ✅ | 60 min | ⭐⭐⭐⭐ |
+  | 4 screen | screen | ✅ | 60 min | ⭐⭐⭐ |
+  | 5 pm2| node npm pm2 | ✅ | 60 min | ⭐⭐ |
   
 <img src="https://user-images.githubusercontent.com/62703343/155870006-ce235b59-fee7-4f45-a9b7-9af3ede8420f.png" width="70%" />
 
@@ -102,8 +103,8 @@ bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unl
 
 * 支持 AMD64 和 ARM64 机器
 * Docker 以 alpine 为底包，内置 WGCF
-* 每 5 分钟检测一次状态
-* TG 通知输出
+* 每 5 分钟检测一次状态，TG 通知输出
+* 容器内 gost 为宿主机提供 socks5 或者 http 服务，端口为 40000，可以在xray/v2ray 配置文件里作相应设置
 
 ```
 bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/docker.sh)
