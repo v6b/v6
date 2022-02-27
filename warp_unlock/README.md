@@ -6,7 +6,7 @@ Born to make stream media unlock by WARP
 # 目录
 
 - [更新信息和 TODO](README.md#更新信息和-todo)
-- [脚本特点](README.md#脚本特点)
+- [脚本特点(附 5 种模式对比)](README.md#脚本特点)
 - [VPS 运行脚本(附 TG bot 创建方法)](README.md#VPS-运行脚本)
 - [Docker 自动解锁方案](README.md#Docker-自动解锁方案)
 - [鸣谢](README.md#鸣谢下列作者的文章和项目)
@@ -48,10 +48,17 @@ beta 2022.1.26 Media unlock daemon. Check it every 5 minutes. If unlocked, the s
 * 多种方式解锁: 1.crontab 每 5 分钟检测一次状态; 2. screen 后台运行; 3. nohup & 后台运行; 4. systemd service 进程守护; 5. pm2 daemon 进程守护
 * 支持 WARP Socks5 Proxy 检测和更换 IP 
 * 日志输出
+  | Mode模式 | Dependencies 依赖 | Resident Process 常驻进程 | Maximum detection interval time 最大检测间隔时长 | 推荐度 |
+  | ------- | ------- | ------- | ------- | ------- |
+  | 1 crontab || No 否| 5 min | ⭐⭐⭐⭐⭐ |
+  | 2 systemd || Yes 是 | 60 min | ⭐⭐⭐⭐ |
+  | 3 nohunp || Yes 是 | 60 min | ⭐⭐⭐⭐ |
+  | 4 screen | screen | Yes 是 | 60 min | ⭐⭐⭐ |
+  | 5 pm2| nodejs npm pm2 | Yes 是 | 60 min | ⭐⭐ |
+  
+<img src="https://user-images.githubusercontent.com/62703343/155870006-ce235b59-fee7-4f45-a9b7-9af3ede8420f.png" width="70%" />
 
-<img src="https://user-images.githubusercontent.com/62703343/151651669-92d5263e-bfa2-4c2c-9928-683b678d9956.png" width="70%" />
-
-<img src="https://user-images.githubusercontent.com/62703343/152547440-5abecca0-7dbe-41d1-bdfd-b09b2e459b87.png" width="50%" />
+<img src="https://user-images.githubusercontent.com/62703343/155870126-97aaea72-d714-4d1d-80c6-f9864d0246a6.png" width="60%" />
 
 ## VPS 运行脚本
 
