@@ -2255,17 +2255,6 @@ Description
     * ``false``: Skip video Tweets
 
 
-extractor.twitter.warnings
---------------------------
-Type
-    ``bool``
-Default
-    ``false``
-Description
-    Emit `logging messages <output.log_>`_
-    for non-fatal errors reported by Twitter's API.
-
-
 extractor.unsplash.format
 -------------------------
 Type
@@ -3117,6 +3106,27 @@ Description
     Custom format string to build the content of metadata files with.
 
     Note: Only applies for ``"mode": "custom"``.
+
+
+metadata.mtime
+--------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    Set modification times for generated metadata files
+    according to the accompanying downloaded file.
+
+
+mtime.event
+-----------
+Type
+    ``string``
+Default
+    ``"file"``
+Description
+    See `metadata.event`_
 
 
 mtime.key

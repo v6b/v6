@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2017-2021 Mike Fährmann
+# Copyright 2017-2022 Mike Fährmann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -12,6 +12,7 @@ import re
 import os
 import sys
 import json
+import time
 import random
 import sqlite3
 import binascii
@@ -20,6 +21,7 @@ import functools
 import itertools
 import urllib.parse
 from http.cookiejar import Cookie
+from email.utils import mktime_tz, parsedate_tz
 from . import text, exception
 
 
@@ -272,6 +274,15 @@ def remove_directory(path):
         pass
 
 
+def set_mtime(path, mtime):
+    try:
+        if isinstance(mtime, str):
+            mtime = mktime_tz(parsedate_tz(mtime))
+        os.utime(path, (time.time(), mtime))
+    except Exception:
+        pass
+
+
 def load_cookiestxt(fp):
     """Parse a Netscape cookies.txt file and return a list of its Cookies"""
     cookies = []
@@ -413,6 +424,7 @@ GLOBALS = {
     "parse_int": text.parse_int,
     "urlsplit" : urllib.parse.urlsplit,
     "datetime" : datetime.datetime,
+    "timedelta": datetime.timedelta,
     "abort"    : raises(exception.StopExtraction),
     "terminate": raises(exception.TerminateExtraction),
     "re"       : re,

@@ -103,7 +103,7 @@ class NewgroundsExtractor(Extractor):
         }
 
     def extract_post(self, post_url):
-
+        url = post_url
         if "/art/view/" in post_url:
             extract_data = self._extract_image_data
         elif "/audio/listen/" in post_url:
@@ -111,18 +111,19 @@ class NewgroundsExtractor(Extractor):
         else:
             extract_data = self._extract_media_data
             if self.flash:
-                post_url += "/format/flash"
+                url += "/format/flash"
 
-        response = self.request(post_url, fatal=False)
+        response = self.request(url, fatal=False)
         if response.status_code >= 400:
             return {}
         page = response.text
         extr = text.extract_from(page)
         data = extract_data(extr, post_url)
 
-        data["_comment"] = extr('id="author_comments"', '</div>')
+        data["_comment"] = extr(
+            'id="author_comments"', '</div>').partition(">")[2]
         data["comment"] = text.unescape(text.remove_html(
-            data["_comment"].partition(">")[2], "", ""))
+            data["_comment"], "", ""))
         data["favorites"] = text.parse_int(extr(
             'id="faves_load">', '<').replace(",", ""))
         data["score"] = text.parse_float(extr('id="score_number">', '<'))
@@ -134,6 +135,7 @@ class NewgroundsExtractor(Extractor):
 
         data["tags"].sort()
         data["user"] = self.user or data["artist"][0]
+        data["post_url"] = post_url
         return data
 
     @staticmethod
