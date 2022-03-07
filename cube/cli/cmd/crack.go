@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"cube/cubelib"
-	"cube/log"
-	"cube/model"
-	Plugins "cube/plugins"
+	"cube/core"
+	"cube/core/crackmodule"
+	"cube/gologger"
 	"fmt"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 var crackCli *cobra.Command
@@ -17,37 +15,37 @@ func runCrack(cmd *cobra.Command, args []string) {
 
 	if len(opt.User+opt.UserFile+opt.Pass+opt.PassFile) > 0 { //当使用自定义用户密码的时候，判断是否同时指定了User和Password
 		if len(opt.User)+len(opt.UserFile) == 0 || len(opt.Pass)+len(opt.PassFile) == 0 {
-			log.Error("-h for Help, Please set User(-u/--user-file) and Password(-p/--pass-file) flag")
+			gologger.Errorf("Please set login name -l/-L and password -p/-P flag)")
 		}
 	}
 
-	cubelib.StartCrackTask(opt, globalopts)
+	crackmodule.StartCrack(opt, globalopts)
 }
 
-func parseCrackOptions() (*model.GlobalOptions, *model.CrackOptions, error) {
+func parseCrackOptions() (*core.GlobalOption, *crackmodule.CrackOption, error) {
 	globalOpts, err := parseGlobalOptions()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	crackOption := model.NewCrackOptions()
+	crackOption := crackmodule.NewCrackOptions()
 
-	crackOption.Ip, err = crackCli.Flags().GetString("ip")
+	crackOption.Ip, err = crackCli.Flags().GetString("service")
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid value for plugin: %v", err)
 	}
 
-	crackOption.IpFile, err = crackCli.Flags().GetString("ip-file")
+	crackOption.IpFile, err = crackCli.Flags().GetString("service-file")
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid value for plugin: %v", err)
 	}
 
-	crackOption.User, err = crackCli.Flags().GetString("user")
+	crackOption.User, err = crackCli.Flags().GetString("login")
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid value for Password: %v", err)
 	}
 
-	crackOption.UserFile, err = crackCli.Flags().GetString("user-file")
+	crackOption.UserFile, err = crackCli.Flags().GetString("login-file")
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid value for target-file: %w", err)
 	}
@@ -67,47 +65,39 @@ func parseCrackOptions() (*model.GlobalOptions, *model.CrackOptions, error) {
 		return nil, nil, fmt.Errorf("invalid value for target-file: %w", err)
 	}
 
-	crackOption.CrackPlugin, err = crackCli.Flags().GetString("plugin")
+	crackOption.PluginName, err = crackCli.Flags().GetString("plugin")
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid value for scan plugin: %w", err)
 	}
-
 	return globalOpts, crackOption, nil
 }
 
 func init() {
 	crackCli = &cobra.Command{
 		Use:   "crack",
-		Long:  crackDesc(),
+		Long:  crackmodule.CrackHelpTable(),
 		Short: "crack service password",
 		Run:   runCrack,
-		Example: `cube crack -u root -p root -i 192.168.1.1 -x ssh
-cube crack -u root -p root -i 192.168.1.1 -x ssh --port 2222
-cube crack -u root,ubuntu -p 123,000111,root -x ssh -i 192.168.1.1
-cube crack -u root -p root -i 192.168.1.1/24 -x ssh
-cube crack -u root --pass-file pass.txt -i 192.168.1.1/24 -x ssh
-cube crack -u root --pass-file pass.txt -i 192.168.1.1/24 -x ssh,mysql
-cube crack -u root --pass-file pass.txt -i http://127.0.0.1:8080 -x httpbasic
-cube crack -u root --pass-file pass.txt -i http://127.0.0.1:8080 -x phpmyadmin
+		Example: `cube crack -s 192.168.1.1 -x ssh
+cube crack -l root -p root -s 192.168.1.1 -x ssh --port 2222
+cube crack -l root,ubuntu -p 123,000111,root -x ssh -s 192.168.1.1
+cube crack -l root -p root -s 192.168.1.1/24 -x ssh
+cube crack -l root -P pass.txt -s 192.168.1.1/24 -x ssh
+cube crack -L user.txt -P pass.txt -s 192.168.1.1/24 -x ssh,mysql
+cube crack -L user.txt -P pass.txt -s http://127.0.0.1:8080 -x phpmyadmin
 		`,
 	}
 
-	crackCli.Flags().StringP("ip", "i", "", "ip (e.g. 10.0.0.1, 10.0.0.5-10, 192.168.1.*, 192.168.10.0/24, in the nmap format.)")
-	crackCli.Flags().StringP("ip-file", "", "", "ip file")
-	crackCli.Flags().StringP("user", "u", "", "login user")
-	crackCli.Flags().StringP("user-file", "", "", "login user file")
+	crackCli.Flags().StringP("service", "s", "", "service ip(in the nmap format: 10.0.0.1, 10.0.0.5-10, 192.168.1.*, 192.168.10.0/24)")
+	crackCli.Flags().StringP("service-file", "S", "", "service ip file")
+	crackCli.Flags().StringP("login", "l", "", "login user")
+	crackCli.Flags().StringP("login-file", "L", "", "login user file")
 	crackCli.Flags().StringP("pass", "p", "", "login password")
-	crackCli.Flags().StringP("pass-file", "", "", "login password file")
+	crackCli.Flags().StringP("pass-file", "P", "", "login password file")
 	crackCli.Flags().StringP("port", "", "", "if the service is on a different default port, define it here")
-	crackCli.Flags().StringP("plugin", "x", "", fmt.Sprintf("avaliable plugin: %s", strings.Join(Plugins.CrackKeys, ",")))
+	crackCli.Flags().StringP("plugin", "x", "", "crack plugin")
 	if err := crackCli.MarkFlagRequired("plugin"); err != nil {
-		log.Errorf("error on marking flag as required: %v", err)
+		gologger.Errorf("error on marking flag as required: %v", err)
 	}
-
 	rootCmd.AddCommand(crackCli)
-}
-
-func crackDesc() (s string) {
-	s = fmt.Sprintf("Plugins(-x ALL):\n  %s\n\nPlugins: \n  %s", strings.Join(Plugins.CrackKeys, "\n  "), strings.Join(Plugins.CrackFuncExclude, "\n  "))
-	return s
 }

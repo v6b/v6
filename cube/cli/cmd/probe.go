@@ -1,13 +1,9 @@
 package cmd
 
 import (
-	"cube/cubelib"
-	"cube/log"
-	Plugins "cube/plugins"
-	"strings"
-
-	//"cube/log"
-	"cube/model"
+	"cube/core"
+	"cube/core/probemodule"
+	"cube/gologger"
 	"fmt"
 	"github.com/spf13/cobra"
 )
@@ -17,17 +13,17 @@ var probeCli *cobra.Command
 func runProbe(cmd *cobra.Command, args []string) {
 	globalopts, opt, _ := parseProbeOptions()
 
-	cubelib.StartProbeTask(opt, globalopts)
+	probemodule.StartProbe(opt, globalopts)
 }
 
-func parseProbeOptions() (*model.GlobalOptions, *model.ProbeOptions, error) {
+func parseProbeOptions() (*core.GlobalOption, *probemodule.ProbeOption, error) {
 	globalOpts, err := parseGlobalOptions()
 	if err != nil {
 		return nil, nil, err
 	}
-	probeOption := model.NewProbeOptions()
+	probeOption := probemodule.NewProbeOption()
 
-	probeOption.ScanPlugin, err = probeCli.Flags().GetString("plugin")
+	probeOption.PluginName, err = probeCli.Flags().GetString("plugin")
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid value for plugin: %v", err)
 	}
@@ -37,11 +33,11 @@ func parseProbeOptions() (*model.GlobalOptions, *model.ProbeOptions, error) {
 		return nil, nil, fmt.Errorf("invalid value for scan port: %v", err)
 	}
 
-	probeOption.Target, err = probeCli.Flags().GetString("ip")
+	probeOption.Ip, err = probeCli.Flags().GetString("service")
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid value for target-ip: %w", err)
 	}
-	probeOption.TargetFile, err = probeCli.Flags().GetString("ip-file")
+	probeOption.IpFile, err = probeCli.Flags().GetString("service-file")
 	if err != nil {
 		return nil, nil, fmt.Errorf("invalid value for target-file: %w", err)
 	}
@@ -51,28 +47,23 @@ func parseProbeOptions() (*model.GlobalOptions, *model.ProbeOptions, error) {
 func init() {
 	probeCli = &cobra.Command{
 		Use:   "probe",
-		Long:  probeDesc(),
+		Long:  probemodule.ProbeHelpTable(),
 		Short: "probe pentest env",
 		Run:   runProbe,
-		Example: `cube probe -i 192.168.1.1 -x oxid
-cube probe -i 192.168.1.1 -x oxid,zookeeper,ms17010
-cube probe -i 192.168.1.1/24 -x ALL
+		Example: `cube probe -s 192.168.1.1 -x oxid
+cube probe -s 192.168.1.1 -x oxid,zookeeper,ms17010
+cube probe -s 192.168.1.1/24 -x X
 		`,
 	}
 
-	probeCli.Flags().StringP("port", "p", "", "target port")
+	probeCli.Flags().StringP("port", "", "", "target port")
 	probeCli.Flags().StringP("plugin", "x", "", "plugin to scan(e.g. oxid,ms17010)")
-	probeCli.Flags().StringP("ip", "i", "", "ip (e.g. 10.0.0.1, 10.0.0.5-10, 192.168.1.*, 192.168.10.0/24, in the nmap format.)")
-	probeCli.Flags().StringP("ip-file", "", "", "File to probe for(e.g. ip.txt)")
+	probeCli.Flags().StringP("service", "s", "", "service ip(in the nmap format: 10.0.0.1, 10.0.0.5-10, 192.168.1.*, 192.168.10.0/24)")
+	probeCli.Flags().StringP("service-file", "S", "", "File to probe for(e.g. ip.txt)")
 
-	if err := crackCli.MarkFlagRequired("plugin"); err != nil {
-		log.Errorf("error on marking flag as required: %v", err)
+	if err := probeCli.MarkFlagRequired("plugin"); err != nil {
+		gologger.Errorf("error on marking flag as required: %v", err)
 	}
 
 	rootCmd.AddCommand(probeCli)
-}
-
-func probeDesc() (s string) {
-	s = fmt.Sprintf("Plugins(-x ALL):\n  %s\n\nPlugins: \n  %s", strings.Join(Plugins.ProbeKeys, "\n  "), strings.Join(Plugins.ProbeFuncExclude, "\n  "))
-	return s
 }

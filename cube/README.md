@@ -1,203 +1,138 @@
-### CUBE
+## 声明
+>特别声明：此工具仅限于安全研究，禁止使用该项目进行违法操作，否则自行承担相关责任
 
- 代码整体可读性比较差，各位师傅如果对源代码感兴趣，建议看netxfly师傅[X-Crack](https://github.com/netxfly/x-crack)仓库的
- [README.txt](https://github.com/netxfly/x-crack/commit/684e738b8de93456cce073243efe1ad784bb154f)，我只是在X-Crack的基础上套了一层壳。
+## 特点
+- 方便二次开发，快速增加插件
+- 支持输出结果到excel文档
+- 精简运行参数，方便记忆
 
-![code](https://pbs.twimg.com/media/ElkdkAGXIAAl_4P?format=jpg&name=small)
+## 我什么都不想记
+如果没有耐心看下面的命令选项，运行如下命令，然后打开pwn.xlsx
+```
+cube crack -x X -s 192.168.2.1/24 -o /tmp/pwn.xlsx
+cube probe -x Y -s 192.168.2.1/24 -o /tmp/pwn.xlsx
+```
+![report.png](./image/report.png)
 
-适用内网渗透测试。 ~~F-Scrack的翻版，给fscan和Ladon做了个分类，[X-Crack](https://github.com/netxfly/x-crack) 套壳~~
-，包括三个模块信息收集(probe)、弱密码爆破(crack)、命令执行(sqlcmd)，参考gobuster的爆破模式
+## 全局参数
+- `-v`: 输出内容更详细，一般用于调试
+- `-n`: 设定`crack`和`probe`模块的运行线程数量，默认30线程
+- `--delay`: 设定此选项的时候，`crack`和`probe`模块强制设为单线程，并在设定的值之内随机休眠
 
-```bash
-Usage:
-  cube [command]
 
-Available Commands:
-  crack       crack service password, avaliable plugin: smb,mongo,postgres,ssh,mysql,ftp,redis,elastic,mssql
-  help        Help about any command
-  probe       collect pentest environment information
-  sqlcmd      exec sql query or cmd
-
-Flags:
-      --delay int     delay for request 
-  -h, --help          help for cube
-  -n, --threads int   Number of concurrent threads (default 30)
-      --timeout int   Timeout each thread waits (default 5)
-  -v, --verbose       Verbose output (errors)
+## 0x1. crack模块
+#### 使用内置词典
+```shell
+cube crack -s 192.168.1.1 -x ssh
+```
+#### 指定用户密码
+```shell
+cube crack -l root,ubuntu -p 123,000111,root -x ssh -s 192.168.1.1
+cube crack -L user.txt -P pass.txt -s 192.168.1.1/24 -x ssh
+cube crack -l root -P pass.txt -s 192.168.1.1/24 -x ssh
+```
+#### 指定端口
+```shell
+cube crack -l root -p root -s 192.168.1.1 -x ssh --port 2222
+```
+#### 指定多个插件
+```shell
+# 爆破mysql和ssh(注意ssh和mysql之间的逗号不存在空格)
+cube crack -s 192.168.1.1 -x ssh,mysql
+```
+#### 爆破phpmyadmin
+```shell
+cube crack -s http://192.168.2.1 -x phpmyadmin
 ```
 
-### Flags
-下面都是全局参数，适用任何模块
-#### --delay 每次的请求之间的时间延迟，设定参数之后，多线程数量强制设为1，用于在流量监控特别敏感的内网(~~感觉没有什么卵用~~)
-#### --threads  设定多线程数量，默认30
-#### --verbose  Debug模式输出
-
-
-### Probe 内网信息收集
-内网探测信息，有如下插件:
-
-| 插件名称      | 插件效果 | 默认端口 |
-| --------- | :-----|------|
-| oxid           | 探测多网卡和windows位数          |   TCP 135 
-| netbios        | netscan        | UDP 137和TCP 139   
-| ms17010        | ms17010漏洞    | TCP 445             
-| zookeeper      | zookeeper未授权 | TCP 2181                    
-| smbghost       | smbghost漏洞    | TCP 445           
-| ntlm-smb       | NTLM信息收集(smbv1和smbv2) | TCP 445  
-| ntlm-wmi       | NTLM信息收集     | TCP 135            
-| ntlm-winrm     | NTLM信息收集     | TCP 5985         
-| ntlm-mssql     | NTLM信息收集     | TCP 1433        
-| rmi            | RMI服务探测      | TCP 1099    
-| dubbo            | Dubbo服务探测      | TCP 20880
-| docker         | Docker API探测   | TCP 2375
-| ping         | 主机存活探测   | N/A
-
-
-```
-ALL选项默认加载插件: docker,rmi,oxid,netbios,ntlm-smb,zookeeper
-cube probe -x oxid -i 192.168.2.1/24
-cube probe -x oxid,ms17010 -i 192.168.2.1/24
-cube probe -x ALL -i 192.168.2.1/24
+#### 加载全部爆破插件
+```shell
+cube crack -x X -s 192.168.1.1
 ```
 
-#### Probe注意事项
-- Probe模块的插件一般情况下不用指定端口
-- `ntlm-smb`模块发送了smbv1和smbv2探测包，smbv1的返回包会包含具体的操作系统，smbv2只会有一个Build版本号，比如Win10常见的`Build: 10.0.19041`,
-`10.0.19044`可以指 Windows 10 或 Windows Server 2019 的 21H1 版本。
-- netbios使用udp扫描，udp本身是不可靠协议，建议低线程，比如`--threads 10`，netbios也可以扫描多网卡并且支持中文主机名
-- `ntlm-smb、ntlm-wmi、ntlm-winrm、ntlm-mssql`都是获取NTLM信息的插件，全部支持中文主机名
-- `oxid`扫描多网卡和主机位数，从impacket的`getArch.py`抄来的，支持中文主机名
-- 内网Linux主机比较多的时候使用crack模块探测`ssh,mysql,redis`，Windows主机较多的时候使用probe模块下的`netbios`和`ntlm-*`探测
+* phpmyadmin这类http的爆破插件只能单独使用，不可同时加载其它插件，类似的还有jenkins等
+* `-x X`是加载全部可用的爆破插件，先检查端口，端口开放之后爆破
+* 未指定用户密码的时候，会加载内置词典
 
-### Crack 弱密码爆破
-```bash
-Usage:
-  cube crack [flags]
-
-Flags:
-  -h, --help               help for crack
-  -i, --ip string          ip (e.g. 10.0.0.1, 10.0.0.5-10, 192.168.1.*, 192.168.10.0/24, in the nmap format.)
-      --ip-file string     ip file
-  -p, --pass string        login password
-      --pass-file string   login password file
-  -x, --plugin string      avaliable plugin: redis,postgres,mssql,elastic,ssh,mysql,ftp,smb,mongo
-      --port string        if the service is on a different default port, define it here
-  -u, --user string        login user
-      --user-file string   login user file
-
-Global Flags:
-      --delay int     delay for request
-  -n, --threads int   Number of concurrent threads (default 30)
-      --timeout int   Timeout each thread waits (default 5)
-  -v, --verbose       Verbose output (errors)
+## 0x2. probe模块
+#### 加载全部默认插件
+```shell
+# -x Y的时候加载全部probe插件， -x -X只会加载部分默认插件
+cube probe -x X -s 192.168.2.1/24
+cube probe -x Y -s 192.168.2.1/24
 ```
-用户名(`-u/--user-file`)和密码(`-p/--pass-file`)成对出现，可以任意组合， 可用插件：`ssh，mysql，redis，elastic，ftp，httpbasic，mongo，mssql，smb，postgres`
-smb插件的域爆破没有充分测试
-
-| 插件名称      | 插件效果 | 默认端口 |
-| --------- | :-----|------|
-| mysql     | Mysql爆破 | TCP 3306 |
-| mssql     | Mssql爆破 | TCP 1433
-| mongo     | Mongo爆破 | TCP 27017
-| elastic   | ES爆破    | TCP 9200
-| postgres  | postgres爆破(未测试) | TCP 5432
-| ssh       | SSH爆破     | TCP 22
-| redis     | redis爆破     | TCP 6379
-| ftp       | ftp爆破     | TCP 21
-| smb       | smb爆破(支持域爆破: 用户名 DC1\administrator )     | TCP 445
-
-
-| 插件名称      | 插件效果 | 默认端口 |
-| --------- | :-----|------|
-| httpbasic        | basic认证爆破     | 自己指定
-| jenkins          | jenkins爆破     | 自己指定
-| phpmyadmin       | phpmyadmin爆破     | 自己指定
-| zabbix           | zabbix爆破(超过5个密码锁定30s)  | 自己指定
-
-```
-Examples:
-cube crack -u root -p root -i 192.168.1.1 -x ALL //加载全部可组合插件
-cube crack -u root -p root -i 192.168.1.1 -x ssh
-cube crack -u root -p root -i 192.168.1.1 -x ssh --port 2222
-cube crack -u root,ubuntu -p 123,000111,root -x ssh -i 192.168.1.1
-cube crack -u root -p root -i 192.168.1.1/24 -x ssh
-cube crack -u root --pass-file pass.txt -i 192.168.1.1/24 -x ssh
-cube crack -u root --pass-file pass.txt -i 192.168.1.1/24 -x ssh,mysql
-
-phpmyadmin、httpbasic、jenkins、zabbix插件只能单独使用，不可组合:
-cube crack -u root --pass-file pass.txt -i http://192.168.1.1 -x phpmyadmin
-cube crack -u root --pass-file pass.txt -i http://192.168.1.1 -x httpbasic
-cube crack -u root --pass-file pass.txt -i http://192.168.1.1 -x jenkins
-cube crack -u root --pass-file pass.txt -i http://192.168.1.1 -x zabbix
-//sqlserver爆破密码的代码(Event Code): 18456
+### 加载指定插件
+```shell
+cube probe -x oxid,ms17010 -s 192.168.2.1/24
 ```
 
-#### crack注意事项
-- 未指定用户密码的时候使用内置密码列表
-- redis未授权也会爆破出来一个密码，可忽略
+## 0x3. 结果输出
+在使用`crack`和`probe`模块的任何插件都可以加上`-o result.xlsx`，用于把结果写入到excel，当excel已经存在
+的时候，cube会把当前扫描的结果自动追加到文档，建议扫描结束之后的文档固定首行首列，查看更方便。
 
-#### Sqlcmd 命令执行
-执行命令，可用插件： `ssh`,`mssql`(开启xp_cmdshell),`mssql-wscript`,`mssql-com`,`mssql-clr`, `mysql`
+## 0x4. 快速开发
+#### Crack模块
+新增一个自定义爆破插件，插件名`cloud`，默认端口`80`，默认词典使用内置词典：
+![crack.gif](./image/crack.gif)
 
-| 插件名称      | 插件效果 | 默认端口 |
-| --------- | :-----|------|
-| ssh     | ssh命令执行，仅支持密码 | TCP 22 |
-| mssql     | mssql开启命令执行 | TCP 1433
-| mssql-wscript     | mssql开启命令执行 | TCP 1433
-| mssql-com     | mssql开启命令执行 | TCP 1433
-| mssql-clr     | mssql开启命令执行 | TCP 1433
-| mysql     | msql开启命令执行，仅支持Windows x64 | TCP 3306
-
+```shell
+	CrackName() string       //插件名称
+	CrackPort() string       //插件默认端口
+	CrackAuthUser() []string //插件默认爆破的用户名
+	CrackAuthPass() []string //插件默认爆破的密码，可以使用config.PASSWORD
+	IsMutex() bool           //只能单独使用的插件，比如phpmyadmin
+	CrackPortCheck() bool    //插件是否需要端口检查，一般TCP需要，phpmyadmin类单独使用的不用
+	Exec() CrackResult       //运行插件
 ```
-Examples:
-cube sqlcmd -x ssh://172.16.157.163:2222 -usa -p123456 -e "whoami"  //指定端口
 
+ * 如果需要`-x X`加载`cloud`, 修改`config/config.go`，把`cloud`加入到`CrackX`列表里面
 
-cube sqlcmd -x mssql://172.16.157.163 -usa -p123456 -e "whoami"
-cube sqlcmd -x mssql://172.16.157.163 -usa -p123456 -e "clear" //clear xp_cmdshell
+#### Probe模块
+新增Probe插件和crack类似，需要实现以下接口:
 
-cube sqlcmd -x mssql-wscript://172.16.157.163 -usa -p123456 -e "whoami"
-cube sqlcmd -x mssql-wscript://172.16.157.163 -usa -p123456 -e "clear" //clear sp_oacreate
+```shell
+	ProbeName() string      //插件名称
+	ProbePort() string      //插件默认端口
+	PortCheck() bool        //是否需要端口检查
+	ProbeExec() ProbeResult //执行插件
+```
 
+## 0x5 Sqlcmd模块
+用于mysql的UDF提权(暂时支持windows x64)，mssql命令执行：
+```shell
+#开启UDF执行命令
+cube sqlcmd -x mysql -l root -p root -e "whoami"
 
-cube sqlcmd -x mssql-com://172.16.157.163 -usa -p123456 -e "whoami"
-cube sqlcmd -x mssql-com://172.16.157.163 -usa -p123456 -e "clear" //clear sp_oacreate
+#清除xp_cmdshell
+cube sqlcmd -x mysql -l root -p root -e "clear"
 
-
-cube sqlcmd -x mssql-clr://172.16.157.163 -usa -p123456 -e "whoami"
-cube sqlcmd -x mssql-clr://172.16.157.163 -usa -p123456 -e "clear" //clear CLR
-
-cube sqlcmd -x mysql://172.16.157.163 -uroot -p123456 -e "whoami"
-cube sqlcmd -x mysql://172.16.157.163 -uroot -p123456 -e "clear" //clear udf backdoor
+#指定mssql端口
+cube sqlcmd -x mssql -l sa -p sa -e "whoami" --port 4134
 ```
 
 
-
-### TODO
-- [ ] [WidnowsEDR探测](https://www.rumble.run/blog/research-dcerpc/) [Fingerprinting Through RPC](https://www.blackhat.com/presentations/win-usa-04/bh-win-04-seki-up2.pdf)
-AVG和avast安装之后在135端口会存在UUID，但是未找到一种方式可以单独探测，EDR探测先过啦
-```sh
-dbe95f8e-2be7-4b70-96f3-369be27fa432
-27ecede4-7987-44af-ab7d-eeacd740a084
-74103b90-29af-413f-b203-a3eb4f7e95b8
-```
-- [x] NTLM SSP信息收集扫描, 
-- [ ] 增加输出CSV
-- [x] 增加sqlcmd的mssql命令执行
-- [x] 增加请求间隔延迟 --delay，当设定这个选项的时候，线程强制设为1，这个选项大概用不上？
-- [ ] 变量名和函数名优化
-- [x] SMB和OXID输出的中文乱码问题 [Golang的字符编码与regexp](https://mp.weixin.qq.com/s/MgkRkCgqkvOL81gokP4gAg)
-- [x] NetBios模块复制[nextnet](https://github.com/hdm/nextnet)
-- [ ] **尝试改造为interface实现**
-
-httpx -title --follow-redirects --status-code -tech-detect --title -ports 8000,8080,8888
 
 ### 参考
-* <https://github.com/shadow1ng/fscan>
-* <https://github.com/k8gege/LadonGo>
-* <https://github.com/OJ/gobuster>
-* <https://github.com/netxfly/x-crack>
-* <https://github.com/mabangde/pentesttools/blob/master/golang/sqltool.go>
+* [X-Crack](https://github.com/netxfly/x-crack)
+* [LadonGo](https://github.com/k8gege/LadonGo)
+* [fscan](https://github.com/shadow1ng/fscan)
+* [gobuster](https://github.com/OJ/gobuster)
+* [sqltool](https://github.com/mabangde/pentesttools/blob/master/golang/sqltool.go)
 
-### 声明
->特别声明：此工具仅限于安全研究，禁止使用该项目进行违法操作，否则自行承担相关责任
+
+## TODO
+* [数据库利用工具](http://ryze-t.com/posts/2022/02/16/%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5%E5%88%A9%E7%94%A8%E5%B7%A5%E5%85%B7-Sylas.html)
+* [MDUT](https://github.com/SafeGroceryStore/MDUT)
+* 完成SQLCMD模块
+  -m ls  <dst path>
+  -m cat <dst file>
+  -m upload <src path> <dst path>
+  -m exec <cmd string>
+
+```shell
+cube sqlcmd -s 127.0.0.1 -l root -p root -x mssql exec "whoami"
+cube sqlcmd -s 127.0.0.1 -l root -p root -x mssql upload  <src> <dst>
+cube sqlcmd -s 127.0.0.1 -l root -p root -x mssql ls  <src>
+cube sqlcmd -s 127.0.0.1 -l root -p root -x mssql cat  <src> 
+```
+* [检查某个方法是否实现了接口](https://go.dev/play/p/tNNDukK4wRi)
