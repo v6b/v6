@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 
 use super::{SocketOpts, TcpTransport, Transport};
 use crate::config::{TlsConfig, TransportConfig};
+use crate::helper::host_port_pair;
 use anyhow::{anyhow, Context, Result};
 use async_trait::async_trait;
 use std::fs;
@@ -25,7 +26,7 @@ impl Transport for TlsTransport {
 
     fn new(config: &TransportConfig) -> Result<Self> {
         let tcp = TcpTransport::new(config)?;
-        let config = config.tls.as_ref().ok_or(anyhow!("Missing tls config"))?;
+        let config = config.tls.as_ref().ok_or_else(|| anyhow!("Missing tls config"))?;
 
         let connector = match config.trusted_root.as_ref() {
             Some(path) => {
@@ -94,8 +95,8 @@ impl Transport for TlsTransport {
             .connect(
                 self.config
                     .hostname
-                    .as_ref()
-                    .unwrap_or(&String::from(addr.split(':').next().unwrap())),
+                    .as_deref()
+                    .unwrap_or(host_port_pair(addr)?.0),
                 conn,
             )
             .await?)

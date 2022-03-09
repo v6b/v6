@@ -5,8 +5,13 @@ use std::fmt::{Debug, Formatter};
 use std::ops::Deref;
 use std::path::Path;
 use tokio::fs;
+use url::Url;
 
 use crate::transport::{DEFAULT_KEEPALIVE_INTERVAL, DEFAULT_KEEPALIVE_SECS, DEFAULT_NODELAY};
+
+/// Application-layer heartbeat interval in secs
+const DEFAULT_HEARTBEAT_INTERVAL_SECS: u64 = 30;
+const DEFAULT_HEARTBEAT_TIMEOUT_SECS: u64 = 40;
 
 /// String with Debug implementation that emits "MASKED"
 /// Used to mask sensitive strings when logging
@@ -20,7 +25,7 @@ impl Debug for MaskedString {
 }
 
 impl Deref for MaskedString {
-    type Target = String;
+    type Target = str;
     fn deref(&self) -> &Self::Target {
         &self.0
     }
@@ -142,36 +147,42 @@ fn default_keepalive_interval() -> u64 {
     DEFAULT_KEEPALIVE_INTERVAL
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[serde(deny_unknown_fields)]
-pub struct TransportConfig {
-    #[serde(rename = "type")]
-    pub transport_type: TransportType,
+pub struct TcpConfig {
     #[serde(default = "default_nodelay")]
     pub nodelay: bool,
     #[serde(default = "default_keepalive_secs")]
     pub keepalive_secs: u64,
     #[serde(default = "default_keepalive_interval")]
     pub keepalive_interval: u64,
-    pub tls: Option<TlsConfig>,
-    pub noise: Option<NoiseConfig>,
+    pub proxy: Option<Url>,
 }
 
-impl Default for TransportConfig {
-    fn default() -> TransportConfig {
-        TransportConfig {
-            transport_type: Default::default(),
+impl Default for TcpConfig {
+    fn default() -> Self {
+        Self {
             nodelay: default_nodelay(),
             keepalive_secs: default_keepalive_secs(),
             keepalive_interval: default_keepalive_interval(),
-            tls: None,
-            noise: None,
+            proxy: None,
         }
     }
 }
 
-fn default_transport() -> TransportConfig {
-    Default::default()
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone, Default)]
+#[serde(deny_unknown_fields)]
+pub struct TransportConfig {
+    #[serde(rename = "type")]
+    pub transport_type: TransportType,
+    #[serde(default)]
+    pub tcp: TcpConfig,
+    pub tls: Option<TlsConfig>,
+    pub noise: Option<NoiseConfig>,
+}
+
+fn default_heartbeat_timeout() -> u64 {
+    DEFAULT_HEARTBEAT_TIMEOUT_SECS
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq, Clone)]
@@ -180,8 +191,14 @@ pub struct ClientConfig {
     pub remote_addr: String,
     pub default_token: Option<MaskedString>,
     pub services: HashMap<String, ClientServiceConfig>,
-    #[serde(default = "default_transport")]
+    #[serde(default)]
     pub transport: TransportConfig,
+    #[serde(default = "default_heartbeat_timeout")]
+    pub heartbeat_timeout: u64,
+}
+
+fn default_heartbeat_interval() -> u64 {
+    DEFAULT_HEARTBEAT_INTERVAL_SECS
 }
 
 #[derive(Debug, Serialize, Deserialize, Default, PartialEq, Clone)]
@@ -190,8 +207,10 @@ pub struct ServerConfig {
     pub bind_addr: String,
     pub default_token: Option<MaskedString>,
     pub services: HashMap<String, ServerServiceConfig>,
-    #[serde(default = "default_transport")]
+    #[serde(default)]
     pub transport: TransportConfig,
+    #[serde(default = "default_heartbeat_interval")]
+    pub heartbeat_interval: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -255,24 +274,33 @@ impl Config {
     }
 
     fn validate_transport_config(config: &TransportConfig, is_server: bool) -> Result<()> {
+        config
+            .tcp
+            .proxy
+            .as_ref()
+            .map_or(Ok(()), |u| match u.scheme() {
+                "socks5" => Ok(()),
+                "http" => Ok(()),
+                _ => Err(anyhow!(format!("Unknown proxy scheme: {}", u.scheme()))),
+            })?;
         match config.transport_type {
             TransportType::Tcp => Ok(()),
             TransportType::Tls => {
                 let tls_config = config
                     .tls
                     .as_ref()
-                    .ok_or(anyhow!("Missing TLS configuration"))?;
+                    .ok_or_else(|| anyhow!("Missing TLS configuration"))?;
                 if is_server {
                     tls_config
                         .pkcs12
                         .as_ref()
                         .and(tls_config.pkcs12_password.as_ref())
-                        .ok_or(anyhow!("Missing `pkcs12` or `pkcs12_password`"))?;
+                        .ok_or_else(|| anyhow!("Missing `pkcs12` or `pkcs12_password`"))?;
                 } else {
                     tls_config
                         .trusted_root
                         .as_ref()
-                        .ok_or(anyhow!("Missing `trusted_root`"))?;
+                        .ok_or_else(|| anyhow!("Missing `trusted_root`"))?;
                 }
                 Ok(())
             }
