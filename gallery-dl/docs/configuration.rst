@@ -599,7 +599,9 @@ Description
     memory requirements are significantly lower when the
     amount of stored IDs gets reasonably large.
 
-    Note: archive paths support regular `format string`_ replacements,
+    Note: Archive files that do not already exist get generated automatically.
+
+    Note: Archive paths support regular `format string`_ replacements,
     but be aware that using external inputs for building local paths
     may pose a security risk.
 
@@ -3139,6 +3141,19 @@ Description
     Note: Only applies for ``"mode": "custom"``.
 
 
+metadata.archive
+----------------
+Type
+    |Path|_
+Description
+    File to store IDs of generated metadata files in,
+    similar to `extractor.*.archive`_.
+
+    ``archive-format`` and ``archive-prefix`` options,
+    akin to `extractor.*.archive-format`_ and `extractor.*.archive-prefix`_,
+    are supported as well.
+
+
 metadata.mtime
 --------------
 Type
@@ -3146,7 +3161,7 @@ Type
 Default
     ``false``
 Description
-    Set modification times for generated metadata files
+    Set modification times of generated metadata files
     according to the accompanying downloaded file.
 
     Enabling this option will only have an effect
@@ -3289,6 +3304,16 @@ Description
     adds ``["-vf", "crop=iw-mod(iw\\,2):ih-mod(ih\\,2)"]``
     to the list of FFmpeg command-line arguments
     to reduce an odd width/height by 1 pixel and make them even.
+
+
+ugoira.mtime
+------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    Set modification times of generated ugoira aniomations.
 
 
 ugoira.repeat-last-frame
