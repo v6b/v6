@@ -31,7 +31,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Git Clone Repository
       run: |
-        git clonehttps://github.com/iyear/E5SubBot git2
+        git clone https://github.com/iyear/E5SubBot git2
         cd git2 && mv .github github
     - name: Deploy git2
       uses: JamesIves/github-pages-deploy-action@v4.2.3
