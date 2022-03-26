@@ -157,6 +157,11 @@ jobs:
         commit-message: Update
         clean: true
         single-commit: false
+    - name: Delete workflow runs
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 0
+        keep_minimum_runs: 0
   build9:
     name: 9
     runs-on: ubuntu-latest
@@ -355,13 +360,42 @@ jobs:
         commit-message: Update
         clean: true
         single-commit: false
-  Delete:
-    name: delete
+  build19:
+    name: 19
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Delete workflow runs
-      uses: Mattraks/delete-workflow-runs@main
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/julydate/acmeDeliver git19
+        cd git19 && mv .github github
+    - name: Deploy git19
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
       with:
-        retain_days: 0
-        keep_minimum_runs: 0
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
+        branch: main
+        folder: git19
+        target-folder: acme-Server
+        commit-message: Update
+        clean: true
+        single-commit: false
+  build20:
+    name: 20
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone -b client https://github.com/julydate/acmeDeliver git20
+    - name: Deploy git20
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
+        branch: main
+        folder: git20
+        target-folder: acme-Client
+        commit-message: Update
+        clean: true
+        single-commit: false
