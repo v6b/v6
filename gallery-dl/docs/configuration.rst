@@ -1336,17 +1336,6 @@ Description
     but is most likely going to fail with ``403 Forbidden`` errors.
 
 
-extractor.hitomi.metadata
--------------------------
-Type
-    ``bool``
-Default
-    ``false``
-Description
-    Try to extract
-    ``artist``, ``group``, ``parody``,  and ``characters`` metadata.
-
-
 extractor.imgur.mp4
 -------------------
 Type
@@ -2792,16 +2781,6 @@ Output Options
 ==============
 
 
-output.fallback
----------------
-Type
-    ``bool``
-Default
-    ``true``
-Description
-    Include fallback URLs in the output of ``-g/--get-urls``.
-
-
 output.mode
 -----------
 Type
@@ -2840,6 +2819,28 @@ Default
     ``true``
 Description
     Show skipped file downloads.
+
+
+output.fallback
+---------------
+Type
+    ``bool``
+Default
+    ``true``
+Description
+    Include fallback URLs in the output of ``-g/--get-urls``.
+
+
+output.private
+--------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    Include private fields,
+    i.e. fields whose name starts with an underscore,
+    in the output of ``-K/--list-keywords`` and ``-j/--dump-json``.
 
 
 output.progress
@@ -3238,11 +3239,16 @@ ugoira.ffmpeg-demuxer
 Type
     ``string``
 Default
-    ``image2``
+    ``auto``
 Description
-    FFmpeg demuxer to read input files with. Possible values are
-    "`image2 <https://ffmpeg.org/ffmpeg-formats.html#image2-1>`_" and
-    "`concat <https://ffmpeg.org/ffmpeg-formats.html#concat-1>`_".
+    FFmpeg demuxer to read and process input files with. Possible values are
+
+    * "`concat <https://ffmpeg.org/ffmpeg-formats.html#concat-1>`_" (inaccurate frame timecodes)
+    * "`image2 <https://ffmpeg.org/ffmpeg-formats.html#image2-1>`_" (accurate timecodes, not usable on Windows)
+    * "mkvmerge" (accurate timecodes, only WebM or MKV, requires `mkvmerge <ugoira.mkvmerge-location_>`__)
+
+    `"auto"` will select `mkvmerge` if possible and fall back to `image2` or
+    `concat` depending on the local operating system.
 
 
 ugoira.ffmpeg-location
@@ -3253,6 +3259,17 @@ Default
     ``"ffmpeg"``
 Description
     Location of the ``ffmpeg`` (or ``avconv``) executable to use.
+
+
+ugoira.mkvmerge-location
+------------------------
+Type
+    |Path|_
+Default
+    ``"mkvmerge"``
+Description
+    Location of the ``mkvmerge`` executable for use with the
+    `mkvmerge demuxer <ugoira.ffmpeg-demuxer_>`__.
 
 
 ugoira.ffmpeg-output
