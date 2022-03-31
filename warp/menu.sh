@@ -1120,7 +1120,7 @@ install(){
 	rm -rf /usr/local/bin/wgcf /usr/bin/wireguard-go wgcf-account.toml wgcf-profile.conf
 	
 	# 如安装 WireProxy 方案，自定义 Port
-	input_port
+	[[ $OCTEEP = 1 ]] && input_port
 	
 	# 询问是否有 WARP+ 或 Teams 账户
 	[[ -z $LICENSETYPE ]] && yellow " ${T[${L}132]}" && reading " ${T[${L}50]} " LICENSETYPE
@@ -1321,7 +1321,7 @@ DNS = $DNS
 
 # Socks5 create a socks5 proxy on your LAN, and any traffic would be routed via wireguard
 [Socks5]
-BindAddress = 127.0.0.1:40000
+BindAddress = 127.0.0.1:$PORT
 
 # Socks5 authentication parameters, specifying username and password enables
 # proxy authentication.
