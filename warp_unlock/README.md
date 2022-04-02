@@ -14,7 +14,7 @@ Born to make stream media unlock by WARP
 * * *
 
 ## 更新信息和 TODO
-2022.4.2  1.07 1. Support change IP for WireProxy; 2. 支持 WireProxy 更换 IP
+2022.4.2  1.07 1. Support change IP for WireProxy; 2. Add Misaka one-key warp. 1. 支持 WireProxy 更换 IP; 2. 新增 Misaka WARP 一键脚本
 
 2022.2.23 1.06 1. Add two modes to unlock: systemd service and pm2 daemon; 1. 增加两个解锁模式: systemd 服务和 pm2 进程守护
 
