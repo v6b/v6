@@ -10,6 +10,7 @@
 - [运行脚本](README.md#运行脚本)
 - [刷 Netflix 解锁 WARP IP 的方法](README.md#刷-Netflix-解锁-WARP-IP-的方法)
 - [Netflix 分流到 WARP Client Proxy、WireProxy 的方法](README.md#Netflix-分流到-WARP-Client-ProxyWireProxy-的方法)
+- [Netflix,Google 分流到 Client WARP 网络接口的方法](README.md#netflixgoogle-分流到-client-warp-网络接口的方法)
 - [WARP+ License 及 ID 获取](README.md#warp-license-及-id-获取)
 - [WARP Teams 获取并用于 Linux 的方法](README.md#WARP-Teams-获取并用于-Linux-的方法)
 - [WARP 网络接口数据，临时、永久关闭和开启](README.md#warp-网络接口数据临时永久关闭和开启)
@@ -19,6 +20,8 @@
 * * *
 
 ## 更新信息
+2022.4.8 2.37 1. First publication on a global scale: After WirePorxy, another major technological breakthrough -- WARP-Cli's WARP mode solution. Thanks to the original creator -- Teacher LUBAN. It solves two major pain points: 1) The instability of the traditional proxy model; 2) Currently HK does not have a WARP service; 1. 全网首发: 继 WirePorxy 之后，又一重大技术突破，WARP-Cli 的 WARP 模式方案，感谢原创者 LUBAN 老师，引用大神的思路，解决两大通点: 1) 传统 proxy 模式的断流和慢; 2) 解决 HK 没有 WARP 服务
+
 2022.3.27  2.36 1. First publication on a global scale. By WireProxy, Wireguard client that exposes itself as a socks5 proxy; Ths Fangliding for the information:[#113](https://github.com/fscarmen/warp/issues/113); 2. WARP+ and Teams can be used in WireProxy; 3. Systemd and change Netflix IP for WireProxy. 1. 全网首发: 通过 wireproxy，让 WARP 在本地建议一个 socks5 代理。感谢风扇滑翔翼 提供的资讯:[#113](https://github.com/fscarmen/warp/issues/113); 2. WARP+ 和 Teams 账户可用于 WireProxy 安装或者升级; 3. WireProxy systemd 进程守护，同时支持更换 Netflix IP
 
 2022.3.23  2.35 1.Support WARP on Debian9; 1.支持 Debian 9 上安装 WARP
@@ -161,6 +164,7 @@ warp [option] [lisence]
   | a lisence | 在上面基础上把 WARP+ Lisence 添加进去，如 ```bash menu.sh a N5670ljg-sS9jD334-6o6g4M9F``` |
   | p | 刷 Warp+ 流量 |
   | c | 安装 WARP Linux Client，开启 Socks5 代理模式 |
+  | l | 安装 WARP Linux Client，开启 WARP 模式 | 
   | c lisence | 在上面基础上把 WARP+ Lisence 添加进去，如 ```bash menu.sh c N5670ljg-sS9jD334-6o6g4M9F``` |
   | r | WARP Linux Client 开关 |
   | v | 同步脚本至最新版本 |
@@ -262,6 +266,55 @@ kill -9 $(pgrep -f warp)   ##杀掉正在运行的进程
 }
 ```
 
+## Netflix,Google 分流到 Client WARP 网络接口的方法
+
+感谢 LUDAN 老师提供的网络接口分流配置模板，注意：172.16.0.2 为 CloudFlareWARP 网络接口的 IP
+
+```
+{
+    "outbounds":[
+        {
+            "tag":"INTERNET_OUT",
+            "protocol":"freedom",
+            "settings":{
+                "domainStrategy":"UseIP"
+            }
+        },
+        {
+            "tag":"CLI_OUT",
+            "protocol":"freedom",
+            "settings":{
+                "domainStrategy":"UseIPv4"
+            },
+            "sendThrough":"172.16.0.2"
+        }
+    ],
+    "routing":{
+        "rules":[
+            {
+                "type":"field",
+                "outboundTag":"CLI_OUT",
+                "domain":[
+                    "geosite:google",
+                    "geosite:netflix"
+                ]
+            },
+            {
+                "type":"field",
+                "outboundTag":"INTERNET_OUT",
+                "network":"udp,tcp"
+            }
+        ]
+    },
+    "dns":{
+        "servers":[
+            "1.1.1.1",
+            "1.0.0.1"
+        ]
+    }
+}
+```
+    
 ## WARP+ License 及 ID 获取
 
 以下是使用WARP和Team后 Argo 2.0 的官方介绍:[Argo 2.0: Smart Routing Learns New Tricks](https://blog.cloudflare.com/argo-v2/)
@@ -348,7 +401,8 @@ https://blog.cloudflare.com/argo-v2/
 * Anemone: https://cutenico.best/posts/blogs/cloudflare-warp-fixed-youtube-location/    
 https://github.com/acacia233/Project-WARP-Unlock
 * wangying202: https://blog.csdn.net/wangying202/article/details/113178159
-    
+* LUBAN: 
+
 服务提供（排名不分先后）:
 * CloudFlare Warp(+): https://1.1.1.1/
 * WGCF 项目原作者: https://github.com/ViRb3/wgcf/
