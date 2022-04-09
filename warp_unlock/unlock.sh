@@ -3,7 +3,7 @@ export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/sbin:/b
 export LANG=en_US.UTF-8
 
 # 当前脚本版本号和新增功能
-VERSION='1.07'
+VERSION='1.08'
 
 # 最大支持流媒体
 SUPPORT_NUM='2'
@@ -13,8 +13,8 @@ declare -A T
 
 T[E0]="\n Language:\n  1.English (default) \n  2.简体中文\n"
 T[C0]="${T[E0]}"
-T[E1]="1. Support change IP for WireProxy"
-T[C1]="1. 支持 WirePorxy 更换 IP"
+T[E1]="Support change IP for Client WARP mode"
+T[C1]="支持 Client WRAP 模式下更换 IP"
 T[E2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp_unlock/issues]"
 T[C2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp_unlock/issues]"
 T[E3]="Choose:"
@@ -179,9 +179,25 @@ check_warp(){
 			[[ $TRACE6 =~ on|plus ]] && STATUS[1]=1 || STATUS[1]=0
 		else STATUS=(0 0)
 		fi
-
-		type -P warp-cli >/dev/null 2>&1 && [[ ! $(ss -nltp) =~ 'warp-svc' ]] && warp-cli --accept-tos connect >/dev/null 2>&1
-		[[ $(ss -nltp) =~ 'warp-svc' ]] && CLIENT_PORT=$(ss -nltp | grep warp-svc | grep -oP '127.0*\S+' | cut -d: -f2) && STATUS[2]=1 || STATUS[2]=0
+		
+		# 在已安装 Client 的前提下，区分模式 Mode
+		if type -P warp-cli >/dev/null 2>&1; then
+			if [[ -e /etc/wireguard/luban ]]; then
+				if [[ ! $(ip a) =~ 'CloudflareWARP' ]]; then
+					warp-cli --accept-tos connect >/dev/null 2>&1
+					warp-cli --accept-tos enable-always-on >/dev/null 2>&1
+					sleep 5
+					ip -4 rule add from 172.16.0.2 lookup 51820
+					ip -4 route add default dev CloudflareWARP table 51820
+					ip -4 rule add table main suppress_prefixlength 0
+				fi
+				[[ $(ip a) =~ 'CloudflareWARP' ]] && STATUS[2]=1 || STATUS[2]=0
+		
+			else [[ ! $(ss -nltp) =~ 'warp-svc' ]] && warp-cli --accept-tos connect >/dev/null 2>&1
+				[[ $(ss -nltp) =~ 'warp-svc' ]] && CLIENT_PORT=$(ss -nltp | grep warp-svc | grep -oP '127.0*\S+' | cut -d: -f2) && STATUS[2]=1 || STATUS[2]=0
+			fi
+		else STATUS[2]=0
+		fi
 
 		type -P wireproxy >/dev/null 2>&1 && [[ ! $(ss -nltp) =~ 'wireproxy' ]] && systemctl restart wireproxy
 		[[ $(ss -nltp) =~ 'wireproxy' ]] && WIREPROXY_PORT=$(ss -nltp | grep wireproxy | grep -oP '127.0*\S+' | cut -d: -f2) && STATUS[3]=1 || STATUS[3]=0
@@ -194,7 +210,7 @@ check_warp(){
 
 	CASE_IPV4(){ NIC='-ks4m8'; RESTART="wgcf_restart"; }
 	CASE_IPV6(){ NIC='-ks6m8'; RESTART="wgcf_restart"; }
-	CASE_CLIENT(){ NIC="-sx socks5h://localhost:$CLIENT_PORT"; RESTART="socks5_restart"; }
+	CASE_CLIENT(){ NIC="-sx socks5h://localhost:$CLIENT_PORT" && RESTART="socks5_restart" && [[ -e /etc/wireguard/luban ]] && NIC='--interface CloudflareWARP' && RESTART="interface_restart"; }
 	CASE_WIREPROXY(){ NIC="-sx socks5h://localhost:$WIREPROXY_PORT"; RESTART="wireproxy_restart"; }
 
 	INSTALL_CHECK=("0 0 0 0" "1 1 1 1" "0 1 1 1" "1 0 1 1" "1 1 0 1" "1 1 1 0" "0 0 1 1" "0 1 0 1" "0 1 1 0" "1 0 0 1" "1 0 1 0" "1 1 0 0" "0 0 0 1"  "0 0 1 0" "0 1 0 0" "1 0 0 0")
@@ -303,9 +319,27 @@ ASNORG=\$(expr "\$IP_INFO" : '.*asn_org\":\"\([^"]*\).*')
 wgcf_restart(){ systemctl restart wg-quick@wgcf; sleep 2; ss -nltp | grep 'dnsmasq' >/dev/null 2>&1 && systemctl restart dnsmasq >/dev/null 2>&1; sleep 2; ip; }
 
 socks5_restart(){
-warp-cli --accept-tos delete >/dev/null 2>&1 && warp-cli --accept-tos register >/dev/null 2>&1 && sleep 15
-ip
-[[ -e /etc/wireguard/license ]] && warp-cli --accept-tos set-license \$(cat /etc/wireguard/license) >/dev/null 2>&1 && sleep 2; }
+	warp-cli --accept-tos delete >/dev/null 2>&1 && warp-cli --accept-tos register >/dev/null 2>&1 && sleep 15
+	[[ -e /etc/wireguard/license ]] && warp-cli --accept-tos set-license \$(cat /etc/wireguard/license) >/dev/null 2>&1 && sleep 2
+	ip
+}
+
+interface_restart(){
+	warp-cli --accept-tos delete >/dev/null 2>&1 && warp-cli --accept-tos register >/dev/null 2>&1
+	[[ -e /etc/wireguard/license ]] && warp-cli --accept-tos set-license \$(cat /etc/wireguard/license) >/dev/null 2>&1
+	warp-cli --accept-tos disconnect >/dev/null 2>&1
+	warp-cli --accept-tos disable-always-on >/dev/null 2>&1
+	ip -4 rule delete from 172.16.0.2 lookup 51820
+	ip -4 rule delete table main suppress_prefixlength 0
+	sleep 4
+	warp-cli --accept-tos connect >/dev/null 2>&1
+	warp-cli --accept-tos enable-always-on >/dev/null 2>&1
+	sleep 8
+	ip -4 rule add from 172.16.0.2 lookup 51820
+	ip -4 route add default dev CloudflareWARP table 51820
+	ip -4 rule add table main suppress_prefixlength 0
+	ip
+}
 
 wireproxy_restart(){ systemctl restart wireproxy; sleep 5; ip; }
 
