@@ -1077,6 +1077,19 @@ Description
     everything else (archives, etc.).
 
 
+extractor.deviantart.pagination
+-------------------------------
+Type
+    ``string``
+Default
+    ``"api"``
+Description
+    Controls when to stop paginating over API results.
+
+    * ``"api"``: Trust the API and stop when ``has_more`` is ``false``.
+    * ``"manual"``: Disregard ``has_more`` and only stop when a batch of results is empty.
+
+
 extractor.deviantart.refresh-token
 ----------------------------------
 Type
@@ -1775,6 +1788,16 @@ Description
     Download user avatars.
 
 
+extractor.pixiv.user.background
+-------------------------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    Download user background banners.
+
+
 extractor.pixiv.user.metadata
 -----------------------------
 Type
@@ -1872,6 +1895,19 @@ Description
 
     * ``"stop``: Stop the current extractor run.
     * ``"wait``: Ask the user to solve the CAPTCHA and wait.
+
+
+extractor.readcomiconline.quality
+---------------------------------
+Type
+    ``string``
+Default
+    ``"auto"``
+Description
+    Sets the ``quality`` query parameter of issue pages. (``"lq"`` or ``"hq"``)
+
+    ``"auto"`` uses the quality parameter of the input URL
+    or ``"hq"`` if not present.
 
 
 extractor.reddit.comments
@@ -3275,12 +3311,11 @@ Default
 Description
     FFmpeg demuxer to read and process input files with. Possible values are
 
-    * "`concat <https://ffmpeg.org/ffmpeg-formats.html#concat-1>`_" (inaccurate frame timecodes)
-    * "`image2 <https://ffmpeg.org/ffmpeg-formats.html#image2-1>`_" (accurate timecodes, not usable on Windows)
+    * "`concat <https://ffmpeg.org/ffmpeg-formats.html#concat-1>`_" (inaccurate frame timecodes for non-uniform frame delays)
+    * "`image2 <https://ffmpeg.org/ffmpeg-formats.html#image2-1>`_" (accurate timecodes, requires nanosecond file timestamps, i.e. no Windows or macOS)
     * "mkvmerge" (accurate timecodes, only WebM or MKV, requires `mkvmerge <ugoira.mkvmerge-location_>`__)
 
-    `"auto"` will select `mkvmerge` if possible and fall back to `image2` or
-    `concat` depending on the local operating system.
+    `"auto"` will select `mkvmerge` if available and fall back to `concat` otherwise.
 
 
 ugoira.ffmpeg-location
