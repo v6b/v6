@@ -1,8 +1,10 @@
-mod zio;
 use cfg_if::cfg_if;
 
 #[cfg(feature = "proxy-protocol")]
 mod haproxy;
+
+#[cfg(feature = "transport")]
+mod transport;
 
 cfg_if! {
     if #[cfg(feature = "tfo")] {
@@ -16,7 +18,6 @@ cfg_if! {
 }
 
 use std::io::Result;
-
 use log::debug;
 
 use tokio::net::TcpSocket;
@@ -73,18 +74,11 @@ pub async fn connect_and_relay(
     let res = {
         #[cfg(feature = "transport")]
         {
-            use kaminari::{AsyncAccept, AsyncConnect};
-            use kaminari::mix::{MixClientStream, MixServerStream};
-            type Inbound = MixServerStream<TcpStream>;
-            type Outbound = MixClientStream<TcpStream>;
+            use transport::relay_transport;
             if let Some((ac, cc)) = transport {
-                let mut inbound: Inbound = ac.accept(inbound).await?;
-                let mut outbound: Outbound = cc.connect(outbound).await?;
-                tokio::io::copy_bidirectional(&mut inbound, &mut outbound)
-                    .await
-                    .map(|_| ())
+                relay_transport(inbound, outbound, ac, cc).await
             } else {
-                relay_plain(&mut inbound, &mut outbound, *zero_copy).await
+                relay_plain(inbound, outbound, *zero_copy).await
             }
         }
         #[cfg(not(feature = "transport"))]
@@ -101,17 +95,25 @@ pub async fn connect_and_relay(
 
 #[inline]
 async fn relay_plain(
-    inbound: &mut TcpStream,
-    outbound: &mut TcpStream,
+    mut inbound: TcpStream,
+    mut outbound: TcpStream,
     zero_copy: bool,
 ) -> Result<()> {
     #[cfg(all(target_os = "linux", feature = "zero-copy"))]
     if zero_copy {
-        zio::bidi_copy_pipe(inbound, outbound).await
+        let (res, _, _) =
+            realm_io::bidi_zero_copy(&mut inbound, &mut outbound).await;
+        res
     } else {
-        zio::bidi_copy_buffer(inbound, outbound).await
+        let (res, _, _) =
+            realm_io::bidi_copy(&mut inbound, &mut outbound).await;
+        res
     }
 
     #[cfg(not(all(target_os = "linux", feature = "zero-copy")))]
-    zio::bidi_copy_buffer(inbound, outbound).await
+    {
+        let (res, _, _) =
+            realm_io::bidi_copy(&mut inbound, &mut outbound).await;
+        res
+    }
 }

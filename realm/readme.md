@@ -1,5 +1,7 @@
-![realm](../../workflows/ci/badge.svg)
-![realm](../../workflows/release/badge.svg)
+[![realm](https://github.com/zhboner/realm/workflows/ci/badge.svg)](https://github.com/zhboner/realm/actions)
+[![realm](https://github.com/zhboner/realm/workflows/compile/badge.svg)](https://github.com/zhboner/realm/actions/workflows/cross_compile.yml)
+[![realm](https://github.com/zhboner/realm/workflows/release/badge.svg)](https://github.com/zhboner/realm/releases)
+[![downloads](https://img.shields.io/github/downloads/zhboner/realm/total?color=green)](https://github.com/zhboner/realm/releases)
 
 [中文说明](https://zhb.me/realm)
 
@@ -17,42 +19,54 @@ Realm is a simple, high performance relay server written in rust.
 
 ## Transports
 
-With `transport` feature, Realm is able to handle [ws/tls/wss] on both sides. This is powered by [libkaminari](https://github.com/zephyrchien/kaminari).
+With `transport` feature, Realm is able to handle [ws/tls/wss] on both sides. This is powered by [libkaminari](https://github.com/zephyrchien/kaminari), which is dramatically faster in comparison to other implements. [Here are some benchmark results](https://github.com/zephyrchien/boring-relay-bench).
+
+## Container
+
+Realm can be run in a container with OCI (like Docker, Podman, Kubernetes, etc), see guides [here](readme.container.md).
 
 ## Build Guides
 
-Install rust toolchains with [rustup](https://rustup.rs/).
+Install rust **nightly** toolchains with [rustup](https://rustup.rs/):
 
 ```shell
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-Clone this repository
+Clone this repository:
 
 ```shell
-git clone https://github.com/zephyrchien/realm
+git clone https://github.com/zhboner/realm
 ```
 
-Enter the directory and build
+Enter the directory and build:
 
 ```shell
 cd realm
 git submodule sync && git submodule update --init --recursive
+
+# build release
 cargo build --release
+
+# allow more possible optimizations, make it even faster
+RUSTFLAGS='-C target_cpu=native' cargo build --release
 ```
 
 ### Build Options
 
-- udp *(enabled by default)*
-- trust-dns *(enabled by default)*
-- zero-copy *(enabled on linux)*
-- transport *(enabled by default)*
-- multi-thread *(enabled by default)*
-- tfo
-- mi-malloc
-- jemalloc
+- udp: enable udp relay.
+- trust-dns: enable trust-dns's async dns resolver.
+- zero-copy: enable zero-copy on linux.
+- transport: enable ws/tls/wss.
+- transport-boost: enable optimizations for transport, at the cost of increasing binary size.
+- multi-thread: enable tokio's multi-threaded IO scheduler.
+- tfo: enable tcp-fast-open.
+- mi-malloc: custom memory allocator.
+- jemalloc: custom memory allocator.
 
-See also: `Cargo.toml`
+Default: udp + trust-dns + zero-copy + multi-thread + transport + transport-boost.
+
+See also: `Cargo.toml`.
 
 Examples:
 
@@ -61,7 +75,7 @@ Examples:
 cargo build --release --no-default-features
 
 # enable other options
-cargo build --release --no-default-features --features udp, tfo, zero-copy, trust-dns
+cargo build --release --no-default-features --features udp,tfo,zero-copy,trust-dns..
 ```
 
 ### Cross Compile
@@ -73,7 +87,7 @@ Or have a look at [Cross](https://github.com/cross-rs/cross), it makes things ea
 ## Usage
 
 ```shell
-Realm 2.0.0 [udp][zero-copy][trust-dns][proxy-protocol][multi-thread]
+Realm 2.x [udp][zero-copy][trust-dns][proxy-protocol][transport][multi-thread]
 A high efficiency relay tool
 
 USAGE:
@@ -212,7 +226,7 @@ remote = "www.google.com:443"
 
 [See other examples here](./examples)
 
-## global
+## Overview
 
 ```shell
 ├── log
@@ -240,6 +254,8 @@ remote = "www.google.com:443"
     ├── remote
     ├── through
     ├── interface
+    ├── listen_transport
+    ├── remote_transport
     └── network
 ```
 
