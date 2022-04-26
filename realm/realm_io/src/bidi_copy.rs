@@ -59,10 +59,8 @@ where
     CopyBuffer<B, SR, SL>: AsyncIOBuf,
 {
     // type equality constraints will save this (one day)!
-    let r: &mut <CopyBuffer<B, SR, SL> as AsyncIOBuf>::StreamR =
-        unsafe { std::mem::transmute(r) };
-    let w: &mut <CopyBuffer<B, SR, SL> as AsyncIOBuf>::StreamW =
-        unsafe { std::mem::transmute(w) };
+    let r: &mut <CopyBuffer<B, SR, SL> as AsyncIOBuf>::StreamR = unsafe { std::mem::transmute(r) };
+    let w: &mut <CopyBuffer<B, SR, SL> as AsyncIOBuf>::StreamW = unsafe { std::mem::transmute(w) };
     loop {
         match state {
             TransferState::Running(buf) => {
@@ -120,12 +118,23 @@ where
         let a_to_b = transfer(cx, a_to_b, a, b, ab_amt)?;
         let b_to_a = transfer2::<B, SL, SR>(cx, b_to_a, b, a, ba_amt)?;
 
-        // It is not a problem if ready! returns early because transfer_one_direction for the
-        // other direction will keep returning TransferState::Done(count) in future calls to poll
-        ready!(a_to_b);
-        ready!(b_to_a);
+        // graceful shutdown
+        #[cfg(not(feature = "brutal-shutdown"))]
+        {
+            ready!(a_to_b);
+            ready!(b_to_a);
+            Poll::Ready(Ok(()))
+        }
 
-        Poll::Ready(Ok(()))
+        // brutal shutdown
+        #[cfg(feature = "brutal-shutdown")]
+        {
+            if a_to_b.is_ready() || b_to_a.is_ready() {
+                Poll::Ready(Ok(()))
+            }else {
+                Poll::Pending
+            }
+        }
     }
 }
 
