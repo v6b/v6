@@ -1,5 +1,5 @@
-#!/bin/bash
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/sbin:/bin
+#!/usr/bin/env bash
+
 export LANG=en_US.UTF-8
 
 WGCF_DIR='/etc/wireguard'
@@ -26,11 +26,11 @@ wgcf_install(){
 	# 判断 wgcf 的最新版本,如因 github 接口问题未能获取，默认 v2.2.11
 	green " \n Install WGCF \n "
 	latest=$(wget -qO- -4 "https://api.github.com/repos/ViRb3/wgcf/releases/latest" | grep "tag_name" | head -n 1 | cut -d : -f2 | sed 's/[ \"v,]//g')
-	latest=${latest:-'2.2.11'}
+	latest=${latest:-'2.2.13'}
 
-	# 安装 wgcf，尽量下载官方的最新版本，如官方 wgcf 下载不成功，将使用 jsDelivr 的 CDN，以更好的支持双栈。并添加执行权限
-	wget -4 -O /usr/local/bin/wgcf https://github.com/ViRb3/wgcf/releases/download/v"$latest"/wgcf_"$latest"_linux_$ARCHITECTURE ||
-	wget -4 -O /usr/local/bin/wgcf https://cdn.jsdelivr.net/gh/fscarmen/warp/wgcf_"$latest"_linux_$ARCHITECTURE
+	# 安装 wgcf，尽量下载官方的最新版本，如官方 wgcf 下载不成功，将使用 githubusercontents 的 CDN，以更好的支持双栈。并添加执行权限
+	wget -4 -O /usr/local/bin/wgcf https://github.com/ViRb3/wgcf/releases/download/v"$latest"/wgcf_"$latest"_linux_"$ARCHITECTURE" ||
+	wget -4 -O /usr/local/bin/wgcf https://raw.githubusercontents.com/fscarmen/warp/main/wgcf/wgcf_"$latest"_linux_"$ARCHITECTURE"
 	chmod +x /usr/local/bin/wgcf
 
 	# 注册 WARP 账户 ( wgcf-account.toml 使用默认值加加快速度)。如有 WARP+ 账户，修改 license 并升级
@@ -92,7 +92,7 @@ export_unlock_file(){
 
 # 生成 warp_unlock.sh 文件，判断当前流媒体解锁状态，遇到不解锁时更换 WARP IP，直至刷成功。5分钟后还没有刷成功，将不会重复该进程而浪费系统资源
 cat <<EOF > $WGCF_DIR/warp_unlock.sh
-#!/bin/bash
+#!/usr/bin/env bash
 EXPECT="$EXPECT"
 TOKEN="$TOKEN"
 USERID="$USERID"
