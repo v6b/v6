@@ -1,24 +1,30 @@
 use std::net::SocketAddr;
+use std::time::Duration;
 
 use tokio::net::UdpSocket;
+use tokio::time::sleep;
 
-use realm::relay::run_udp;
-use realm::utils::{Endpoint, ConnectOpts};
-use realm::utils::timeoutfut;
+use realm_core::udp::run_udp;
+use realm_core::endpoint::{Endpoint, RemoteAddr};
+use realm_core::trick::Ref;
 
 #[tokio::test]
 async fn udp() {
     env_logger::init();
     let endpoint = Endpoint {
-        listen: "127.0.0.1:10000".parse().unwrap(),
-        remote: "127.0.0.1:20000".parse::<SocketAddr>().unwrap().into(),
-        conn_opts: ConnectOpts {
-            udp_timeout: 20,
-            ..Default::default()
-        },
+        laddr: "127.0.0.1:10000".parse().unwrap(),
+        raddr: "127.0.0.1:20000"
+            .parse::<SocketAddr>()
+            .map(RemoteAddr::SocketAddr)
+            .unwrap(),
+        conn_opts: Default::default(),
     };
 
-    tokio::spawn(async {
+    tokio::spawn(run_udp(Ref::new(&endpoint)));
+
+    let task1 = async {
+        sleep(Duration::from_millis(500)).await;
+
         let socket = UdpSocket::bind("127.0.0.1:0").await.unwrap();
 
         let mut buf = vec![0; 32];
@@ -31,9 +37,9 @@ async fn udp() {
             log::debug!("a got: {:?}", std::str::from_utf8(&buf[..n]).unwrap());
             assert_eq!(b"Pong Pong Pong", &buf[..n]);
         }
-    });
+    };
 
-    tokio::spawn(async {
+    let task2 = async {
         let socket = UdpSocket::bind("127.0.0.1:20000").await.unwrap();
 
         let mut buf = vec![0; 32];
@@ -44,7 +50,7 @@ async fn udp() {
             assert_eq!(b"Ping Ping Ping", &buf[..n]);
             socket.send_to(b"Pong Pong Pong", peer).await.unwrap();
         }
-    });
+    };
 
-    let _ = timeoutfut(run_udp((&endpoint).into()), 3).await;
+    tokio::join!(task1, task2);
 }

@@ -1,26 +1,25 @@
 use std::io::{Error, ErrorKind, Result};
 use std::mem::MaybeUninit;
-use std::net::SocketAddr;
+use std::net::{SocketAddr, IpAddr, Ipv4Addr, Ipv6Addr};
 
 use log::{info, debug};
 use bytes::{BytesMut, Buf};
 
-use haproxy::ProxyHeader;
-use haproxy::{version1 as v1, version2 as v2};
-use haproxy::{encode, parse};
+use proxy_protocol::ProxyHeader;
+use proxy_protocol::{version1 as v1, version2 as v2};
+use proxy_protocol::{encode, parse};
 
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
 
-use super::TcpStream;
-use crate::utils;
-use crate::utils::HaproxyOpts;
-use crate::utils::timeoutfut;
+use crate::endpoint::ProxyOpts;
+use crate::time::timeoutfut;
 
 // TODO: replace the "proxy-protocol" crate, and then avoid heap allocation.
 
 // client -> relay -> server
-pub async fn handle_proxy_protocol(src: &mut TcpStream, dst: &mut TcpStream, opts: HaproxyOpts) -> Result<()> {
-    let HaproxyOpts {
+pub async fn handle_proxy(src: &mut TcpStream, dst: &mut TcpStream, opts: ProxyOpts) -> Result<()> {
+    let ProxyOpts {
         send_proxy,
         accept_proxy,
         send_proxy_version,
@@ -83,8 +82,8 @@ pub async fn handle_proxy_protocol(src: &mut TcpStream, dst: &mut TcpStream, opt
         // the doc only mentions that this field is similar to X-Origin-To
         // which is seldom used
         server_addr.write(match unsafe { client_addr.assume_init_ref() } {
-            SocketAddr::V4(_) => utils::new_sockaddr_v4(),
-            SocketAddr::V6(_) => utils::new_sockaddr_v6(),
+            SocketAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), 0),
+            SocketAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0)), 0),
         });
     }
 
