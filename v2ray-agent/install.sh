@@ -83,10 +83,12 @@ checkCPUVendor() {
 			'amd64' | 'x86_64')
 				xrayCoreCPUVendor="Xray-linux-64"
 				v2rayCoreCPUVendor="v2ray-linux-64"
+				# hysteriaCoreCPUVendor="hysteria-linux-amd64"
 				;;
 			'armv8' | 'aarch64')
 				xrayCoreCPUVendor="Xray-linux-arm64-v8a"
 				v2rayCoreCPUVendor="v2ray-linux-arm64-v8a"
+				# hysteriaCoreCPUVendor="hysteria-linux-arm64"
 				;;
 			*)
 				echo "  不支持此CPU架构--->"
@@ -111,6 +113,8 @@ initVar() {
 	# 核心支持的cpu版本
 	xrayCoreCPUVendor=""
 	v2rayCoreCPUVendor=""
+	# hysteriaCoreCPUVendor=""
+
 	# 域名
 	domain=
 
@@ -283,36 +287,26 @@ allowPort() {
 			iptables -I INPUT -p tcp --dport "$1" -m comment --comment "allow $1(mack-a)" -j ACCEPT
 		fi
 
-		#		if ! iptables -L | grep -q "$1(mack-a)"; then
-		#			updateFirewalldStatus=true
-		#			iptables -I INPUT -p tcp --dport $1 -m comment --comment "allow $1(mack-a)" -j ACCEPT
-		#		fi
-
 		if echo "${updateFirewalldStatus}" | grep -q "true"; then
 			netfilter-persistent save
 		fi
 	elif systemctl status ufw 2>/dev/null | grep -q "active (exited)"; then
-		if ! ufw status | grep -q "$1"; then
-			sudo ufw allow "$1"
-			checkUFWAllowPort "$1"
+		if ufw status | grep -q "Status: active"; then
+			if ! ufw status | grep -q "$1"; then
+				sudo ufw allow "$1"
+				checkUFWAllowPort "$1"
+			fi
 		fi
-		#		if ! ufw status | grep -q $1; then
-		#			sudo ufw allow $1
-		#			checkUFWAllowPort $1
-		#		fi
-	elif systemctl status firewalld 2>/dev/null | grep -q "active (running)"; then
+
+	elif
+		systemctl status firewalld 2>/dev/null | grep -q "active (running)"
+	then
 		local updateFirewalldStatus=
 		if ! firewall-cmd --list-ports --permanent | grep -qw "$1/tcp"; then
 			updateFirewalldStatus=true
 			firewall-cmd --zone=public --add-port="$1/tcp" --permanent
 			checkFirewalldAllowPort "$1"
 		fi
-
-		#		if ! firewall-cmd --list-ports --permanent | grep -qw "$1/tcp"; then
-		#			updateFirewalldStatus=true
-		#			firewall-cmd --zone=public --add-port=$1/tcp --permanent
-		#			checkFirewalldAllowPort $1
-		#		fi
 
 		if echo "${updateFirewalldStatus}" | grep -q "true"; then
 			firewall-cmd --reload
@@ -513,6 +507,7 @@ mkdirTools() {
 	mkdir -p /etc/v2ray-agent/xray/conf
 	mkdir -p /etc/v2ray-agent/xray/tmp
 	mkdir -p /etc/v2ray-agent/trojan
+	mkdir -p /etc/v2ray-agent/hysteria/conf
 	mkdir -p /etc/systemd/system/
 	mkdir -p /tmp/v2ray-agent-tls/
 }
@@ -1685,6 +1680,11 @@ addClients() {
 		config=$(jq -r ".inbounds[0].settings.clients = ${previousClients}" "${path}")
 		echo "${config}" | jq . >"${path}"
 	fi
+}
+
+# 初始化Hysteria配置
+initHysteriaConfig() {
+	echoContent skyBlue "\n进度 $2/${totalProgress} : 初始化Hysteria配置"
 }
 
 # 初始化V2Ray 配置文件
@@ -4556,7 +4556,7 @@ menu() {
 	cd "$HOME" || exit
 	echoContent red "\n=============================================================="
 	echoContent green "作者:mack-a"
-	echoContent green "当前版本:v2.5.63"
+	echoContent green "当前版本:v2.5.64"
 	echoContent green "Github:https://github.com/mack-a/v2ray-agent"
 	echoContent green "描述:八合一共存脚本\c"
 	showInstallStatus
