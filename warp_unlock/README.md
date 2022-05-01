@@ -149,7 +149,6 @@ bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/doc
             }
         ]
     }
-
 }
 ```
 
