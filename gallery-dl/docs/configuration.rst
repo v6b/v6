@@ -613,9 +613,7 @@ Type
 Example
     ``"{id}_{offset}"``
 Description
-    An alternative `format string`__ to build archive IDs with.
-
-.. __: https://docs.python.org/3/library/string.html#format-string-syntax
+    An alternative `format string`_ to build archive IDs with.
 
 
 extractor.*.archive-prefix
@@ -1650,7 +1648,7 @@ Description
 
 
 extractor.nijie.include
-----------------------------
+-----------------------
 Type
     ``string`` or ``list`` of ``strings``
 Default
@@ -1660,7 +1658,7 @@ Description
     when processing a user profile.
 
     Possible values are
-    ``"illustration"``, ``"doujin"``, ``"favorite"``.
+    ``"illustration"``, ``"doujin"``, ``"favorite"``, ``"nuita"``.
 
     You can use ``"all"`` instead of listing all values separately.
 
@@ -1778,28 +1776,28 @@ Description
     Download from video pins.
 
 
-extractor.pixiv.user.avatar
----------------------------
+extractor.pixiv.include
+-----------------------
 Type
-    ``bool``
+    * ``string``
+    * ``list`` of ``strings``
 Default
-    ``false``
+    ``"artworks"``
+Example
+    * ``"avatar,background,artworks"``
+    * ``["avatar", "background", "artworks"]``
 Description
-    Download user avatars.
+    A (comma-separated) list of subcategories to include
+    when processing a user profile.
+
+    Possible values are
+    ``"artworks"``, ``"avatar"``, ``"background"``, ``"favorite"``.
+
+    It is possible to use ``"all"`` instead of listing all values separately.
 
 
-extractor.pixiv.user.background
--------------------------------
-Type
-    ``bool``
-Default
-    ``false``
-Description
-    Download user background banners.
-
-
-extractor.pixiv.user.metadata
------------------------------
+extractor.pixiv.artworks.metadata
+---------------------------------
 Type
     ``bool``
 Default
