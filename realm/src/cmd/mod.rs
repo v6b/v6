@@ -10,6 +10,7 @@ use crate::consts::FEATURES;
 mod sub;
 mod flag;
 
+#[allow(clippy::large_enum_variant)]
 pub enum CmdInput {
     Config(String, CmdOverride),
     Endpoint(EndpointConf, CmdOverride),
@@ -93,6 +94,15 @@ fn handle_matches(matches: ArgMatches) -> CmdInput {
                 set_pipe_size(page * 0x1000);
                 println!("pipe capacity: {}", page * 0x1000);
             }
+        }
+    }
+
+    #[cfg(feature = "hook")]
+    {
+        use realm_core::hook::load_pre_conn_hook;
+        if let Some(path) = matches.value_of("pre_conn_hook") {
+            load_pre_conn_hook(path);
+            println!("hook: {}", path);
         }
     }
 
