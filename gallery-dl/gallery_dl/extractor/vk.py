@@ -9,7 +9,7 @@
 """Extractors for https://vk.com/"""
 
 from .common import Extractor, Message
-from .. import text
+from .. import text, exception
 
 BASE_PATTERN = r"(?:https://)?(?:www\.|m\.)?vk\.com"
 
@@ -71,6 +71,10 @@ class VkExtractor(Extractor):
             payload = self.request(
                 url, method="POST", headers=headers, data=data,
             ).json()["payload"][1]
+
+            if len(payload) < 4:
+                self.log.debug(payload)
+                raise exception.AuthorizationError(payload[0])
 
             total = payload[1]
             photos = payload[3]
@@ -162,7 +166,8 @@ class VkPhotosExtractor(VkExtractor):
                 '<h1 class="page_name">', "<")).replace("  ", " "),
             "info": text.unescape(text.remove_html(extr(
                 '<span class="current_text">', '</span'))),
-            "id"  : extr('<a href="/albums', '"'),
+            "id"  : (extr('<a href="/albums', '"') or
+                     extr('data-from-id="', '"')),
         }}
 
 
@@ -177,6 +182,10 @@ class VkAlbumExtractor(VkExtractor):
         }),
         ("https://vk.com/album-165740836_281339889", {
             "count": 12,
+        }),
+        # "Access denied" (#2556)
+        ("https://vk.com/album-53775183_00", {
+            "exception": exception.AuthorizationError,
         }),
     )
 
