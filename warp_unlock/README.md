@@ -82,7 +82,7 @@ bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unl
   | -S || Brush Socks5  刷 Socks5 |
   | -M | 1 | Mode 1: detect every 5   minute 每5分钟检测 |
   | -M | 2 | Mode 2: run by screen   以 screen 方式运行 |
-  | -M | 3 | Mode 2: run by nohup &   以 hup & 方式运行 |
+  | -M | 3 | Mode 3: run by nohup &   以 hup & 方式运行 |
   | -A | ** | region abbreviation,such as us. 地区简码,如 us |
   | -N | n | Unlock Neflix 解锁奈飞 |
   | -N | d | Unlock Disney+ 解锁迪士尼 |
@@ -169,6 +169,5 @@ bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/doc
 服务提供（排名不分先后）:
 * CloudFlare Warp(+): https://1.1.1.1/
 * WGCF 项目原作者: https://github.com/ViRb3/wgcf/
-* P3terx wireguard-go 最新版本:  curl -fsSL git.io/wireguard-go.sh | bash
 * 获取公网 IP 及归属地查询: https://ip.gs/
 * 统计PV网:https://hits.seeyoufarm.com/
