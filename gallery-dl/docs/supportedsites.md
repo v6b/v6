@@ -957,12 +957,6 @@ Consider all sites to be NSFW unless otherwise known.
     <td>Favorites, Posts, Tag Searches</td>
     <td></td>
 </tr>
-<tr>
-    <td>The Loud Booru</td>
-    <td>https://tlb.booru.org/</td>
-    <td>Favorites, Posts, Tag Searches</td>
-    <td></td>
-</tr>
 
 <tr>
     <td colspan="4"><strong>Gelbooru Beta 0.2</strong></td>
@@ -1188,8 +1182,32 @@ Consider all sites to be NSFW unless otherwise known.
     <td colspan="4"><strong>Shopify Instances</strong></td>
 </tr>
 <tr>
+    <td>Chelseacrew</td>
+    <td>https://chelseacrew.com/</td>
+    <td>Collections, Products</td>
+    <td></td>
+</tr>
+<tr>
     <td>Fashion Nova</td>
     <td>https://www.fashionnova.com/</td>
+    <td>Collections, Products</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Loungeunderwear</td>
+    <td>https://loungeunderwear.com/</td>
+    <td>Collections, Products</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Michaelscameras</td>
+    <td>https://michaels.com.au/</td>
+    <td>Collections, Products</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Modcloth</td>
+    <td>https://modcloth.com/</td>
     <td>Collections, Products</td>
     <td></td>
 </tr>
@@ -1200,14 +1218,26 @@ Consider all sites to be NSFW unless otherwise known.
     <td></td>
 </tr>
 <tr>
-    <td>Windsorstore</td>
-    <td>https://www.windsorstore.com/</td>
+    <td>Pinupgirlclothing</td>
+    <td>https://pinupgirlclothing.com/</td>
     <td>Collections, Products</td>
     <td></td>
 </tr>
 <tr>
-    <td>Loungeunderwear</td>
-    <td>https://loungeunderwear.com/</td>
+    <td>Raidlondon</td>
+    <td>https://www.raidlondon.com/</td>
+    <td>Collections, Products</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Unique-vintage</td>
+    <td>https://www.unique-vintage.com/</td>
+    <td>Collections, Products</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Windsorstore</td>
+    <td>https://www.windsorstore.com/</td>
     <td>Collections, Products</td>
     <td></td>
 </tr>
