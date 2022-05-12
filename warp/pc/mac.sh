@@ -42,8 +42,8 @@ T[E16]="Congratulations! WARP is turned on. Spend time:\$(( end - start )) secon
 T[C16]="恭喜！WARP 已开启，总耗时:\$(( end - start ))秒， 脚本当天运行次数:\$TODAY，累计运行次数：\$TOTAL"
 T[E17]="Device name：\$(grep -s 'Device name' /etc/wireguard/info.log | awk '{ print \$NF }')\\\n Quota：\$(grep -s Quota /etc/wireguard/info.log | awk '{ print \$(NF-1), \$NF }')"
 T[C17]="设备名:\$(grep -s 'Device name' /etc/wireguard/info.log | awk '{ print \$NF }')\\\n 剩余流量:\$(grep -s Quota /etc/wireguard/info.log | awk '{ print \$(NF-1), \$NF }')"
-T[E18]="Run again with warp [option] [lisence], such as"
-T[C18]="再次运行用 warp [option] [lisence]，如"
+T[E18]="Run again with warp [option], such as"
+T[C18]="再次运行用 warp [option]，如"
 T[E19]="WARP installation failed. Feedback: [https://github.com/fscarmen/warp/issues]"
 T[C19]="WARP 安装失败，问题反馈:[https://github.com/fscarmen/warp/issues]"
 T[E20]="warp h (help)\n warp o (WARP on-off)\n warp u (Turn off and uninstall WARP interface)\n warp a (Upgrade to WARP+ or Teams account)\n warp e (Install WARP in English)\n warp c (Install WARP in Chinese)\n warp v (Sync the latest version)"
@@ -255,11 +255,11 @@ install(){
 	green "\n ${T[${L}11]}\n "
 	latest=$(curl -fsSL "https://api.github.com/repos/ViRb3/wgcf/releases/latest" | grep "tag_name" | head -n 1 | cut -d : -f2 | sed 's/[ \"v,]//g')
 	latest=${latest:-'2.2.14'}
-	[[ ! -e /usr/local/bin/wgcf ]] && curl -o /usr/local/bin/wgcf https://raw.githubusercontents.com/fscarmen/warp/main/wgcf/wgcf_"$latest"_darwin_"$ARCHITECTURE"
+	[[ ! -e /usr/local/bin/wgcf ]] && sudo curl -o /usr/local/bin/wgcf https://raw.githubusercontents.com/fscarmen/warp/main/wgcf/wgcf_"$latest"_darwin_"$ARCHITECTURE"
 
 	# 安装 wireguard-go
-	[[ ! -e /usr/local/bin/wireguard-go ]] && curl -o /usr/local/bin/wireguard-go_darwin_"$ARCHITECTURE".tar.gz https://raw.githubusercontents.com/fscarmen/warp/main/wireguard-go/wireguard-go_darwin_"$ARCHITECTURE".tar.gz &&
-	tar xzf /usr/local/bin/wireguard-go_darwin_"$ARCHITECTURE".tar.gz -C /usr/local/bin/ && rm -f /usr/local/bin/wireguard-go_darwin_"$ARCHITECTURE".tar.gz
+	[[ ! -e /usr/local/bin/wireguard-go ]] && sudo curl -o /usr/local/bin/wireguard-go_darwin_"$ARCHITECTURE".tar.gz https://raw.githubusercontents.com/fscarmen/warp/main/wireguard-go/wireguard-go_darwin_"$ARCHITECTURE".tar.gz &&
+	sudo tar xzf /usr/local/bin/wireguard-go_darwin_"$ARCHITECTURE".tar.gz -C /usr/local/bin/ && rm -f /usr/local/bin/wireguard-go_darwin_"$ARCHITECTURE".tar.gz
 
 	# 添加执行权限
 	sudo chmod +x /usr/local/bin/wireguard-go /usr/local/bin/wgcf
@@ -267,7 +267,7 @@ install(){
 	# 注册 WARP 账户 (将生成 wgcf-account.toml 文件保存账户信息，为避免文件已存在导致出错，先尝试删掉原文件)
 	rm -f wgcf-account.toml
 	until [[ -e wgcf-account.toml ]] >/dev/null 2>&1; do
-		wgcf register --accept-tos >/dev/null 2>&1 && break
+		sudo wgcf register --accept-tos && break
 	done
 
 	# 如有 WARP+ 账户，修改 license 并升级
@@ -275,7 +275,7 @@ install(){
 	( wgcf update --name "$NAME" | sudo tee /etc/wireguard/info.log >/dev/null 2>&1 || red " \n${T[${L}14]}\n " )
 
 	# 生成 Wire-Guard 配置文件 (wgcf-profile.conf)
-	wgcf generate >/dev/null 2>&1
+	sudo wgcf generate >/dev/null 2>&1
 
 	# 如有 Teams，改为 Teams 账户信息
 	[[ $CONFIRM = [Yy] ]] && echo "$TEAMS" | sudo tee /etc/wireguard/info.log >/dev/null 2>&1 &&
@@ -286,8 +286,9 @@ install(){
 
 	# 把 wgcf-profile.conf 复制到/etc/wireguard/ 并命名为 wgcf.conf
 	sudo cp -f wgcf-profile.conf /etc/wireguard/wgcf.conf
-	sudo mv -f wgcf-account.toml wgcf-profile.conf mac.sh /etc/wireguard >/dev/null 2>&1
-	ln -sf /etc/wireguard/mac.sh /usr/local/bin/warp && green " ${T[${L}27]} "
+	sudo mv -f wgcf-account.toml wgcf-profile.conf /etc/wireguard >/dev/null 2>&1
+	sudo mv -f /usr/local/bin/mac.sh /etc/wireguard >/dev/null 2>&1
+	sudo ln -sf /etc/wireguard/mac.sh /usr/local/bin/warp && green " ${T[${L}27]} "
 	sudo chmod +x /usr/local/bin/warp
 	echo "$L" | sudo tee /etc/wireguard/language >/dev/null 2>&1
 
