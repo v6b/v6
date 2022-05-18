@@ -824,7 +824,7 @@ dependencies = [
 
 [[package]]
 name = "realm"
-version = "2.3.1"
+version = "2.3.2"
 dependencies = [
  "cfg-if",
  "chrono",
@@ -837,7 +837,7 @@ dependencies = [
  "log",
  "mimalloc",
  "realm_core",
- "realm_io 0.3.1",
+ "realm_io 0.3.2",
  "realm_syscall 0.1.4",
  "serde",
  "serde_json",
@@ -851,7 +851,7 @@ version = "0.1.0"
 
 [[package]]
 name = "realm_core"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "bytes",
  "env_logger",
@@ -902,7 +902,7 @@ dependencies = [
 
 [[package]]
 name = "realm_io"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "libc",
  "tokio",
