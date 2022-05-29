@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2017-2021 Mike Fährmann
+# Copyright 2017-2022 Mike Fährmann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -72,18 +72,60 @@ class GfycatExtractor(Extractor):
 class GfycatUserExtractor(GfycatExtractor):
     """Extractor for gfycat user profiles"""
     subcategory = "user"
-    directory_fmt = ("{category}", "{username|userName}")
-    pattern = r"(?:https?://)?gfycat\.com/@([^/?#]+)"
+    directory_fmt = ("{category}", "{username}")
+    pattern = r"(?:https?://)?gfycat\.com/@([^/?#]+)/?(?:$|\?|#)"
     test = ("https://gfycat.com/@gretta", {
         "pattern": r"https://giant\.gfycat\.com/[A-Za-z]+\.mp4",
         "count": ">= 100",
     })
 
-    def metadata(self):
-        return {"userName": self.key}
-
     def gfycats(self):
         return GfycatAPI(self).user(self.key)
+
+
+class GfycatCollectionExtractor(GfycatExtractor):
+    """Extractor for a gfycat collection"""
+    subcategory = "collection"
+    directory_fmt = ("{category}", "{collection_owner}",
+                     "{collection_name|collection_id}")
+    pattern = (r"(?:https?://)?gfycat\.com/@([^/?#]+)/collections"
+               r"/(\w+)(?:/([^/?#]+))?")
+    test = ("https://gfycat.com/@reactions/collections/nHgy2DtE/no-text", {
+        "pattern": r"https://\w+\.gfycat\.com/[A-Za-z]+\.mp4",
+        "count": ">= 100",
+    })
+
+    def __init__(self, match):
+        GfycatExtractor.__init__(self, match)
+        self.collection_id = match.group(2)
+        self.collection_name = match.group(3)
+
+    def metadata(self):
+        return {
+            "collection_owner": self.key,
+            "collection_name" : self.collection_name,
+            "collection_id"   : self.collection_id,
+        }
+
+    def gfycats(self):
+        return GfycatAPI(self).collection(self.key, self.collection_id)
+
+
+class GfycatCollectionsExtractor(GfycatExtractor):
+    """Extractor for a gfycat user's collections"""
+    subcategory = "collections"
+    pattern = r"(?:https?://)?gfycat\.com/@([^/?#]+)/collections/?(?:$|\?|#)"
+    test = ("https://gfycat.com/@sannahparker/collections", {
+        "pattern": GfycatCollectionExtractor.pattern,
+        "count": ">= 20",
+    })
+
+    def items(self):
+        for col in GfycatAPI(self).collections(self.key):
+            url = "https://gfycat.com/@{}/collections/{}/{}".format(
+                col["userId"], col["folderId"], col["linkText"])
+            col["_extractor"] = GfycatCollectionExtractor
+            yield Message.Queue, url, col
 
 
 class GfycatSearchExtractor(GfycatExtractor):
@@ -177,7 +219,6 @@ class GfycatAPI():
 
     def __init__(self, extractor):
         self.extractor = extractor
-        self.headers = {}
 
     def gfycat(self, gfycat_id):
         endpoint = "/v1/gfycats/" + gfycat_id
@@ -188,6 +229,17 @@ class GfycatAPI():
         params = {"count": 100}
         return self._pagination(endpoint, params)
 
+    def collection(self, user, collection):
+        endpoint = "/v1/users/{}/collections/{}/gfycats".format(
+            user, collection)
+        params = {"count": 100}
+        return self._pagination(endpoint, params)
+
+    def collections(self, user):
+        endpoint = "/v1/users/{}/collections".format(user)
+        params = {"count": 100}
+        return self._pagination(endpoint, params, "gfyCollections")
+
     def search(self, query):
         endpoint = "/v1/gfycats/search"
         params = {"search_text": query, "count": 150}
@@ -195,20 +247,13 @@ class GfycatAPI():
 
     def _call(self, endpoint, params=None):
         url = self.API_ROOT + endpoint
-        return self.extractor.request(
-            url, params=params, headers=self.headers).json()
+        return self.extractor.request(url, params=params).json()
 
-    def _pagination(self, endpoint, params):
+    def _pagination(self, endpoint, params, key="gfycats"):
         while True:
             data = self._call(endpoint, params)
-            gfycats = data["gfycats"]
+            yield from data[key]
 
-            for gfycat in gfycats:
-                if "gfyName" not in gfycat:
-                    gfycat.update(self.gfycat(gfycat["gfyId"]))
-                yield gfycat
-
-            if "found" not in data and len(gfycats) < params["count"] or \
-                    not data["gfycats"]:
+            if not data["cursor"]:
                 return
             params["cursor"] = data["cursor"]

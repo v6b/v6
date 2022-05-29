@@ -214,7 +214,7 @@ Consider all sites to be NSFW unless otherwise known.
 <tr>
     <td>Gfycat</td>
     <td>https://gfycat.com/</td>
-    <td>individual Images, Search Results, User Profiles</td>
+    <td>Collections, individual Images, Search Results, User Profiles</td>
     <td></td>
 </tr>
 <tr>
@@ -985,6 +985,12 @@ Consider all sites to be NSFW unless otherwise known.
     <td>Favorites, Pools, Posts, Tag Searches</td>
     <td></td>
 </tr>
+<tr>
+    <td>Hypnohub</td>
+    <td>https://hypnohub.net/</td>
+    <td>Favorites, Pools, Posts, Tag Searches</td>
+    <td></td>
+</tr>
 
 <tr>
     <td colspan="4"><strong>Philomena Instances</strong></td>
@@ -1048,12 +1054,6 @@ Consider all sites to be NSFW unless otherwise known.
 <tr>
     <td>Konachan</td>
     <td>https://konachan.com/</td>
-    <td>Pools, Popular Images, Posts, Tag Searches</td>
-    <td></td>
-</tr>
-<tr>
-    <td>Hypnohub</td>
-    <td>https://hypnohub.net/</td>
     <td>Pools, Popular Images, Posts, Tag Searches</td>
     <td></td>
 </tr>
