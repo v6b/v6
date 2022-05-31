@@ -179,25 +179,8 @@ initVar() {
 
 	localIP=
 
-	# 集成更新证书逻辑不再使用单独的脚本
-	# RenewTLS:检查证书
-	# whiteIP:ip白名单
-	funType=$1
-
-	# 白名单IP
-	whiteListIP=$3
-
-	# 白名单端口
-	whiteListPort=$2
-
-	#白名单订阅唯一标识
-	whiteListIPUUID=$4
-
-	# 白名单防火墙状态
-	whiteListIPFirewallStatus=
-
-	# ss端口
-	ssPort=
+	# 集成更新证书逻辑不再使用单独的脚本--RenewTLS
+	renewTLS=$1
 
 	# tls安装失败后尝试的次数
 	installTLSCount=
@@ -273,9 +256,6 @@ readInstallProtocolType() {
 		if echo "${row}" | grep -q VLESS_gRPC_inbounds; then
 			currentInstallProtocolType=${currentInstallProtocolType}'5'
 		fi
-		if echo "${row}" | grep -q shadowsocks_inbounds; then
-			currentInstallProtocolType=${currentInstallProtocolType}'6'
-		fi
 	done < <(find ${configPath} -name "*inbounds.json" | awk -F "[.]" '{print $1}')
 }
 
@@ -297,55 +277,8 @@ readInstallAlpn() {
 	fi
 }
 
-# 安装nginx Lua
-insertLua() {
-	if ! find /usr/bin /usr/sbin | grep -q -w lua5.2; then
-		echoContent green " ---> 安装lua5.2"
-		${installType} lua5.2 >/dev/null 2>&1
-	fi
-
-	if ! find /usr/share | grep -q -w liblua5.2-dev; then
-		echoContent green " ---> 安装liblua5.2-dev"
-		${installType} liblua5.2-dev >/dev/null 2>&1
-	fi
-
-	if ! find /usr/bin /usr/sbin | grep -q -w luajit; then
-		echoContent green " ---> 安装luajit"
-		${installType} luajit >/dev/null 2>&1
-	fi
-
-	if ! find /usr/share | grep -q -w libnginx-mod-http-lua; then
-		echoContent green " ---> 安装libnginx-mod-http-lua"
-		${installType} libnginx-mod-http-lua >/dev/null 2>&1
-	fi
-}
-
-# 修改nginx白名单
-updateWhiteListIPNginx() {
-	local nginxConf
-	nginxConf=$(sed "$(grep -n "user" </etc/nginx/nginx.conf | head -1 | awk -F "[:]" '{print $1}')c user root;" /etc/nginx/nginx.conf)
-
-	echo "${nginxConf}" >/etc/nginx/nginx.conf
-	cp ${nginxConfigPath}alone.conf /etc/v2ray-agent/ss/alone.conf
-	sed "/location \/s\/ {/{:a;n;s/alias \/etc\/v2ray-agent\/subscribe\/;/real_ip_header proxy_protocol;\n\t\tset_real_ip_from 0.0.0.0\/8;\n\t\tproxy_set_header X-Real-IP       \$proxy_protocol_addr;\n\t\tproxy_set_header X-Forwarded-For \$proxy_protocol_addr;\n\t\tcontent_by_lua_block {\n\t\t\tclientIP =ngx.var.proxy_protocol_addr;\n\t\t\tngx.header.content_type = \"text\/plain;charset=UTF-8\";\n\t\t\tpath = string.sub(\"\"..ngx.var.request_uri..\"\",4,-1);\n\t\t\tlocal file=\"\/etc\/v2ray-agent\/subscribe\/\"..path..\"\";\n\t\t\tlocal f = io.open(file, \"rb\");\n\t\t\tlocal content = f:read(\"*all\");\n\t\t\tf:close();\n\t\t\tos.execute(\"\/usr\/bin\/bash \/etc\/v2ray-agent\/install.sh whitelistIP ${ssPort} \"..clientIP..\" \"..path..\" >> \/etc\/v2ray-agent\/whiteListIP.log\");\n\t\t\tngx.print(content);\n\t\t}/g;/}/! ba}" ${nginxConfigPath}alone.conf >/tmp/alone.conf && mv /tmp/alone.conf ${nginxConfigPath}alone.conf
-}
-# 检查防火墙状态
-checkFirewall() {
-	whiteListIPFirewallStatus=false
-
-	if systemctl status ufw 2>/dev/null | grep -q "active (exited)"; then
-		if ufw status | grep -q "Status: active"; then
-			whiteListIPFirewallStatus=true
-		fi
-
-	elif systemctl status firewalld 2>/dev/null | grep -q "active (running)"; then
-		whiteListIPFirewallStatus=true
-	fi
-}
 # 检查防火墙
 allowPort() {
-	whiteListIPFirewallStatus=false
-
 	# 如果防火墙启动状态则添加相应的开放端口
 	if systemctl status netfilter-persistent 2>/dev/null | grep -q "active (exited)"; then
 		local updateFirewalldStatus=
@@ -359,42 +292,25 @@ allowPort() {
 		fi
 	elif systemctl status ufw 2>/dev/null | grep -q "active (exited)"; then
 		if ufw status | grep -q "Status: active"; then
-			whiteListIPFirewallStatus=true
-			if [[ -n "$2" && -n "$1" ]]; then
-				if ! ufw status | grep "$1" | grep -q "$2"; then
-					sudo ufw allow from "$2" to any port "$1"
-				fi
-
-			else
-				if ! ufw status | grep -q "$1"; then
-					sudo ufw allow "$1"
-				fi
+			if ! ufw status | grep -q "$1"; then
+				sudo ufw allow "$1"
+				checkUFWAllowPort "$1"
 			fi
-			checkUFWAllowPort "$1" "$2" "$3"
 		fi
 
-	elif systemctl status firewalld 2>/dev/null | grep -q "active (running)"; then
-		whiteListIPFirewallStatus=true
+	elif
+		systemctl status firewalld 2>/dev/null | grep -q "active (running)"
+	then
 		local updateFirewalldStatus=
-		if [[ -n "$2" && -n "$1" ]]; then
-			if ! firewall-cmd --zone=public --list-rich-rules | grep "$2" | grep -q "$1"; then
-				updateFirewalldStatus=true
-				firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address=$2 port protocol=tcp port=$1 accept"
-				firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address=$2 port protocol=udp port=$1 accept"
-				# firewall-cmd --zone=public --list-rich-rules
-				# firewall-cmd --permanent --remove-rich-rule ''
-			fi
-		else
-			if ! firewall-cmd --list-ports --permanent | grep -qw "$1/tcp"; then
-				updateFirewalldStatus=true
-				firewall-cmd --zone=public --add-port="$1/tcp" --permanent
-			fi
+		if ! firewall-cmd --list-ports --permanent | grep -qw "$1/tcp"; then
+			updateFirewalldStatus=true
+			firewall-cmd --zone=public --add-port="$1/tcp" --permanent
+			checkFirewalldAllowPort "$1"
 		fi
 
 		if echo "${updateFirewalldStatus}" | grep -q "true"; then
 			firewall-cmd --reload
 		fi
-		checkFirewalldAllowPort "$1" "$2" "$3"
 	fi
 }
 
@@ -415,39 +331,22 @@ checkPortUsedStatus() {
 
 # 输出ufw端口开放状态
 checkUFWAllowPort() {
-	if [[ -n "$2" ]]; then
-		if ufw status | grep "$1" | grep -q "$2"; then
-			echoContent green " ---> $2:$1 开放成功 $(date "+%F %H:%M:%S") 订阅UUID:$3"
-		else
-			echoContent green " ---> $2:$1 开放失败 $(date "+%F %H:%M:%S") 订阅UUID:$3"
-		fi
+	if ufw status | grep -q "$1"; then
+		echoContent green " ---> $1端口开放成功"
 	else
-		if ufw status | grep -q "$1"; then
-			echoContent green " ---> $1端口开放成功"
-		else
-			echoContent red " ---> $1端口开放失败"
-			exit 0
-		fi
+		echoContent red " ---> $1端口开放失败"
+		exit 0
 	fi
 }
 
 # 输出firewall-cmd端口开放状态
 checkFirewalldAllowPort() {
-	if [[ -n "$2" ]]; then
-		if firewall-cmd --zone=public --list-rich-rules | grep "$1" | grep -q "$2"; then
-			echoContent green " ---> $2:$1 开放成功 $(date "+%F %H:%M:%S") 订阅UUID:$3"
-		else
-			echoContent green " ---> $2:$1 开放失败 $(date "+%F %H:%M:%S") 订阅UUID:$3"
-		fi
+	if firewall-cmd --list-ports --permanent | grep -q "$1"; then
+		echoContent green " ---> $1端口开放成功"
 	else
-		if firewall-cmd --list-ports --permanent | grep -q "$1"; then
-			echoContent green " ---> $1端口开放成功"
-		else
-			echoContent red " ---> $1端口开放失败"
-			exit 0
-		fi
+		echoContent red " ---> $1端口开放失败"
+		exit 0
 	fi
-
 }
 # 检查文件目录以及path路径
 readConfigHostPathUUID() {
@@ -455,6 +354,7 @@ readConfigHostPathUUID() {
 	currentDefaultPort=
 	currentUUID=
 	currentHost=
+	#	currentPort=
 	currentAdd=
 	# 读取path
 	if [[ -n "${configPath}" ]]; then
@@ -485,6 +385,7 @@ readConfigHostPathUUID() {
 			fi
 		fi
 
+
 		local defaultPortFile=
 		defaultPortFile=$(find ${configPath}* | grep "default")
 
@@ -494,9 +395,6 @@ readConfigHostPathUUID() {
 			currentDefaultPort=443
 		fi
 
-		if [[ -f "${configPath}07_shadowsocks_inbounds.json" ]]; then
-			ssPort=$(jq -r .inbounds[0].port "${configPath}07_shadowsocks_inbounds.json")
-		fi
 	fi
 	if [[ "${coreInstallType}" == "1" ]]; then
 		currentHost=$(jq -r .inbounds[0].streamSettings.xtlsSettings.certificates[0].certificateFile ${configPath}${frontingType}.json | awk -F '[t][l][s][/]' '{print $2}' | awk -F '[.][c][r][t]' '{print $1}')
@@ -505,6 +403,7 @@ readConfigHostPathUUID() {
 		if [[ "${currentAdd}" == "null" ]]; then
 			currentAdd=${currentHost}
 		fi
+		#		currentPort=$(jq .inbounds[0].port ${configPath}${frontingType}.json)
 
 	elif [[ "${coreInstallType}" == "2" || "${coreInstallType}" == "3" ]]; then
 		if [[ "${coreInstallType}" == "3" ]]; then
@@ -519,8 +418,8 @@ readConfigHostPathUUID() {
 			currentAdd=${currentHost}
 		fi
 		currentUUID=$(jq -r .inbounds[0].settings.clients[0].id ${configPath}${frontingType}.json)
+		#		currentPort=$(jq .inbounds[0].port ${configPath}${frontingType}.json)
 	fi
-
 }
 
 # 状态展示
@@ -601,7 +500,7 @@ cleanUp() {
 	fi
 }
 
-initVar "$1" "$2" "$3" "$4"
+initVar "$1"
 checkSystem
 checkCPUVendor
 readInstallType
@@ -622,8 +521,7 @@ mkdirTools() {
 	mkdir -p /etc/v2ray-agent/xray/conf
 	mkdir -p /etc/v2ray-agent/xray/tmp
 	mkdir -p /etc/v2ray-agent/trojan
-	#	mkdir -p /etc/v2ray-agent/hysteria/conf
-	mkdir -p /etc/v2ray-agent/ss/
+	mkdir -p /etc/v2ray-agent/hysteria/conf
 	mkdir -p /etc/systemd/system/
 	mkdir -p /tmp/v2ray-agent-tls/
 }
@@ -817,7 +715,7 @@ module_hotfixes=true
 EOF
 		sudo yum-config-manager --enable nginx-mainline >/dev/null 2>&1
 	fi
-	${installType} nginx=1.18.0-6.1 >/dev/null 2>&1
+	${installType} nginx >/dev/null 2>&1
 	systemctl daemon-reload
 	systemctl enable nginx
 }
@@ -1057,7 +955,7 @@ EOF
 
 	cat <<EOF >>${nginxConfigPath}alone.conf
 server {
-	listen 127.0.0.1:31300 proxy_protocol;
+	listen 127.0.0.1:31300;
 	server_name ${domain};
 	root /usr/share/nginx/html;
 	location /s/ {
@@ -2362,7 +2260,7 @@ EOF
 		  }
 		],
 		"fallbacks":[
-			{"dest":"31300","xver":1}
+			{"dest":"31300"}
 		]
 	  },
 	  "streamSettings": {
@@ -2645,7 +2543,6 @@ defaultBase64Code() {
 	local type=$1
 	local email=$2
 	local id=$3
-	local method=$4
 
 	port=${currentDefaultPort}
 
@@ -2799,20 +2696,6 @@ trojan://${id}@${currentAdd}:${currentDefaultPort}?encryption=none&peer=${curren
 EOF
 		echoContent yellow " ---> 二维码 Trojan gRPC(TLS)"
 		echoContent green "    https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=trojan%3a%2f%2f${id}%40${currentAdd}%3a${currentDefaultPort}%3Fencryption%3Dnone%26security%3Dtls%26peer%3d${currentHost}%26type%3Dgrpc%26sni%3d${currentHost}%26path%3D${currentPath}trojangrpc%26alpn%3Dh2%26serviceName%3D${currentPath}trojangrpc%23${email}\n"
-	elif [[ "${type}" == "ss" ]]; then
-		# URLEncode
-
-		local base64SS=$(echo -n "${method}:${id}" | base64 -w 0)
-
-		echoContent yellow " ---> 格式化明文"
-		echoContent green "    协议类型:shadowsocks，地址:${currentHost}，端口:${ssPort}，用户ID:${id}，method:${method}，账户名:${email}\n"
-
-		echoContent green "    ss://${base64SS}@${currentHost}:${ssPort}#${email}\n"
-		cat <<EOF >>"/etc/v2ray-agent/subscribe_tmp/${subAccount}"
-ss://${base64SS}@${currentHost}:${ssPort}#${email}
-EOF
-		echoContent yellow " ---> 二维码 shadowsocks"
-		echoContent green "    https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=ss%3a%2f%2f${base64SS}%40${currentHost}%3a${ssPort}%23${email}\n"
 	fi
 
 }
@@ -2907,19 +2790,6 @@ showAccounts() {
 			echo
 			defaultBase64Code trojangrpc "$(echo "${user}" | jq -r .email)" "$(echo "${user}" | jq -r .password)"
 		done
-	fi
-
-	# ss
-	if echo ${currentInstallProtocolType} | grep -q 6; then
-		checkFirewall
-		if [[ "${whiteListIPFirewallStatus}" == "true" ]]; then
-			echoContent skyBlue "\n==================================  shadowsocks 白名单  ==================================\n"
-			jq .inbounds[0].settings.clients ${configPath}07_shadowsocks_inbounds.json | jq -c '.[]' | while read -r user; do
-				echoContent skyBlue "\n ---> 帐号:$(echo "${user}" | jq -r .email)"
-
-				defaultBase64Code ss "$(echo "${user}" | jq -r .email)" "$(echo "${user}" | jq -r .password)" "$(echo "${user}" | jq -r .method)"
-			done
-		fi
 	fi
 
 	if [[ -z ${show} ]]; then
@@ -3255,7 +3125,9 @@ manageUser() {
 
 # 自定义uuid
 customUUID() {
-
+	#	read -r -p "是否自定义UUID ？[y/n]:" customUUIDStatus
+	#	echo
+	#	if [[ "${customUUIDStatus}" == "y" ]]; then
 	read -r -p "请输入合法的UUID，[回车]随机UUID:" currentCustomUUID
 	echo
 	if [[ -z "${currentCustomUUID}" ]]; then
@@ -3275,11 +3147,14 @@ customUUID() {
 			exit 0
 		fi
 	fi
+	#	fi
 }
 
 # 自定义email
 customUserEmail() {
-
+	#	read -r -p "是否自定义email ？[y/n]:" customEmailStatus
+	#	echo
+	#	if [[ "${customEmailStatus}" == "y" ]]; then
 	read -r -p "请输入合法的email，[回车]随机email:" currentCustomEmail
 	echo
 	if [[ -z "${currentCustomEmail}" ]]; then
@@ -3298,6 +3173,7 @@ customUserEmail() {
 			exit 0
 		fi
 	fi
+	#	fi
 }
 
 # 添加用户
@@ -3339,7 +3215,6 @@ addUser() {
 			users="{\"id\":\"${uuid}\",\"email\":\"${email}\",\"alterId\":0}"
 		fi
 
-		# todo 优化
 		if echo ${currentInstallProtocolType} | grep -q 0; then
 			local vlessUsers="${users//\,\"alterId\":0/}"
 
@@ -3400,15 +3275,6 @@ addUser() {
 			local trojanTCPResult
 			trojanTCPResult=$(jq -r ".inbounds[0].settings.clients += [${trojanUsers}]" ${configPath}04_trojan_TCP_inbounds.json)
 			echo "${trojanTCPResult}" | jq . >${configPath}04_trojan_TCP_inbounds.json
-		fi
-
-		if echo ${currentInstallProtocolType} | grep -q 6; then
-
-			local ssUsers=$(echo "${users}" | jq '.|{"password":.id,"method":"chacha20-ietf-poly1305","email":.email}')
-
-			local ssResult
-			ssResult=$(jq -r ".inbounds[0].settings.clients += [${ssUsers}]" ${configPath}07_shadowsocks_inbounds.json)
-			echo "${ssResult}" | jq . >${configPath}07_shadowsocks_inbounds.json
 		fi
 	done
 
@@ -3848,105 +3714,6 @@ EOF
 		exit 0
 	fi
 	reloadCore
-}
-
-# ss白名单模式
-ssWhiteListIPFunction() {
-	echoContent skyBlue "\n进度  $1/${totalProgress} : ss白名单模式"
-	if [[ -z "${configPath}" ]]; then
-		echoContent red " ---> 不可单独使用，请使用脚本安装"
-		menu
-		exit 0
-	fi
-	echo
-	read -r -p "不保证IP不会被阻断，请谨慎使用，是否继续[y/n]:" allowSStatus
-
-	if [[ "${allowSStatus}" != "y" ]]; then
-		echoContent red " ---> 已放弃"
-		exit 0
-	fi
-
-	echoContent red "=============================================================="
-	echoContent yellow "# 注意事项\n"
-	echoContent red "不保证IP不会被阻断，请谨慎使用"
-	echoContent yellow "访问订阅会自动添加白名单"
-	echoContent yellow "密码采用之前的安装的内容"
-	echoContent yellow "会安装lua环境"
-	echoContent yellow "卸载时防火墙环境不会更改，请手动更改"
-	echoContent yellow "配置需依赖防火墙，请保证22端口可用\n"
-
-	echoContent yellow "1.安装"
-	echoContent yellow "2.卸载"
-	echoContent red "=============================================================="
-
-	read -r -p "请选择:" ssWhiteListIPStats
-	if [[ "${ssWhiteListIPStats}" == "1" ]]; then
-		if [[ -f ${configPath}07_shadowsocks_inbounds.json ]]; then
-			echoContent skyBlue " ---> 已安装"
-			exit 0
-		fi
-		insertSSWhiteListIP
-	else
-		unInsertSSWhiteListIP
-	fi
-
-}
-# 安装ss白名单
-insertSSWhiteListIP() {
-	checkFirewall
-
-	if [[ "${whiteListIPFirewallStatus}" == "false" ]]; then
-		echoContent red " ---> 防火墙未安装，请手动安装"
-	fi
-
-	# 安装环境
-	insertLua
-	# 初始化ss配置
-	initSSConfig
-	reloadCore
-	# 配置nginx
-	updateWhiteListIPNginx
-	handleNginx stop
-	handleNginx start
-	echoContent green " ---> 安装完毕"
-}
-
-# 卸载ss白名单
-unInsertSSWhiteListIP() {
-	rm ${configPath}07_shadowsocks_inbounds.json
-	mv /etc/v2ray-agent/ss/alone.conf /etc/nginx/conf.d/alone.conf >/dev/null 2>&1
-	reloadCore
-	handleNginx stop
-	handleNginx start
-	echoContent green " ---> 卸载完毕"
-}
-# 初始化ss配置
-initSSConfig() {
-	echo
-	read -r -p "请输入Shadowsocks端口号:" ssPort
-
-	cat <<EOF >${configPath}07_shadowsocks_inbounds.json
-{
-    "inbounds": [
-        {
-            "port": ${ssPort},
-            "tag": "shadowsocks",
-            "protocol": "shadowsocks",
-            "settings": {
-                "clients": [],
-                "network": "tcp,udp"
-            }
-        }
-    ]
-}
-EOF
-
-	jq -c .inbounds[0].settings.clients[] ${configPath}02_VLESS_TCP_inbounds.json | while read -r user; do
-		user=$(echo "${user}" | jq '.|{"password":.id,"method":"chacha20-ietf-poly1305","email":.email}')
-		ssConfig=$(jq -r ".inbounds[0].settings.clients += [${user}]" <${configPath}07_shadowsocks_inbounds.json)
-		echo "${ssConfig}" | jq . >${configPath}07_shadowsocks_inbounds.json
-	done
-
 }
 
 # 根据tag卸载Routing
@@ -4835,22 +4602,13 @@ coreVersionManageMenu() {
 		v2rayVersionManageMenu 1
 	fi
 }
-
-# 外部方法
-functionList() {
-
-	if [[ "${funType}" == "RenewTLS" ]]; then
+# 定时任务检查证书
+cronRenewTLS() {
+	if [[ "${renewTLS}" == "RenewTLS" ]]; then
 		renewalTLS
-		exit 0
-	elif [[ "${funType}" == "whitelistIP" ]]; then
-		allowPort "${whiteListPort}" "${whiteListIP}" "${whiteListIPUUID}"
-		if [[ "${whiteListIPFirewallStatus}" == "false" ]]; then
-			echoContent red " ---> 防火墙未安装，请手动安装"
-		fi
 		exit 0
 	fi
 }
-
 # 账号管理
 manageAccount() {
 	echoContent skyBlue "\n功能 1/${totalProgress} : 账号管理"
@@ -4959,7 +4717,7 @@ menu() {
 	cd "$HOME" || exit
 	echoContent red "\n=============================================================="
 	echoContent green "作者:mack-a"
-	echoContent green "当前版本:v2.6.1"
+	echoContent green "当前版本:v2.5.70"
 	echoContent green "Github:https://github.com/mack-a/v2ray-agent"
 	echoContent green "描述:八合一共存脚本\c"
 	showInstallStatus
@@ -4989,14 +4747,13 @@ menu() {
 	echoContent yellow "12.BT下载管理"
 	echoContent yellow "13.切换alpn"
 	echoContent yellow "14.域名黑名单"
-	echoContent yellow "15.ss白名单模式[Beta]"
 	echoContent skyBlue "-------------------------版本管理-----------------------------"
-	echoContent yellow "16.core管理"
-	echoContent yellow "17.更新脚本"
-	echoContent yellow "18.安装BBR、DD脚本"
+	echoContent yellow "15.core管理"
+	echoContent yellow "16.更新脚本"
+	echoContent yellow "17.安装BBR、DD脚本"
 	echoContent skyBlue "-------------------------脚本管理-----------------------------"
-	echoContent yellow "19.查看日志"
-	echoContent yellow "20.卸载脚本"
+	echoContent yellow "18.查看日志"
+	echoContent yellow "19.卸载脚本"
 	echoContent red "=============================================================="
 	mkdirTools
 	aliasInstall
@@ -5045,24 +4802,21 @@ menu() {
 		blacklist 1
 		;;
 	15)
-		ssWhiteListIPFunction 1
-		;;
-	16)
 		coreVersionManageMenu 1
 		;;
-	17)
+	16)
 		updateV2RayAgent 1
 		;;
-	18)
+	17)
 		bbrInstall
 		;;
-	19)
+	18)
 		checkLog 1
 		;;
-	20)
+	19)
 		unInstall 1
 		;;
 	esac
 }
-functionList
+cronRenewTLS
 menu
