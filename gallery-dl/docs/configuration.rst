@@ -1355,6 +1355,21 @@ Description
     If not set, a temporary guest token will be used.
 
 
+extractor.gofile.website-token
+------------------------------
+Type
+    ``string``
+Default
+    ``"12345"``
+Description
+    API token value used during API requests.
+
+    A not up-to-date value will result in ``401 Unauthorized`` errors.
+
+    Setting this value to ``null`` will do an extra HTTP request to fetch
+    the current value used by gofile.
+
+
 extractor.gofile.recursive
 --------------------------
 Type
@@ -2450,6 +2465,16 @@ Description
     Note: This requires 1 additional HTTP request per submission.
 
 
+extractor.weibo.livephoto
+-------------------------
+Type
+    ``bool``
+Default
+    ``true``
+Description
+    Download ``livephoto`` files.
+
+
 extractor.weibo.retweets
 ------------------------
 Type
@@ -3217,6 +3242,8 @@ Example
 Description
     A `format string`_ to build the filenames for metadata files with.
     (see `extractor.filename <extractor.*.filename_>`__)
+
+    Using ``"-"`` as filename will write all output to ``stdout``.
 
     If this option is set, `metadata.extension`_ and
     `metadata.extension-format`_ will be ignored.
