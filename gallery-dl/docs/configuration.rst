@@ -2271,6 +2271,19 @@ Description
     <https://help.twitter.com/en/using-twitter/twitter-conversations>`__.
 
 
+extractor.twitter.csrf
+----------------------
+Type
+    ``string``
+Default
+    ``"cookies"``
+Description
+    Controls how to handle Cross Site Request Forgery (CSRF) tokens.
+
+    * ``"auto"``: Always auto-generate a token.
+    * ``"cookies"``: Use token given by the ``ct0`` cookie if present.
+
+
 extractor.twitter.size
 ----------------------
 Type
@@ -2489,7 +2502,7 @@ Description
     when processing a user profile.
 
     Possible values are
-    ``"home"``, ``"feed"``, ``"videos"``, ``"article"``, ``"album"``.
+    ``"home"``, ``"feed"``, ``"videos"``, ``"newvideo"``, ``"article"``, ``"album"``.
 
     It is possible to use ``"all"`` instead of listing all values separately.
 

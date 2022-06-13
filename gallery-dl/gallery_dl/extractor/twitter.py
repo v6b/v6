@@ -40,6 +40,7 @@ class TwitterExtractor(Extractor):
         self.quoted = self.config("quoted", False)
         self.videos = self.config("videos", True)
         self.cards = self.config("cards", False)
+        self._user_id = None
         self._user_cache = {}
         self._init_sizes()
 
@@ -59,6 +60,10 @@ class TwitterExtractor(Extractor):
         self.api = TwitterAPI(self)
         metadata = self.metadata()
 
+        if self.config("expand"):
+            tweets = self._expand_tweets(self.tweets())
+            self.tweets = lambda : tweets
+
         for tweet in self.tweets():
 
             if "legacy" in tweet:
@@ -75,7 +80,8 @@ class TwitterExtractor(Extractor):
             if "in_reply_to_user_id_str" in data and (
                 not self.replies or (
                     self.replies == "self" and
-                    data["in_reply_to_user_id_str"] != data["user_id_str"]
+                    (self._user_id or data["in_reply_to_user_id_str"]) !=
+                    data["user_id_str"]
                 )
             ):
                 self.log.debug("Skipping %s (reply)", data["id_str"])
@@ -338,6 +344,22 @@ class TwitterExtractor(Extractor):
             user["_extractor"] = cls
             yield Message.Queue, fmt(user), user
 
+    def _expand_tweets(self, tweets):
+        seen = set()
+        for tweet in tweets:
+
+            if "legacy" in tweet:
+                cid = tweet["legacy"]["conversation_id_str"]
+            else:
+                cid = tweet["conversation_id_str"]
+
+            if cid not in seen:
+                seen.add(cid)
+                try:
+                    yield from self.api.tweet_detail(cid)
+                except Exception:
+                    yield tweet
+
     def metadata(self):
         """Return general metadata"""
         return {}
@@ -418,12 +440,15 @@ class TwitterTimelineExtractor(TwitterExtractor):
             self.user = "id:" + user_id
 
     def tweets(self):
-        tweets = (self.api.user_tweets(self.user) if self.retweets else
-                  self.api.user_media(self.user))
+        if self.retweets or self.textonly:
+            tweets = (self.api.user_tweets_and_replies if self.replies else
+                      self.api.user_tweets)
+        else:
+            tweets = self.api.user_media
 
         # yield initial batch of (media) tweets
         tweet = None
-        for tweet in tweets:
+        for tweet in tweets(self.user):
             yield tweet
 
         if tweet is None:
@@ -442,12 +467,17 @@ class TwitterTimelineExtractor(TwitterExtractor):
         if "legacy" in tweet:
             tweet = tweet["legacy"]
 
+        # build search query
+        query = "from:{} max_id:{}".format(username, tweet["id_str"])
+        if self.retweets:
+            query += " include:retweets include:nativeretweets"
+        if not self.textonly:
+            query += (" (filter:images OR"
+                      " filter:native_video OR"
+                      " card_name:animated_gif)")
+
         # yield search results starting from last tweet id
-        yield from self.api.search_adaptive(
-            "from:{} include:retweets include:nativeretweets max_id:{} "
-            "filter:images OR card_name:animated_gif OR filter:native_video"
-            .format(username, tweet["id_str"])
-        )
+        yield from self.api.search_adaptive(query)
 
 
 class TwitterTweetsExtractor(TwitterExtractor):
@@ -694,10 +724,10 @@ class TwitterTweetExtractor(TwitterExtractor):
                 "date"      : "dt:2020-08-20 04:00:28",
             },
         }),
-        # all Tweets from a conversation (#1319)
-        ("https://twitter.com/BlankArts_/status/1323314488611872769", {
+        # all Tweets from a 'conversation' (#1319)
+        ("https://twitter.com/supernaturepics/status/604341487988576256", {
             "options": (("conversations", True),),
-            "count": ">= 50",
+            "count": 5,
         }),
         # retweet with missing media entities (#1555)
         ("https://twitter.com/morino_ya/status/1392763691599237121", {
@@ -845,8 +875,11 @@ class TwitterAPI():
         cookies = extractor.session.cookies
         cookiedomain = extractor.cookiedomain
 
-        # CSRF
-        csrf_token = cookies.get("ct0", domain=cookiedomain)
+        csrf = extractor.config("csrf")
+        if csrf is None or csrf == "cookies":
+            csrf_token = cookies.get("ct0", domain=cookiedomain)
+        else:
+            csrf_token = None
         if not csrf_token:
             csrf_token = util.generate_token()
             cookies.set("ct0", csrf_token, domain=cookiedomain)
@@ -1000,19 +1033,23 @@ class TwitterAPI():
     def _user_id_by_screen_name(self, screen_name):
         if screen_name.startswith("id:"):
             self._user = util.SENTINEL
-            return screen_name[3:]
+            user_id = screen_name[3:]
 
-        user = ()
-        try:
-            user = self._user = self.user_by_screen_name(screen_name)
-            return user["rest_id"]
-        except KeyError:
-            if "unavailable_message" in user:
-                raise exception.NotFoundError("{} ({})".format(
-                    user["unavailable_message"].get("text"),
-                    user.get("reason")), False)
-            else:
-                raise exception.NotFoundError("user")
+        else:
+            user = ()
+            try:
+                user = self._user = self.user_by_screen_name(screen_name)
+                user_id = user["rest_id"]
+            except KeyError:
+                if "unavailable_message" in user:
+                    raise exception.NotFoundError("{} ({})".format(
+                        user["unavailable_message"].get("text"),
+                        user.get("reason")), False)
+                else:
+                    raise exception.NotFoundError("user")
+
+        self.extractor._user_id = user_id
+        return user_id
 
     @cache(maxage=3600)
     def _guest_token(self):
@@ -1228,6 +1265,8 @@ class TwitterAPI():
                     tweets.append(entry)
                 elif esw("cursor-bottom-"):
                     cursor = entry["content"]
+                    if "itemContent" in cursor:
+                        cursor = cursor["itemContent"]
                     if not cursor.get("stopOnEmptyResponse", True):
                         # keep going even if there are no tweets
                         tweet = True
