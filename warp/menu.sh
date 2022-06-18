@@ -987,8 +987,8 @@ EOF
 teams_change(){
 	sed -i "s#PrivateKey.*#PrivateKey = $PRIVATEKEY#g;s#Address.*32#Address = ${ADDRESS4}/32#g;s#Address.*128#Address = ${ADDRESS6}/128#g;s#PublicKey.*#PublicKey = $PUBLICKEY#g" /etc/wireguard/wgcf.conf
 		case $IPV4$IPV6 in
-			01 ) sed -i "s#Endpoint.*#Endpoint = $(expr "$TEAMS" : '.*v6&quot;:&quot;\(\[[^&]*\).*')#g" /etc/wireguard/wgcf.conf;;
-			10 ) sed -i "s#Endpoint.*#Endpoint = $(expr "$TEAMS" : '.*endpoint&quot;:{&quot;v4&quot;:&quot;\([^&]*\).*')#g" /etc/wireguard/wgcf.conf;;	
+			01 ) sed -i "s#Endpoint.*#Endpoint = $(expr "$TEAMS" : '.*v6&quot;:&quot;\(.*]\):.*'):2408#g" /etc/wireguard/wgcf.conf;;
+			10 ) sed -i "s#Endpoint.*#Endpoint = $(expr "$TEAMS" : '.*v4&quot;:&quot;\(.*\):0&quot;,.*'):2408#g" /etc/wireguard/wgcf.conf;;	
 		esac
 	}
 	
@@ -1599,10 +1599,12 @@ proxy(){
 			rm -f Client_CentOS_8.rpm
 		else
 			{ wget --no-check-certificate $CDN https://github.com/fscarmen/warp/raw/main/Client/Client_${SYSTEM}_${VERSION_ID}.deb; }&
+			${PACKAGE_UPDATE[int]}
 			[[ $SYSTEM = Debian && ! $(apt list 2>/dev/null | grep apt-transport-https) =~ installed ]] && ${PACKAGE_INSTALL[int]} apt-transport-https
 			wait
 			dpkg -i Client_${SYSTEM}_${VERSION_ID}.deb >/dev/null 2>&1
 			${PACKAGE_INSTALL[int]} -f
+			${PACKAGE_INSTALL[int]} gnupg2 desktop-file-utils
 			dpkg -i Client_${SYSTEM}_${VERSION_ID}.deb
 			rm -f Client_${SYSTEM}_${VERSION_ID}.deb
 			sleep 1
