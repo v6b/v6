@@ -203,10 +203,10 @@ check_warp(){
 		[[ $(ss -nltp) =~ 'wireproxy' ]] && WIREPROXY_PORT=$(ss -nltp | grep wireproxy | grep -oP '127.0*\S+' | cut -d: -f2) && STATUS[3]=1 || STATUS[3]=0
 	fi
 
-	fscarmen(){ wget -N https://raw.githubusercontent.com/fscarmen/warp/main/menu.sh && bash menu.sh; exit; }
-	kkkyg(){ wget -N https://cdn.jsdelivr.net/gh/kkkyg/CFwarp/CFwarp.sh && bash CFwarp.sh; exit; }
+	fscarmen(){ wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/menu.sh && bash menu.sh; exit; }
+	kkkyg(){ wget -N --no-check-certificate https://gitlab.com/rwkgyg/cfwarp/raw/main/CFwarp.sh && bash CFwarp.sh; exit; }
 	p3terx(){ bash <(curl -fsSL git.io/warp.sh) menu; exit; }
-	misaka(){ wget -N https://raw.githubusercontents.com/Misaka-blog/Misaka-WARP-Script/master/misakawarp.sh && bash misakawarp.sh; exit; }
+	misaka(){ wget -N --no-check-certificate https://raw.githubusercontents.com/Misaka-blog/Misaka-WARP-Script/master/misakawarp.sh && bash misakawarp.sh; exit; }
 
 	CASE_IPV4(){ NIC='-ks4m8'; RESTART="wgcf_restart"; }
 	CASE_IPV6(){ NIC='-ks6m8'; RESTART="wgcf_restart"; }
