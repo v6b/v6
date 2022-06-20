@@ -380,6 +380,12 @@ Consider all sites to be NSFW unless otherwise known.
     <td></td>
 </tr>
 <tr>
+    <td>Itaku</td>
+    <td>https://itaku.ee/</td>
+    <td>Galleries, individual Images</td>
+    <td></td>
+</tr>
+<tr>
     <td>Keenspot</td>
     <td>http://www.keenspot.com/</td>
     <td>Comics</td>
@@ -623,6 +629,12 @@ Consider all sites to be NSFW unless otherwise known.
     <td>Plurk</td>
     <td>https://www.plurk.com/</td>
     <td>Posts, Timelines</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Poipiku</td>
+    <td>https://poipiku.com/</td>
+    <td>Posts, User Profiles</td>
     <td></td>
 </tr>
 <tr>
