@@ -2375,6 +2375,22 @@ Description
     will be taken from the original Tweets, not the Retweets.
 
 
+extractor.twitter.timeline.strategy
+-----------------------------------
+Type
+    ``string``
+Default
+    ``"auto"``
+Description
+    Controls the strategy / tweet source used for user URLs
+    (``https://twitter.com/USER``).
+
+    * ``"tweets"``: `/tweets <https://twitter.com/USER/tweets>`__ timeline + search
+    * ``"media"``: `/media <https://twitter.com/USER/media>`__ timeline + search
+    * ``"with_replies"``: `/with_replies <https://twitter.com/USER/with_replies>`__ timeline + search
+    * ``"auto"``: ``"tweets"`` or ``"media"``, depending on `retweets <extractor.twitter.retweets_>`__ and `text-tweets <extractor.twitter.text-tweets_>`__ settings
+
+
 extractor.twitter.text-tweets
 -----------------------------
 Type
@@ -2397,6 +2413,16 @@ Default
     ``false``
 Description
     Extract `TwitPic <https://twitpic.com/>`__ embeds.
+
+
+extractor.twitter.unique
+------------------------
+Type
+    ``bool``
+Default
+    ``true``
+Description
+    Ignore previously seen Tweets.
 
 
 extractor.twitter.users

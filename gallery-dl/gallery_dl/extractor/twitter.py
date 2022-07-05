@@ -64,12 +64,22 @@ class TwitterExtractor(Extractor):
             tweets = self._expand_tweets(self.tweets())
             self.tweets = lambda : tweets
 
+        if self.config("unique", True):
+            seen_tweets = set()
+        else:
+            seen_tweets = None
+
         for tweet in self.tweets():
 
             if "legacy" in tweet:
                 data = tweet["legacy"]
             else:
                 data = tweet
+
+            if seen_tweets is not None:
+                if data["id_str"] in seen_tweets:
+                    continue
+                seen_tweets.add(data["id_str"])
 
             if not self.retweets and "retweeted_status_id_str" in data:
                 self.log.debug("Skipping %s (retweet)", data["id_str"])
@@ -440,12 +450,9 @@ class TwitterTimelineExtractor(TwitterExtractor):
             self.user = "id:" + user_id
 
     def tweets(self):
-        tweets = (self.api.user_tweets if self.retweets else
-                  self.api.user_media)
-
         # yield initial batch of (media) tweets
         tweet = None
-        for tweet in tweets(self.user):
+        for tweet in self._select_tweet_source()(self.user):
             yield tweet
 
         if tweet is None:
@@ -475,6 +482,19 @@ class TwitterTimelineExtractor(TwitterExtractor):
 
         # yield search results starting from last tweet id
         yield from self.api.search_adaptive(query)
+
+    def _select_tweet_source(self):
+        strategy = self.config("strategy")
+        if strategy is None or strategy == "auto":
+            if self.retweets or self.textonly:
+                return self.api.user_tweets
+            else:
+                return self.api.user_media
+        if strategy == "tweets":
+            return self.api.user_tweets
+        if strategy == "with_replies":
+            return self.api.user_tweets_and_replies
+        return self.api.user_media
 
 
 class TwitterTweetsExtractor(TwitterExtractor):
