@@ -28,9 +28,9 @@ wgcf_install(){
 	latest=$(wget -qO- -4 "https://api.github.com/repos/ViRb3/wgcf/releases/latest" | grep "tag_name" | head -n 1 | cut -d : -f2 | sed 's/[ \"v,]//g')
 	latest=${latest:-'2.2.15'}
 
-	# 安装 wgcf，尽量下载官方的最新版本，如官方 wgcf 下载不成功，将使用 githubusercontents 的 CDN，以更好的支持双栈。并添加执行权限
+	# 安装 wgcf，尽量下载官方的最新版本，如官方 wgcf 下载不成功，将使用 githubusercontent 的 CDN，以更好的支持双栈。并添加执行权限
 	wget -4 -O /usr/local/bin/wgcf https://github.com/ViRb3/wgcf/releases/download/v"$latest"/wgcf_"$latest"_linux_"$ARCHITECTURE" ||
-	wget -4 -O /usr/local/bin/wgcf https://raw.githubusercontents.com/fscarmen/warp/main/wgcf/wgcf_"$latest"_linux_"$ARCHITECTURE"
+	wget -4 -O /usr/local/bin/wgcf https://raw.githubusercontent.com/fscarmen/warp/main/wgcf/wgcf_"$latest"_linux_"$ARCHITECTURE"
 	chmod +x /usr/local/bin/wgcf
 
 	# 注册 WARP 账户 ( wgcf-account.toml 使用默认值加加快速度)。如有 WARP+ 账户，修改 license 并升级
