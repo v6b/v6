@@ -8,6 +8,7 @@
 
 """Common classes and constants used by extractor modules."""
 
+import os
 import re
 import ssl
 import time
@@ -224,7 +225,9 @@ class Extractor():
         headers.clear()
         ssl_options = ssl_ciphers = 0
 
-        browser = self.config("browser") or self.browser
+        browser = self.config("browser")
+        if browser is None:
+            browser = self.browser
         if browser and isinstance(browser, str):
             browser, _, platform = browser.lower().partition(":")
 
@@ -477,11 +480,16 @@ class Extractor():
 
         fname = "{:>02}_{}".format(
             Extractor._dump_index,
-            Extractor._dump_sanitize('_', response.url)
-        )[:250]
+            Extractor._dump_sanitize('_', response.url),
+        )
+
+        if util.WINDOWS:
+            path = os.path.abspath(fname)[:255]
+        else:
+            path = fname[:251]
 
         try:
-            with open(fname + ".dump", 'wb') as fp:
+            with open(path + ".txt", 'wb') as fp:
                 util.dump_response(
                     response, fp, headers=(self._write_pages == "all"))
         except Exception as e:
