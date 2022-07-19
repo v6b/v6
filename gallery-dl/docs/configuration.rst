@@ -1313,6 +1313,18 @@ Description
     * ``"new"``: Expect the *new* site layout
 
 
+extractor.gelbooru.api-key & .user-id
+-------------------------------------
+Type
+    ``string``
+Default
+    ``null``
+Description
+    Values from the API Access Credentials section found at the bottom of your
+    `Account Options <https://gelbooru.com/index.php?page=account&s=options>`__
+    page.
+
+
 extractor.generic.enabled
 -------------------------
 Type
@@ -3300,13 +3312,15 @@ Type
 Default
     ``"json"``
 Description
-    Select how to write metadata.
+    Selects how to process metadata.
 
-    * ``"json"``: all metadata using `json.dump()
+    * ``"json"``: write metadata using `json.dump()
       <https://docs.python.org/3/library/json.html#json.dump>`_
-    * ``"tags"``: ``tags`` separated by newlines
-    * ``"custom"``: result of applying `metadata.content-format`_
+    * ``"tags"``: write ``tags`` separated by newlines
+    * ``"custom"``: write the result of applying `metadata.content-format`_
       to a file's metadata dictionary
+    * ``"modify"``: add or modify metadata entries
+    * ``"delete"``: remove metadata entries
 
 
 metadata.filename
@@ -3393,6 +3407,32 @@ Description
     ``post``
         When starting to download all files of a `post`,
         e.g. a Tweet on Twitter or a post on Patreon.
+
+
+metadata.fields
+---------------
+Type
+    * ``list`` of ``strings``
+    * ``object`` (`field name` -> `format string`_)
+Example
+    * .. code:: json
+
+        ["blocked", "watching", "status[creator][name]"]
+
+    * .. code:: json
+
+        {
+            "blocked"         : "***",
+            "watching"        : "\fE 'yes' if watching else 'no'",
+            "status[username]": "{status[creator][name]!l}"
+        }
+
+Description
+    * ``"mode": "delete"``:
+        A list of metadata field names to remove.
+    * ``"mode": "modify"``:
+        An object with metadata field names mapping to a `format string`_
+        whose result is assigned to said field name.
 
 
 metadata.content-format
@@ -3734,6 +3774,17 @@ Description
     The list of signal names to ignore, i.e. set
     `SIG_IGN <https://docs.python.org/3/library/signal.html#signal.SIG_IGN>`_
     as signal handler for.
+
+
+warnings
+--------
+Type
+    ``string``
+Default
+    ``"default"``
+Description
+    The `Warnings Filter action <https://docs.python.org/3/library/warnings.html#the-warnings-filter>`__
+    used for (urllib3) warnings.
 
 
 pyopenssl

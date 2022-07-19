@@ -339,6 +339,52 @@ class MetadataTest(BasePostprocessorTest):
 {"category": "test", "extension": "ext", "filename": "file"}
 """)
 
+    def test_metadata_modify(self):
+        kwdict = {"foo": 0, "bar": {"bax": 1, "bay": 2, "baz": 3}}
+        self._create({
+            "mode": "modify",
+            "fields": {
+                "foo"     : "{filename}-{foo!s}",
+                "foo2"    : "\fE bar['bax'] + 122",
+                "bar[baz]": "{_now}",
+                "bar[ba2]": "test",
+            },
+        }, kwdict)
+        pdict = self.pathfmt.kwdict
+
+        self.assertIsNot(kwdict, pdict)
+        self.assertEqual(pdict["foo"], kwdict["foo"])
+        self.assertEqual(pdict["bar"], kwdict["bar"])
+
+        self._trigger()
+
+        self.assertEqual(pdict["foo"]       , "file-0")
+        self.assertEqual(pdict["foo2"]      , 123)
+        self.assertEqual(pdict["bar"]["ba2"], "test")
+        self.assertIsInstance(pdict["bar"]["baz"], datetime)
+
+    def test_metadata_delete(self):
+        kwdict = {"foo": 0, "bar": {"bax": 1, "bay": 2, "baz": 3}}
+        self._create({"mode": "delete", "fields": ["foo", "bar[baz]"]}, kwdict)
+        pdict = self.pathfmt.kwdict
+
+        self.assertIsNot(kwdict, pdict)
+        self.assertEqual(pdict["foo"], kwdict["foo"])
+        self.assertEqual(pdict["bar"], kwdict["bar"])
+
+        del kwdict["foo"]
+        del kwdict["bar"]["baz"]
+
+        self._trigger()
+        self.assertNotIn("foo", pdict)
+        self.assertNotIn("baz", pdict["bar"])
+        self.assertEqual(kwdict["bar"], pdict["bar"])
+
+        self._trigger()
+        self.assertNotIn("foo", pdict)
+        self.assertNotIn("baz", pdict["bar"])
+        self.assertEqual(kwdict["bar"], pdict["bar"])
+
     @staticmethod
     def _output(mock):
         return "".join(
