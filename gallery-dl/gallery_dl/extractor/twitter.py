@@ -11,6 +11,7 @@
 from .common import Extractor, Message
 from .. import text, util, exception
 from ..cache import cache
+import itertools
 import json
 
 BASE_PATTERN = (
@@ -335,6 +336,10 @@ class TwitterExtractor(Extractor):
 
         return udata
 
+    def _assign_user(self, user):
+        self._user_obj = user
+        self._user = self._transform_user(user)
+
     def _users_result(self, users):
         userfmt = self.config("users")
         if not userfmt or userfmt == "timeline":
@@ -629,10 +634,9 @@ class TwitterSearchExtractor(TwitterExtractor):
 
         if user is not None:
             try:
-                self._user_obj = user = self.api.user_by_screen_name(user)
+                self._assign_user(self.api.user_by_screen_name(user))
             except KeyError:
                 raise exception.NotFoundError("user")
-            self._user = self._transform_user(user)
 
         return self.api.search_adaptive(query)
 
@@ -702,7 +706,7 @@ class TwitterTweetExtractor(TwitterExtractor):
         }),
         ("https://twitter.com/i/web/status/1424898916156284928", {
             "options": (("replies", "self"),),
-            "count": 0,
+            "count": 1,
         }),
         # "quoted" option (#854)
         ("https://twitter.com/StobiesGalaxy/status/1270755918330896395", {
@@ -786,19 +790,37 @@ class TwitterTweetExtractor(TwitterExtractor):
 
     def tweets(self):
         if self.config("conversations", False):
-            return self.api.tweet_detail(self.tweet_id)
+            return self._tweets_conversation(self.tweet_id)
+        else:
+            return self._tweets_single(self.tweet_id)
 
+    def _tweets_single(self, tweet_id):
         tweets = []
-        tweet_id = self.tweet_id
+
         for tweet in self.api.tweet_detail(tweet_id):
             if tweet["rest_id"] == tweet_id or \
                     tweet.get("_retweet_id_str") == tweet_id:
+                self._assign_user(tweet["core"]["user_results"]["result"])
                 tweets.append(tweet)
 
                 tweet_id = tweet["legacy"].get("quoted_status_id_str")
                 if not tweet_id:
                     break
+
         return tweets
+
+    def _tweets_conversation(self, tweet_id):
+        tweets = self.api.tweet_detail(tweet_id)
+        buffer = []
+
+        for tweet in tweets:
+            buffer.append(tweet)
+            if tweet["rest_id"] == tweet_id or \
+                    tweet.get("_retweet_id_str") == tweet_id:
+                self._assign_user(tweet["core"]["user_results"]["result"])
+                break
+
+        return itertools.chain(buffer, tweets)
 
 
 class TwitterImageExtractor(Extractor):
@@ -1074,10 +1096,7 @@ class TwitterAPI():
                 else:
                     raise exception.NotFoundError("user")
 
-        extr = self.extractor
-        extr._user_obj = user
-        extr._user = extr._transform_user(user)
-
+        self.extractor._assign_user(user)
         return user_id
 
     @cache(maxage=3600)
@@ -1443,6 +1462,6 @@ class TwitterAPI():
         return {
             "rest_id": tweet["id_str"],
             "legacy" : tweet,
-            "user"   : tweet["user"],
+            "core"   : {"user_results": {"result": tweet["user"]}},
             "_retweet_id_str": retweet_id,
         }
