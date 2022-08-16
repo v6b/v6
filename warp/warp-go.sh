@@ -278,18 +278,19 @@ check_system_info(){
   # 必须加载 TUN 模块，先尝试在线打开 TUN。尝试成功放到启动项，失败作提示并退出脚本
   TUN=$(cat /dev/net/tun 2>&1 | tr '[:upper:]' '[:lower:]')
   if [[ ! $TUN =~ 'in bad state' ]] && [[ ! $TUN =~ '处于错误状态' ]] && [[ ! $TUN =~ 'Die Dateizugriffsnummer ist in schlechter Verfassung' ]]; then
+    mkdir -p /opt/warp-go/ >/dev/null 2>&1
     cat >/opt/warp-go/tun.sh << EOF
 #!/usr/bin/env bash
 mkdir -p /dev/net
 mknod /dev/net/tun c 10 200
 chmod 0666 /dev/net/tun
 EOF
-    bash /usr/bin/tun.sh
+    bash /opt/warp-go/tun.sh
     TUN=$(cat /dev/net/tun 2>&1 | tr '[:upper:]' '[:lower:]')
     if [[ ! $TUN =~ 'in bad state' ]] && [[ ! $TUN =~ '处于错误状态' ]] && [[ ! $TUN =~ 'Die Dateizugriffsnummer ist in schlechter Verfassung' ]]; then
       rm -f /usr/bin//tun.sh && red " 没有加载 TUN 模块，请在管理后台开启或联系供应商了解如何开启，问题反馈:[https://github.com/fscarmen/warp/issues] " && exit 1
     else 
-      echo "@reboot root bash /usr/bin/tun.sh" >> /etc/crontab
+      echo "@reboot root bash //opt/warp-go/tun.sh" >> /etc/crontab
     fi
   fi
 
@@ -352,10 +353,9 @@ update_license(){
 input_token(){
   [[ -z $TOKEN ]] && reading " 请输入 Teams Token (可通过 https://warp-team-api.herokuapp.com/ 轻松获取，如果留空，则使用脚本提供的): " TOKEN
   i=5
-  until [[ -z $TOKEN || ${#TOKEN} = 1836 ]]; do
+  until [[ -z $TOKEN || ${#TOKEN} -gt 1200 ]]; do
     (( i-- )) || true
-    [[ $i = 0 ]] && red " 输入错误达5次，脚本退出 " && exit 1 || reading " $(eval echo "Token 应为1836位字符,请重新输入 Teams token \(剩余\${i}次\):") " TOKEN
-    [[ ${#TOKEN} -gt 1836 ]] && TOKEN=$(echo $TOKEN | sed "s#[:=]# #g" | grep -ioP "token[ ]+\K\S+")
+    [[ $i = 0 ]] && red " 输入错误达5次，脚本退出 " && exit 1 || reading " $(eval echo "Token 错误,请重新输入 Teams token \(剩余\${i}次\):") " TOKEN
   done
   }
 
@@ -587,7 +587,7 @@ check_quota(){
 if [[ $2 != '[lisence]' ]]; then
   if [[ $2 = [46Dd] ]]; then SWITCHCHOOSE=$(tr '[:lower:]' '[:upper:]' <<< "$2")
   elif [[ $2 =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; then LICENSETYPE=1 && LICENSE=$2
-  elif [[ $2 =~ [A-Z0-9a-z]{1000,} ]]; then LICENSETYPE=2 && TOKEN=$2
+  elif [[ $2 =~ [A-Z0-9a-z]{1200,} ]]; then LICENSETYPE=2 && TOKEN=$2
   elif [[ $2 =~ ^[A-Za-z]{2}$ ]]; then EXPECT=$2
   fi
 fi
@@ -648,7 +648,7 @@ case "$OPTION" in
         1 ) CONF=${CONF1[m]};; 
         2 ) CONF=${CONF2[m]};;
         3 ) CONF=${CONF3[m]};;
-        * ) exit 0
+        * ) exit 0;;
       esac
       install
     fi;;
