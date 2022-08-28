@@ -7,6 +7,9 @@ pub mod time;
 pub mod trick;
 pub mod endpoint;
 
+pub use realm_io;
+pub use realm_syscall;
+
 #[cfg(feature = "hook")]
 pub use realm_hook as hook;
 
