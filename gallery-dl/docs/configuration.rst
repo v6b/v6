@@ -1551,7 +1551,7 @@ Description
 
 
 extractor.kemonoparty.favorites
----------------------------
+-------------------------------
 Type
     ``string``
 Default
@@ -2343,6 +2343,16 @@ Description
     * ``"ytdl"``: Additionally download video content from unsupported cards using `youtube-dl`_
 
 
+extractor.twitter.cards-blacklist
+---------------------------------
+Type
+    ``list`` of ``strings``
+Example
+    ``["player", "summary"]``
+Description
+    List of card types to ignore
+
+
 extractor.twitter.conversations
 -------------------------------
 Type
@@ -2350,8 +2360,11 @@ Type
 Default
     ``false``
 Description
-    Fetch media from all Tweets and replies in a `conversation
-    <https://help.twitter.com/en/using-twitter/twitter-conversations>`__.
+    For input URLs pointing to a single Tweet,
+    e.g. `https://twitter.com/i/web/status/<TweetID>`,
+    fetch media from all Tweets and replies in this `conversation
+    <https://help.twitter.com/en/using-twitter/twitter-conversations>`__
+    or thread.
 
 
 extractor.twitter.csrf
@@ -2365,6 +2378,24 @@ Description
 
     * ``"auto"``: Always auto-generate a token.
     * ``"cookies"``: Use token given by the ``ct0`` cookie if present.
+
+
+extractor.twitter.expand
+------------------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    For each Tweet, return *all* Tweets from that initial Tweet's
+    conversation or thread, i.e. *expand* all Twitter threads.
+
+    Going through a timeline with this option enabled is essentially the same
+    as running ``gallery-dl https://twitter.com/i/web/status/<TweetID>``
+    with enabled `conversations <extractor.twitter.conversations_>`__ option
+    for each Tweet in said timeline.
+
+    Note: This requires at least 1 additional API call per initial Tweet.
 
 
 extractor.twitter.size
