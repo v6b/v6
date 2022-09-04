@@ -29,9 +29,9 @@ A simple, high performance relay server written in rust.
 
 Realm can be run in a container with OCI (like Docker, Podman, Kubernetes, etc), see guides [here](readme.container.md).
 
-## Build Guides
+## Build
 
-Install **nightly** rust-toolchain with [rustup](https://rustup.rs/):
+Install rust toolchain with [rustup](https://rustup.rs/):
 
 ```shell
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -40,20 +40,22 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 Clone this repository:
 
 ```shell
-git clone https://github.com/zhboner/realm
+git clone https://github.com/zhboner/realm && cd realm
 ```
 
-Enter the directory and build:
+Build:
 
 ```shell
-cd realm && cargo build --release
+cargo build --release
 ```
 
-Pass `target_cpu=native` to allow more possible optimizations:
+You can also pass `target_cpu=native` to allow more possible optimizations:
 
 ```shell
 RUSTFLAGS='-C target_cpu=native' cargo build --release
 ```
+
+The `realm` binary will be available in `target/release`.
 
 ### Build Options
 
