@@ -41,7 +41,7 @@ class TwitterExtractor(Extractor):
         self.quoted = self.config("quoted", False)
         self.videos = self.config("videos", True)
         self.cards = self.config("cards", False)
-        self.cards_blacklist = self.config("cards-blacklist") or ()
+        self.cards_blacklist = self.config("cards-blacklist")
         self._user = self._user_obj = None
         self._user_cache = {}
         self._init_sizes()
@@ -155,8 +155,11 @@ class TwitterExtractor(Extractor):
                     })
             elif "media_url_https" in media:
                 url = media["media_url_https"]
-                base, _, fmt = url.rpartition(".")
-                base += "?format=" + fmt + "&name="
+                if url[-4] == ".":
+                    base, _, fmt = url.rpartition(".")
+                    base += "?format=" + fmt + "&name="
+                else:
+                    base = url.rpartition("=")[0] + "="
                 files.append(text.nameext_from_url(url, {
                     "url"        : base + self._size_image,
                     "width"      : width,
@@ -177,16 +180,21 @@ class TwitterExtractor(Extractor):
             card = card["legacy"]
 
         name = card["name"].rpartition(":")[2]
-        if name in self.cards_blacklist:
-            return
+        bvals = card["binding_values"]
+        if isinstance(bvals, list):
+            bvals = {bval["key"]: bval["value"]
+                     for bval in card["binding_values"]}
+
+        cbl = self.cards_blacklist
+        if cbl:
+            if name in cbl:
+                return
+            if "vanity_url" in bvals:
+                domain = bvals["vanity_url"]["string_value"]
+                if domain in cbl or name + ":" + domain in cbl:
+                    return
 
         if name in ("summary", "summary_large_image"):
-            bvals = card["binding_values"]
-            if isinstance(bvals, list):
-                bvals = {
-                    bval["key"]: bval["value"]
-                    for bval in card["binding_values"]
-                }
             for prefix in ("photo_image_full_size_",
                            "summary_photo_image_",
                            "thumbnail_image_"):
@@ -203,15 +211,7 @@ class TwitterExtractor(Extractor):
                             files.append(value)
                             return
         elif name == "unified_card":
-            bvals = card["binding_values"]
-            if isinstance(bvals, list):
-                for bval in card["binding_values"]:
-                    if bval["key"] == "unified_card":
-                        bval = bval["value"]["string_value"]
-                        break
-            else:
-                bval = bvals["unified_card"]["string_value"]
-            data = json.loads(bval)
+            data = json.loads(bvals["unified_card"]["string_value"])
             self._extract_media(tweet, data["media_entities"].values(), files)
             return
 
@@ -758,6 +758,12 @@ class TwitterTweetExtractor(TwitterExtractor):
         ("https://twitter.com/i/web/status/1466183847628865544", {
             "count": 0,
         }),
+        # 'cards-blacklist' option
+        ("https://twitter.com/i/web/status/1571141912295243776", {
+            "options": (("cards", "ytdl"),
+                        ("cards-blacklist", ("twitch.tv",))),
+            "count": 0,
+        }),
         # original retweets (#1026)
         ("https://twitter.com/jessica_3978/status/1296304589591810048", {
             "options": (("retweets", "original"),),
@@ -789,11 +795,19 @@ class TwitterTweetExtractor(TwitterExtractor):
         # age-restricted (#2354)
         ("https://twitter.com/mightbecursed/status/1492954264909479936", {
             "options": (("syndication", True),),
+            "keywords": {"date": "dt:2022-02-13 20:10:09"},
             "count": 1,
         }),
         # media alt texts / descriptions (#2617)
         ("https://twitter.com/my0nruri/status/1528379296041299968", {
             "keyword": {"description": "oc"}
+        }),
+        # '?format=...&name=...'-style URLs
+        ("https://twitter.com/poco_dandy/status/1150646424461176832", {
+            "options": (("cards", True),),
+            "pattern": r"https://pbs.twimg.com/card_img/157\d+/\w+"
+                       r"\?format=(jpg|png)&name=orig$",
+            "range": "1-2",
         }),
     )
 
@@ -1454,6 +1468,10 @@ class TwitterAPI():
             tweet["id_str"] = retweet_id = tweet_id
         else:
             retweet_id = None
+
+        tweet["created_at"] = text.parse_datetime(
+            tweet["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
+            "%a %b %d %H:%M:%S +0000 %Y")
 
         if "video" in tweet:
             video = tweet["video"]
