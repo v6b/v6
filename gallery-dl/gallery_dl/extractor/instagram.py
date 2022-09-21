@@ -110,9 +110,13 @@ class InstagramExtractor(Extractor):
     def _request_api(self, endpoint, **kwargs):
         url = "https://i.instagram.com/api" + endpoint
         kwargs["headers"] = {
-            "X-CSRFToken"   : self.csrf_token,
-            "X-IG-App-ID"   : "936619743392459",
-            "X-IG-WWW-Claim": self.www_claim,
+            "X-CSRFToken"     : self.csrf_token,
+            "X-Instagram-AJAX": "1006242110",
+            "X-IG-App-ID"     : "936619743392459",
+            "X-ASBD-ID"       : "198387",
+            "X-IG-WWW-Claim"  : self.www_claim,
+            "Origin"          : self.root,
+            "Referer"         : self.root + "/",
         }
         kwargs["cookies"] = {
             "csrftoken": self.csrf_token,
@@ -127,9 +131,12 @@ class InstagramExtractor(Extractor):
         }
         headers = {
             "X-CSRFToken"     : self.csrf_token,
+            "X-Instagram-AJAX": "1006242110",
             "X-IG-App-ID"     : "936619743392459",
+            "X-ASBD-ID"       : "198387",
             "X-IG-WWW-Claim"  : self.www_claim,
             "X-Requested-With": "XMLHttpRequest",
+            "Referer"         : self.root + "/",
         }
         cookies = {
             "csrftoken": self.csrf_token,
@@ -140,20 +147,9 @@ class InstagramExtractor(Extractor):
 
     @memcache(keyarg=1)
     def _user_by_screen_name(self, screen_name):
-        url = "https://www.instagram.com/{}/?__a=1&__d=dis".format(
-            screen_name)
-        headers = {
-            "Referer": "https://www.instagram.com/{}/".format(screen_name),
-            "X-CSRFToken"     : self.csrf_token,
-            "X-IG-App-ID"     : "936619743392459",
-            "X-IG-WWW-Claim"  : self.www_claim,
-            "X-Requested-With": "XMLHttpRequest",
-        }
-        cookies = {
-            "csrftoken": self.csrf_token,
-        }
-        return self.request(
-            url, headers=headers, cookies=cookies).json()["graphql"]["user"]
+        endpoint = "/v1/users/web_profile_info/"
+        params = {"username": screen_name}
+        return self._request_api(endpoint, params=params)["data"]["user"]
 
     def _uid_by_screen_name(self, screen_name):
         if screen_name.startswith("id:"):
@@ -518,13 +514,16 @@ class InstagramChannelExtractor(InstagramExtractor):
 class InstagramSavedExtractor(InstagramExtractor):
     """Extractor for ProfilePage saved media"""
     subcategory = "saved"
-    pattern = USER_PATTERN + r"/saved/?$"
-    test = ("https://www.instagram.com/instagram/saved/",)
+    pattern = USER_PATTERN + r"/saved(?:/all-posts)?/?$"
+    test = (
+        ("https://www.instagram.com/instagram/saved/"),
+        ("https://www.instagram.com/instagram/saved/all-posts/"),
+    )
 
     def posts(self):
-        query_hash = "2ce1d673055b99250e93b6f88f878fde"
-        variables = {"id": self._uid_by_screen_name(self.item), "first": 50}
-        return self._pagination_graphql(query_hash, variables)
+        endpoint = "/v1/feed/saved/posts/"
+        for item in self._pagination_api(endpoint):
+            yield item["media"]
 
 
 class InstagramCollectionExtractor(InstagramExtractor):
