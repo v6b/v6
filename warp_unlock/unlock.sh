@@ -376,7 +376,7 @@ if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a
         ((k++)) || true
         [[ \$k = 11 ]] && rm -f /opt/warp-go/warp.conf.tmp* && echo -e " Failed to register warp account. Script aborted. " && exit 1
         /opt/warp-go/warp-go --register --config=/opt/warp-go/warp.conf.tmp2 --license=\$(cat /opt/warp-go/License 2>/dev/null) --device-name=\$(cat /opt/warp-go/Device_Name 2>/dev/null) >/dev/null 2>&1
-        [[ \$? != 0 ]] && sleep 10
+        [[ \$? != 0 ]] && sleep 30
       done
       sed -i '1,6!d' /opt/warp-go/warp.conf.tmp2
       tail -n +7 /opt/warp-go/warp.conf.tmp1 >> /opt/warp-go/warp.conf.tmp2
@@ -384,7 +384,7 @@ if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a
       /opt/warp-go/warp-go --config=/opt/warp-go/warp.conf.tmp1 --remove >/dev/null 2>&1
       rm -f /opt/warp-go/warp.conf.tmp*
       systemctl restart warp-go
-      sleep 10
+      sleep 30
     else
       systemctl restart wg-quick@wgcf
       sleep 2
