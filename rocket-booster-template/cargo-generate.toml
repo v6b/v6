@@ -1,5 +1,5 @@
 [template]
 exclude = [
-  'deploy.yml',
-  'node.yml'
+  'node.yml',
+  'publish.yml'
 ]
