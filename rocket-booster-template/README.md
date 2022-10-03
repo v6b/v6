@@ -9,14 +9,15 @@
 [Install `wrangler` CLI](https://github.com/cloudflare/wrangler#installation) and authorize `wrangler` with Cloudflare account.
 
 ```console
-npm install -g @cloudflare/wrangler
+npm install -g wrangler
+
 wrangler login
 ```
 
 Generate a new project from [reflare-template](https://github.com/xiaoyang-sde/reflare-template) and install the dependencies.
 
 ```console
-wrangler generate reflare-app https://github.com/xiaoyang-sde/reflare-template
+npm init cloudflare reflare-app https://github.com/xiaoyang-sde/reflare-template
 cd reflare-app
 npm install
 ```

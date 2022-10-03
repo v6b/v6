@@ -1,12 +1,6 @@
-name = 'template'
-type = 'javascript'
-account_id = ''
-usage_model = ''
+name = "template"
+account_id = ""
+usage_model = "bundled"
 workers_dev = true
-compatibility_date = "2022-02-16"
-
-[build]
-command = "npm install && npm run build"
-
-[build.upload]
-format = "service-worker"
+compatibility_date = "2022-10-03"
+main = "src/index.ts"
