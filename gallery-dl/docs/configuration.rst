@@ -263,6 +263,17 @@ Description
     * ``"windows"``: ``". "``
 
 
+extractor.*.path-extended
+-------------------------
+Type
+    ``bool``
+Default
+    ``true``
+Description
+    On Windows, use `extended-length paths <https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation>`__
+    prefixed with ``\\?\`` to work around the 260 characters path length limit.
+
+
 extractor.*.extension-map
 -------------------------
 Type
@@ -1046,6 +1057,17 @@ Description
 
     Note: Gathering this information requires a lot of API calls.
     Use with caution.
+
+
+extractor.deviantart.group
+--------------------------
+Type
+    ``bool``
+Default
+    ``true``
+Description
+    Check whether the profile name in a given URL
+    belongs to a group or a regular user.
 
 
 extractor.deviantart.include
