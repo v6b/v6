@@ -143,7 +143,7 @@ statistics_of_run-times() {
 
 # 选择语言，先判断 warp 脚本里的语言选择，没有的话再让用户选择，默认英语
 select_laguage() {
-  if [[ -z "$L" ]]; then
+  if [ -z "$L" ]; then
     if [ -e /opt/warp-go/language ]; then
 	  L=$(cat /opt/warp-go/language 2>&1)
 	elif [ -e /etc/wireguard/language ]; then
@@ -153,7 +153,7 @@ select_laguage() {
         E ) L=E;;
         C ) L=C;;
         * ) L=E && hint "\n $(text 0) \n" && reading " $(text 3) " LANGUAGE
-		[[ $LANGUAGE = 2 ]] && L=C;;
+		[ "$LANGUAGE" = 2 ] && L=C;;
       esac
 	fi
   fi
@@ -170,7 +170,7 @@ check_system_info() {
       )
 
   for a in "${CMD[@]}"; do
-    SYS="$a" && [[ -n $SYS ]] && break
+    SYS="$a" && [ -n "$SYS" ] && break
   done
 
   REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|amazon linux|alma|rocky")
@@ -179,9 +179,9 @@ check_system_info() {
   PACKAGE_INSTALL=("apt -y install" "apt -y install" "yum -y install")
 
   for ((b=0; b<${#REGEX[@]}; b++)); do
-    [[ $(echo "$SYS" | tr '[:upper:]' '[:lower:]') =~ ${REGEX[b]} ]] && SYSTEM="${RELEASE[b]}" && break
+    [[ $(tr '[:upper:]' '[:lower:]' <<< "$SYS") =~ ${REGEX[b]} ]] && SYSTEM="${RELEASE[b]}" && break
   done
-  [[ -z $SYSTEM ]] && error " $(text 5) "
+  [ -z "$SYSTEM" ] && error " $(text 5) "
 }
 
 # 检查是否有安装任一版本的 python 依赖，如全部没有，则安装 python3
@@ -206,7 +206,7 @@ check_unlock_running() {
 
 # 判断是否已经安装 WARP 网络接口或者 Socks5 代理,如已经安装组件尝试启动。再分情况作相应处理
 check_warp() {
-  if [[ -z "${STATUS[@]}" ]]; then
+  if [ -z "${STATUS[*]}" ]; then
     if [[ $(ip a) =~ ": WARP:"|": wgcf:" ]]; then
       WARP="--interface wgcf"
       if [[ $(ip a) =~ ": WARP:" ]]; then
@@ -215,14 +215,14 @@ check_warp() {
         if grep -qE 'Type[ ]+=[ ]+team' /opt/warp-go/warp.conf; then
           hint "\n $(text 32) \n" && reading " $(text 3) " CHANGE_ACCOUNT
           case "$CHANGE_ACCOUNT" in
-            2 ) [[ -z $LICENSE ]] && reading " $(text 42) " LICENSE
+            2 ) [ -z "$LICENSE" ] && reading " $(text 42) " LICENSE
                 local i=5
-                until [[ $LICENSE =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; do
+                until [[ "$LICENSE" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; do
                   (( i-- )) || true
-                  [[ $i = 0 ]] && error " $(text 33) " && exit 1 || reading " $(text 34) " LICENSE
+                  [ "$i" = 0 ] && error " $(text 33) " && exit 1 || reading " $(text 34) " LICENSE
                 done
-                [[ -n $LICENSE && -z $NAME ]] && reading " $(text 35) " NAME
-                [[ -n $NAME ]] && NAME="${NAME//[[:space:]]/_}" || NAME=${NAME:-'warp-go'}
+                [[ -n "$LICENSE" && -z "$NAME" ]] && reading " $(text 35) " NAME
+                [ -n "$NAME" ] && NAME="${NAME//[[:space:]]/_}" || NAME=${NAME:-'warp-go'}
                 echo "$LICENSE" > /opt/warp-go/License
                 echo "$NAME" > /opt/warp-go/Device_Name;;
             3 ) exit 0;;
@@ -231,8 +231,8 @@ check_warp() {
       fi
       TRACE4=$(curl -ks4m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | grep warp | sed "s/warp=//g")
       TRACE6=$(curl -ks6m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | grep warp | sed "s/warp=//g")
-      [[ $TRACE4 =~ on|plus ]] && STATUS[0]=1 || STATUS[0]=0
-      [[ $TRACE6 =~ on|plus ]] && STATUS[1]=1 || STATUS[1]=0
+      [[ "$TRACE4" =~ on|plus ]] && STATUS[0]=1 || STATUS[0]=0
+      [[ "$TRACE6" =~ on|plus ]] && STATUS[1]=1 || STATUS[1]=0
     else
       STATUS=(0 0)
     fi
@@ -255,7 +255,7 @@ check_warp() {
   wgcf_warp() { wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/menu.sh && bash menu.sh; exit; }
   warp-go() { wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/warp-go.sh && bash warp-go.sh; exit; }
   p3terx() { bash <(curl -fsSL git.io/warp.sh) menu; exit; }
-  misaka() { wget -N --no-check-certificate https://raw.githubusercontents.com/Misaka-blog/Misaka-WARP-Script/master/misakawarp.sh && bash misakawarp.sh; exit; }
+  misaka() { wget -N --no-check-certificate https://gitlab.com/misakablog/warp-script/-/raw/main/warp.sh && bash warp.sh; exit; }
 
   CASE_IPV4() { NIC="-ks4m8 $WARP"; RESTART="warp_restart"; }
   CASE_IPV6() { NIC="-ks6m8 $WARP"; RESTART="warp_restart"; }
@@ -272,7 +272,7 @@ check_warp() {
   DO0=("exit")
 
   for ((f=0; f<${#INSTALL_CHECK[@]}; f++)); do
-    [[ ${STATUS[@]} = "${INSTALL_CHECK[f]}" ]] && break
+    [[ "${STATUS[*]}" = "${INSTALL_CHECK[f]}" ]] && break
   done
 	
   # 默认只安装一种 WARP 形式时，不用选择。如两种或以上则让用户选择哪个方式的解锁
@@ -286,35 +286,35 @@ check_warp() {
 
 # 期望解锁流媒体, 变量 SUPPORT_NUM 限制选项枚举的次数，不填默认全选, 解锁状态保存在 /usr/bin/status.log
 input_streammedia_unlock() {
-  if [[ -z "${STREAM_UNLOCK[@]}" ]]; then
+  if [ -z "${STREAM_UNLOCK[@]}" ]; then
     hint "\n $(text 15) \n" && reading " $(text 3) " CHOOSE4
     for ((d=0; d<"$SUPPORT_NUM"; d++)); do
-      ( [[ -z "$CHOOSE4" ]] || echo "$CHOOSE4" | grep -q "$((d+1))" ) && STREAM_UNLOCK[d]='1' || STREAM_UNLOCK[d]='0'
-      [[ $d = 0 ]] && echo 'null' > /usr/bin/status.log || echo 'null' >> /usr/bin/status.log
+      ( [ -z "$CHOOSE4" ] || echo "$CHOOSE4" | grep -q "$((d+1))" ) && STREAM_UNLOCK[d]='1' || STREAM_UNLOCK[d]='0'
+      [ "$d" = 0 ] && echo 'null' > /usr/bin/status.log || echo 'null' >> /usr/bin/status.log
     done
   fi
   UNLOCK_SELECT=$(for ((e=0; e<"$SUPPORT_NUM"; e++)); do
-	                [[ "${STREAM_UNLOCK[e]}" = 1 ]] && echo -e "[[ ! \${R[*]} =~ 'No' ]] && check$e;" || echo -e "#[[ ! \${R[*]} =~ 'No' ]] && check$e;"
+	                [ "${STREAM_UNLOCK[e]}" = 1 ] && echo -e "[[ ! \${R[*]} =~ 'No' ]] && check$e;" || echo -e "#[[ ! \${R[*]} =~ 'No' ]] && check$e;"
                   done)
 }
 
 # 期望解锁地区
 input_region() {
-  if [[ -z "$EXPECT" ]]; then
+  if [ -z "$EXPECT" ]; then
   REGION=$(curl -ksm8 https://ip.gs/country-iso 2>/dev/null)
   reading "\n $(text_eval 13) " EXPECT
-  until [[ -z $EXPECT || $EXPECT = [Yy] || $EXPECT =~ ^[A-Za-z]{2}$ ]]; do
+  until [[ -z "$EXPECT" || "$EXPECT" = [Yy] || "$EXPECT" =~ ^[A-Za-z]{2}$ ]]; do
     reading "\n $(text_eval 13) " EXPECT
   done
-  [[ -z $EXPECT || $EXPECT = [Yy] ]] && EXPECT="$REGION"
+  [[ -z "$EXPECT" || "$EXPECT" = [Yy] ]] && EXPECT="$REGION"
   fi
 }
 
 # Telegram Bot 日志推送
 input_tg() {
-  [[ -z $CUSTOM ]] && reading "\n $(text_eval 29) " TOKEN
-  [[ -n $TOKEN && -z $USERID ]] && reading "\n $(text_eval 30) " USERID
-  [[ -n $USERID && -z $CUSTOM ]] && reading "\n $(text_eval 31) " CUSTOM
+  [ -z "$CUSTOM" ] && reading "\n $(text_eval 29) " TOKEN
+  [[ -n "$TOKEN" && -z "$USERID" ]] && reading "\n $(text_eval 30) " USERID
+  [[ -n "$USERID" && -z "$CUSTOM" ]] && reading "\n $(text_eval 31) " CUSTOM
 }
 
 # 根据用户选择在线生成解锁程序，放在 /etc/wireguard/unlock.sh
@@ -326,7 +326,7 @@ input_region
 input_tg
 
 # 检测 Disney+ 需要用到 python 依赖
-[[ ${STREAM_UNLOCK[1]} = 1 && -z $PYTHON ]] && check_python
+[[ "${STREAM_UNLOCK[1]}" = 1 && -z "$PYTHON" ]] && check_python
 
 # 根据解锁模式写入定时任务或systemd
 sh -c "$TASK"
@@ -494,8 +494,8 @@ uninstall() {
 }
 
 # 传参 1/2
-[[ "$@" =~ -[Ee] ]] && L=E
-[[ "$@" =~ -[Cc] ]] && L=C
+[[ "$*" =~ -[Ee] ]] && L=E
+[[ "$*" =~ -[Cc] ]] && L=C
 
 # 主程序运行 1/2
 statistics_of_run-times
@@ -617,7 +617,7 @@ menu() {
   red "======================================================================================================================\n"
   info " $(text 17): $VERSION  $(text 18): $(text 1)\n "
   red "======================================================================================================================\n"
-  [[ -z "$CHOOSE1" ]] && hint " $MENU_SHOW " && reading " $(text 3) " CHOOSE1
+  [ -z "$CHOOSE1" ] && hint " $MENU_SHOW " && reading " $(text 3) " CHOOSE1
   case "$CHOOSE1" in
     [0-6] ) action$CHOOSE1;;
     * ) red " $(text 14) "; sleep 1; menu;;
