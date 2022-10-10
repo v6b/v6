@@ -80,8 +80,8 @@ E[34]="License should be 26 characters, please re-enter WARP+ License. Otherwise
 C[34]="License 应为26位字符,请重新输入 WARP+ License \(剩余\${i}次\): "
 E[35]="Please customize the WARP+ device name (Default is [warp-go] if left blank):"
 C[35]="请自定义 WARP+ 设备名 (如果不输入，默认为 [warp-go]):"
-E[36]=""
-C[36]=""
+E[36]="Press [y] to confirm whether to uninstall dependencies: nodejs and npm. Other keys do not uninstall by default:"
+C[36]="是否卸载依赖 nodejs 和 npm，确认请按 [y] ，其他键默认不卸载:"
 E[37]=""
 C[37]=""
 E[38]=""
@@ -177,6 +177,7 @@ check_system_info() {
   RELEASE=("Debian" "Ubuntu" "CentOS")
   PACKAGE_UPDATE=("apt -y update" "apt -y update" "yum -y update")
   PACKAGE_INSTALL=("apt -y install" "apt -y install" "yum -y install")
+  PACKAGE_UNINSTALL=("apt -y autoremove" "apt -y autoremove" "yum -y autoremove")
 
   for ((b=0; b<${#REGEX[@]}; b++)); do
     [[ $(tr '[:upper:]' '[:lower:]' <<< "$SYS") =~ ${REGEX[b]} ]] && SYSTEM="${RELEASE[b]}" && break
@@ -277,9 +278,10 @@ check_warp() {
 	
   # 默认只安装一种 WARP 形式时，不用选择。如两种或以上则让用户选择哪个方式的解锁
   CHOOSE2=1
-  if echo "$f" | grep -qvwE "12|13|14|15"; then
-    hint "${SHOW[f]}" && reading " $(text 3) " CHOOSE2 
-    echo "$CHOOSE2" | grep -qvwE "${NUM[f]}" && error " $(text 54) "
+  if grep -qvwE "12|13|14|15" <<< "$f"; then
+    hint "${SHOW[f]}" && reading " $(text 3) " CHOOSE2
+    [[ "$f" = 0 && "$CHOOSE2" != [0-4] ]] && CHOOSE2=1
+    grep -qvwE "${NUM[f]}" <<< "$CHOOSE2" && error " $(text 54) "
   fi
   $(eval echo \${DO$CHOOSE2[f]})
 }
@@ -479,6 +481,12 @@ result_output() {
 
 # 卸载
 uninstall() {
+  node -v >/dev/null 2>&1 && npm -v >/dev/null 2>&1 && PM2=1 && reading " $(text 36) " REMOVE_DEPS
+  if [ "$PM2" = 1 ]; then
+    pm2 delete warp_unlock >/dev/null 2>&1
+    pm2 unstartup systemd >/dev/null 2>&1
+    [[ "$REMOVE_DEPS" = [Yy] ]] && ${PACKAGE_UNINSTALL[b]} nodejs npm
+  fi
   screen -QX u quit >/dev/null 2>&1 && screen -wipe >/dev/null 2>&1
   type -p wg-quick >/dev/null 2>&1 && systemctl restart wgcf >/dev/null 2>&1
   type -p warp-cli >/dev/null 2>&1 && ( warp-cli --accept-tos delete >/dev/null 2>&1; sleep 1; warp-cli --accept-tos register >/dev/null 2>&1 )
@@ -486,8 +494,7 @@ uninstall() {
   kill -9 $(pgrep -f warp_unlock.sh) >/dev/null 2>&1
   rm -f /usr/bin/warp_unlock.sh /root/result.log /usr/bin/status.log /etc/systemd/system/warp_unlock.service
   systemctl disable --now warp_unlock >/dev/null 2>&1
-  pm2 delete warp_unlock >/dev/null 2>&1
-  pm2 unstartup systemd >/dev/null 2>&1
+
 
   # 输出执行结果，如是切换模式则不显示
   [ "$UN" = 1 ] && info "\n $(text 11) \n"
@@ -597,8 +604,9 @@ action5() {
   [ -n "$UNLOCK_MODE_NOW" ] && uninstall
   TASK=""
   RESULT_OUTPUT="\n $(text 44) \n"
-  node -v >/dev/null 2>&1 || ${PACKAGE_INSTALL[b]} nodejs
-  npm -v >/dev/null 2>&1 || check_dependencies npm
+  node -v >/dev/null 2>&1 || DEPS+='nodejs'
+  npm -v >/dev/null 2>&1 || DEPS+=' npm'
+  [ -n "$DEPS" ] && ( ${PACKAGE_UPDATE[b]}; ${PACKAGE_INSTALL[b]} $DEPS 2>/dev/null )
   npm install -g pm2
   export_unlock_file
   pm2 start /usr/bin/warp_unlock.sh
