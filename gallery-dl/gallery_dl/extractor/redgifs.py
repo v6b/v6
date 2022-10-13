@@ -10,6 +10,7 @@
 
 from .common import Extractor, Message
 from .. import text
+from ..cache import cache
 
 
 class RedgifsExtractor(Extractor):
@@ -88,7 +89,7 @@ class RedgifsSearchExtractor(RedgifsExtractor):
     pattern = r"(?:https?://)?(?:www\.)?redgifs\.com/browse/?\?([^#]+)"
     test = (
         ("https://www.redgifs.com/browse?tags=JAV", {
-            "pattern": r"https://\w+\.redgifs\.com/[A-Za-z]+\.mp4",
+            "pattern": r"https://\w+\.redgifs\.com/[A-Za-z-]+\.mp4",
             "range": "1-10",
             "count": 10,
         }),
@@ -131,6 +132,12 @@ class RedgifsAPI():
 
     def __init__(self, extractor):
         self.extractor = extractor
+        self.headers = {
+            "Referer"      : extractor.root + "/",
+            "authorization": "Bearer " + self._fetch_bearer_token(extractor),
+            "content-type" : "application/json",
+            "Origin"       : extractor.root,
+        }
 
     def gif(self, gif_id):
         endpoint = "/v2/gifs/" + gif_id.lower()
@@ -149,7 +156,8 @@ class RedgifsAPI():
 
     def _call(self, endpoint, params=None):
         url = self.API_ROOT + endpoint
-        return self.extractor.request(url, params=params).json()
+        return self.extractor.request(
+            url, params=params, headers=self.headers).json()
 
     def _pagination(self, endpoint, params):
         params["page"] = 1
@@ -161,3 +169,17 @@ class RedgifsAPI():
             if params["page"] >= data["pages"]:
                 return
             params["page"] += 1
+
+    @cache(maxage=3600)
+    def _fetch_bearer_token(self, extr):
+        extr.log.debug("Retrieving Bearer token")
+
+        page = extr.request(extr.root + "/").text
+        index = text.extract(page, "/assets/js/index", ".js")[0]
+
+        url = extr.root + "/assets/js/index" + index + ".js"
+        page = extr.request(url, encoding="utf-8").text
+        token = "ey" + text.extract(page, '="ey', '"')[0]
+
+        extr.log.debug("Token: '%s'", token)
+        return token
