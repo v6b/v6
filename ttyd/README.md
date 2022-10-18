@@ -11,7 +11,8 @@ ttyd is a simple command-line tool for sharing terminal over the web.
 - Built on top of [Libwebsockets](https://libwebsockets.org) with [libuv](https://libuv.org) for speed
 - Fully-featured terminal based on [Xterm.js](https://xtermjs.org) with [CJK](https://en.wikipedia.org/wiki/CJK_characters) and IME support
 - Graphical [ZMODEM](https://en.wikipedia.org/wiki/ZMODEM) integration with [lrzsz](https://ohse.de/uwe/software/lrzsz.html) support
-- SSL support based on [OpenSSL](https://www.openssl.org)
+- [Sixel](https://en.wikipedia.org/wiki/Sixel) image output support ([Usage](https://saitoha.github.io/libsixel/))
+- SSL support based on [OpenSSL](https://www.openssl.org) / [Mbed TLS](https://github.com/Mbed-TLS/mbedtls)
 - Run any custom command with options
 - Basic authentication support and many other custom options
 - Cross platform: macOS, Linux, FreeBSD/OpenBSD, [OpenWrt](https://openwrt.org), Windows
@@ -31,6 +32,12 @@ brew install ttyd
 ## Install on Linux
 
 - Binary version (recommended): download from the [releases](https://github.com/tsl0922/ttyd/releases) page.
+
+- Install the snap:
+    
+    `sudo snap install ttyd --classic`
+    
+    
 - Build from source (debian/ubuntu):
 
     ```bash
@@ -66,7 +73,7 @@ USAGE:
     ttyd [options] <command> [<arguments...>]
 
 VERSION:
-    1.7.1
+    1.7.2
 
 OPTIONS:
     -p, --port              Port to listen (default: 7681, use `0` for random port)
