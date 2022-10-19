@@ -400,7 +400,7 @@ Consider all sites to be NSFW unless otherwise known.
 <tr>
     <td>Instagram</td>
     <td>https://www.instagram.com/</td>
-    <td>Channels, Collections, Highlights, Posts, Reels, Saved Posts, Stories, Tag Searches, Tagged Posts, User Profiles</td>
+    <td>Avatars, Collections, Highlights, Posts, Reels, Saved Posts, Stories, Tag Searches, Tagged Posts, User Profiles</td>
     <td>Supported</td>
 </tr>
 <tr>
@@ -558,12 +558,6 @@ Consider all sites to be NSFW unless otherwise known.
     <td>https://www.newgrounds.com/</td>
     <td>Art, Audio, Favorites, Games, individual Images, Media Files, Movies, Search Results, User Profiles</td>
     <td>Supported</td>
-</tr>
-<tr>
-    <td>Ngomik</td>
-    <td>http://ngomik.in/</td>
-    <td>Chapters</td>
-    <td></td>
 </tr>
 <tr>
     <td>nhentai</td>
@@ -770,6 +764,12 @@ Consider all sites to be NSFW unless otherwise known.
     <td></td>
 </tr>
 <tr>
+    <td>Smugloli</td>
+    <td>https://smuglo.li/</td>
+    <td>Boards, Threads</td>
+    <td></td>
+</tr>
+<tr>
     <td>SmugMug</td>
     <td>https://www.smugmug.com/</td>
     <td>Albums, individual Images, Images from Users and Folders</td>
@@ -970,6 +970,12 @@ Consider all sites to be NSFW unless otherwise known.
     <td>https://booru.allthefallen.moe/</td>
     <td>Pools, Popular Images, Posts, Tag Searches</td>
     <td>Supported</td>
+</tr>
+<tr>
+    <td>Aibooru</td>
+    <td>https://aibooru.online/</td>
+    <td>Favorites, Pools, Popular Images, Posts, Tag Searches</td>
+    <td></td>
 </tr>
 
 <tr>

@@ -1517,8 +1517,12 @@ Description
     when processing a user profile.
 
     Possible values are
-    ``"posts"``, ``"reels"``, ``"channel"``, ``"tagged"``,
-    ``"stories"``, ``"highlights"``.
+    ``"posts"``,
+    ``"reels"``,
+    ``"tagged"``,
+    ``"stories"``,
+    ``"highlights"``,
+    ``"avatar"``.
 
     You can use ``"all"`` instead of listing all values separately.
 
@@ -1972,8 +1976,8 @@ Description
     It is possible to use ``"all"`` instead of listing all values separately.
 
 
-extractor.pixiv.artworks.metadata
----------------------------------
+extractor.pixiv.metadata
+------------------------
 Type
     ``bool``
 Default
