@@ -1993,12 +1993,11 @@ change_to_teams() {
 
 # 免费 WARP 账户升级 WARP+ 账户
 update() {
-  unset CHOOSE_TYPE
   wgcf_wireproxy() {
     [ ! -e /etc/wireguard/wgcf-account.toml ] && error " $(text 59) "
     [ ! -e /etc/wireguard/wgcf.conf ] && error " $(text 60) "
 
-    CHANGE_DO0() { [ "$OPTION" != a ] && menu || exit; }
+    CHANGE_DO0() { [ "$OPTION" != a ] && unset CHOOSE_TYPE && menu || exit; }
     CHANGE_DO1() { change_to_free; }
     CHANGE_DO2() { change_to_plus; }
     CHANGE_DO3() { change_to_teams; }
