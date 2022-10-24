@@ -202,8 +202,36 @@ initVar() {
 
 	# 检查天数
 	sslRenewalDays=90
+
+	# dns ssl状态
+	dnsSSLStatus=
+
+	# dns tls domain
+	dnsTLSDomain=
+
+	# 该域名是否通过dns安装通配符证书
+	installDNSACMEStatus=
+
+	# 自定义端口
+	customPort=
 }
 
+# 读取tls证书详情
+readAcmeTLS() {
+	if [[ -d "$HOME/.acme.sh/*.${dnsTLSDomain}_ecc" && -f "$HOME/.acme.sh/*.${dnsTLSDomain}_ecc/*.${dnsTLSDomain}.key" && -f "$HOME/.acme.sh/*.${dnsTLSDomain}_ecc/*.${dnsTLSDomain}.cer" ]]; then
+		installDNSACMEStatus=true
+	fi
+}
+# 读取默认自定义端口
+readCustomPort() {
+	if [[ -n "${configPath}" ]]; then
+		local port=
+		port=$(jq -r .inbounds[0].port "${configPath}02_VLESS_TCP_inbounds.json")
+		if [[ "${port}" != "443" ]]; then
+			customPort=${port}
+		fi
+	fi
+}
 # 检测安装方式
 readInstallType() {
 	coreInstallType=
@@ -215,7 +243,6 @@ readInstallType() {
 		if [[ -d "/etc/v2ray-agent/v2ray" && -f "/etc/v2ray-agent/v2ray/v2ray" && -f "/etc/v2ray-agent/v2ray/v2ctl" ]]; then
 			if [[ -d "/etc/v2ray-agent/v2ray/conf" && -f "/etc/v2ray-agent/v2ray/conf/02_VLESS_TCP_inbounds.json" ]]; then
 				configPath=/etc/v2ray-agent/v2ray/conf/
-
 				if grep </etc/v2ray-agent/v2ray/conf/02_VLESS_TCP_inbounds.json -q '"security": "tls"'; then
 					# 不带XTLS的v2ray-core
 					coreInstallType=2
@@ -515,6 +542,7 @@ initVar "$1"
 checkSystem
 checkCPUVendor
 readInstallType
+readCustomPort
 readInstallProtocolType
 readConfigHostPathUUID
 readInstallAlpn
@@ -629,6 +657,15 @@ installTools() {
 	if ! find /usr/bin /usr/sbin | grep -q -w lsof; then
 		echoContent green " ---> 安装lsof"
 		${installType} lsof >/dev/null 2>&1
+	fi
+
+	if ! find /usr/bin /usr/sbin | grep -q -w dig; then
+		echoContent green " ---> 安装dig"
+		if [[ "${installType}" == "apt" ]]; then
+			${installType} dnsutils >/dev/null 2>&1
+		elif [[ "${installType}" == "yum" ]]; then
+			${installType} bind-utils >/dev/null 2>&1
+		fi
 	fi
 
 	# 检测nginx版本，并提供是否卸载的选项
@@ -796,12 +833,19 @@ initTLSNginxConfig() {
 		echoContent red "  域名不可为空--->"
 		initTLSNginxConfig 3
 	else
+		dnsTLSDomain=$(echo "${domain}" | awk -F "[.]" '{print $(NF-1)"."$NF}')
+		customPortFunction
+		local port=80
+		if [[ -n "${customPort}" ]]; then
+			port=${customPort}
+		fi
+
 		# 修改配置
 		touch ${nginxConfigPath}alone.conf
 		cat <<EOF >${nginxConfigPath}alone.conf
 server {
-    listen 80;
-    listen [::]:80;
+    listen ${port};
+    listen [::]:${port};
     server_name ${domain};
     root /usr/share/nginx/html;
     location ~ /.well-known {
@@ -820,10 +864,9 @@ server {
 	}
 }
 EOF
-		# 启动nginx
-		handleNginx start
-		checkIP
 	fi
+
+	readAcmeTLS
 }
 
 # 修改nginx重定向配置
@@ -839,24 +882,13 @@ updateRedirectNginxConf() {
         }
 EOF
 
-	else
+	elif [[ -n "${customPort}" ]]; then
 		cat <<EOF >${nginxConfigPath}alone.conf
-		server {
-				listen 80;
-				server_name _;
-				return 403;
-        }
-		server {
-				listen 127.0.0.1:31300;
-				server_name _;
-				return 403;
-		}
-        server {
-        	listen 80;
-        	listen [::]:80;
-        	server_name ${domain};
-        	return 302 https://${domain}\${request_uri};
-        }
+                server {
+                		listen 127.0.0.1:31300;
+                		server_name _;
+                		return 403;
+                }
 EOF
 	fi
 
@@ -987,7 +1019,13 @@ EOF
 # 检查ip
 checkIP() {
 	echoContent skyBlue "\n ---> 检查域名ip中"
-	localIP=$(curl -s -m 2 "${domain}/ip")
+	local checkDomain=${domain}
+	if [[ -n "${customPort}" ]]; then
+		checkDomain="http://${domain}:${customPort}"
+	fi
+	local localIP=
+	localIP=$(curl -s -m 2 "${checkDomain}/ip")
+
 	handleNginx stop
 	if [[ -z ${localIP} ]] || ! echo "${localIP}" | sed '1{s/[^(]*(//;s/).*//;q}' | grep -q '\.' && ! echo "${localIP}" | sed '1{s/[^(]*(//;s/).*//;q}' | grep -q ':'; then
 		echoContent red "\n ---> 未检测到当前域名的ip"
@@ -996,15 +1034,27 @@ checkIP() {
 		echoContent yellow " --->  2.检查域名dns解析是否正确"
 		echoContent yellow " --->  3.如解析正确，请等待dns生效，预计三分钟内生效"
 		echoContent yellow " --->  4.如报Nginx启动问题，请手动启动nginx查看错误，如自己无法处理请提issues"
+		echo
 		echoContent skyBlue " ---> 如以上设置都正确，请重新安装纯净系统后再次尝试"
 		if [[ -n ${localIP} ]]; then
 			echoContent yellow " ---> 检测返回值异常，建议手动卸载nginx后重新执行脚本"
 		fi
-		echoContent red " ---> 请检查防火墙规则是否开放443、80\n"
-		read -r -p "是否通过脚本修改防火墙规则开放443、80端口？[y/n]:" allPortFirewallStatus
+		local portFirewallPortStatus="443、80"
+
+		if [[ -n "${customPort}" ]]; then
+			portFirewallPortStatus="${customPort}"
+		fi
+		echoContent red " ---> 请检查防火墙规则是否开放${portFirewallPortStatus}\n"
+		read -r -p "是否通过脚本修改防火墙规则开放${portFirewallPortStatus}端口？[y/n]:" allPortFirewallStatus
+
 		if [[ ${allPortFirewallStatus} == "y" ]]; then
-			allowPort 80
-			allowPort 443
+			if [[ -n "${customPort}" ]]; then
+				allowPort "${customPort}"
+			else
+				allowPort 80
+				allowPort 443
+			fi
+
 			handleNginx start
 			checkIP
 		else
@@ -1052,7 +1102,7 @@ switchSSLType() {
 		echoContent red "\n=============================================================="
 		echoContent yellow "1.letsencrypt[默认]"
 		echoContent yellow "2.zerossl"
-		echoContent yellow "3.buypass"
+		echoContent yellow "3.buypass[不支持DNS申请]"
 		echoContent red "=============================================================="
 		read -r -p "请选择[回车]使用默认:" selectSSLType
 		case ${selectSSLType} in
@@ -1071,12 +1121,106 @@ switchSSLType() {
 		esac
 		touch /etc/v2ray-agent/tls
 		echo "${sslType}" >/etc/v2ray-agent/tls/ssl_type
+
 	fi
 }
+acmeInstallSSL() {
+	local installSSLIPv6=
+	if echo "${localIP}" | grep -q ":"; then
+		installSSLIPv6="--listen-v6"
+	fi
+	echo
+	if [[ -n "${customPort}" ]]; then
+		if [[ "${selectSSLType}" == "3" ]]; then
+			echoContent red " ---> buypass不支持免费通配符证书"
+			echo
+			exit
+		fi
+		dnsSSLStatus=true
+	else
+		read -r -p "是否使用DNS申请证书[y/n]:" installSSLDNStatus
+		if [[ ${installSSLDNStatus} == 'y' ]]; then
+			dnsSSLStatus=true
+		fi
+	fi
+
+	if [[ "${dnsSSLStatus}" == "true" ]]; then
+
+		sudo "$HOME/.acme.sh/acme.sh" --issue -d "*.${dnsTLSDomain}" --dns --yes-I-know-dns-manual-mode-enough-go-ahead-please --standalone -k ec-256 --server "${sslType}" ${installSSLIPv6} 2>&1 | tee -a /etc/v2ray-agent/tls/acme.log >/dev/null
+
+		local txtValue=
+		txtValue=$(tail -n 10 /etc/v2ray-agent/tls/acme.log | grep "TXT value" | awk -F "'" '{print $2}')
+		if [[ -n "${txtValue}" ]]; then
+			echoContent green " ---> 请手动添加DNS TXT记录"
+			echoContent green " --->  name：_acme-challenge"
+			echoContent green " --->  value：${txtValue}"
+			echoContent yellow " ---> 添加完成后等请等待1-2分钟"
+			echo
+			read -r -p "是否添加完成[y/n]:" addDNSTXTRecordStatus
+			if [[ "${addDNSTXTRecordStatus}" == "y" ]]; then
+				local txtAnswer=
+				txtAnswer=$(dig +nocmd "_acme-challenge.${dnsTLSDomain}" txt +noall +answer | awk -F "[\"]" '{print $2}')
+				if [[ "${txtAnswer}" == "${txtValue}" ]]; then
+					echoContent green " ---> TXT记录验证通过"
+					echoContent green " ---> 生成证书中"
+					sudo "$HOME/.acme.sh/acme.sh" --renew -d "*.${dnsTLSDomain}" --yes-I-know-dns-manual-mode-enough-go-ahead-please --ecc --server "${sslType}" ${installSSLIPv6} 2>&1 | tee -a /etc/v2ray-agent/tls/acme.log >/dev/null
+				else
+					echoContent red " ---> 验证失败，请等待1-2分钟后重新尝试"
+					exit 0
+				fi
+			else
+				echoContent red " ---> 放弃"
+				exit 0
+			fi
+		fi
+	else
+		echoContent green " ---> 生成证书中"
+		sudo "$HOME/.acme.sh/acme.sh" --issue -d "${tlsDomain}" --standalone -k ec-256 --server "${sslType}" ${installSSLIPv6}  2>&1 | tee -a /etc/v2ray-agent/tls/acme.log >/dev/null
+	fi
+	readAcmeTLS
+}
+# 自定义端口
+customPortFunction() {
+	local historyCustomPortStatus=
+	if [[ -n "${customPort}" ]]; then
+		echo
+		read -r -p "读取到上次安装时的端口，是否使用上次安装时的端口 ？[y/n]:" historyCustomPortStatus
+		if [[ "${historyCustomPortStatus}" == "y" ]]; then
+			echoContent yellow "\n ---> 端口: ${customPort}"
+		fi
+	fi
+
+	if [[ "${historyCustomPortStatus}" == "n" || -z "${customPort}" ]]; then
+		echo
+		echoContent yellow "请输入自定义端口[例: 2083]，自定义端口后只允许使用DNS申请证书，[回车]使用443"
+		read -r -p "端口:" customPort
+		if [[ -n "${customPort}" ]]; then
+			if ((customPort >= 1 && customPort <= 65535)); then
+				checkCustomPort
+			else
+				echoContent green " ---> 端口输入错误"
+				exit
+			fi
+		else
+			echoContent yellow "\n ---> 端口: 443"
+		fi
+	fi
+
+}
+# 检测端口是否占用
+checkCustomPort() {
+	if lsof -i "tcp:${customPort}" | grep -q LISTEN; then
+		echoContent red "\n ---> ${customPort}端口被占用，请手动关闭后安装\n"
+		lsof -i tcp:80 | grep LISTEN
+		exit 0
+	fi
+}
+
 # 安装TLS
 installTLS() {
 	echoContent skyBlue "\n进度  $1/${totalProgress} : 申请TLS证书\n"
 	local tlsDomain=${domain}
+
 	# 安装tls
 	if [[ -f "/etc/v2ray-agent/tls/${tlsDomain}.crt" && -f "/etc/v2ray-agent/tls/${tlsDomain}.key" && -n $(cat "/etc/v2ray-agent/tls/${tlsDomain}.crt") ]] || [[ -d "$HOME/.acme.sh/${tlsDomain}_ecc" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.key" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.cer" ]]; then
 		echoContent green " ---> 检测到证书"
@@ -1097,18 +1241,24 @@ installTLS() {
 	elif [[ -d "$HOME/.acme.sh" ]] && [[ ! -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.cer" || ! -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.key" ]]; then
 		echoContent green " ---> 安装TLS证书"
 
-		switchSSLType
-		customSSLEmail
-
-		if echo "${localIP}" | grep -q ":"; then
-			sudo "$HOME/.acme.sh/acme.sh" --issue -d "${tlsDomain}" --standalone -k ec-256 --server "${sslType}" --listen-v6 2>&1 | tee -a /etc/v2ray-agent/tls/acme.log >/dev/null
+		if [[ "${installDNSACMEStatus}" != "true" ]]; then
+			switchSSLType
+			customSSLEmail
+			acmeInstallSSL
 		else
-			sudo "$HOME/.acme.sh/acme.sh" --issue -d "${tlsDomain}" --standalone -k ec-256 --server "${sslType}" 2>&1 | tee -a /etc/v2ray-agent/tls/acme.log >/dev/null
+			echoContent green " ---> 检测到已安装通配符证书，自动生成中"
 		fi
 
-		if [[ -d "$HOME/.acme.sh/${tlsDomain}_ecc" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.key" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.cer" ]]; then
+		if [[ "${installDNSACMEStatus}" == "true" ]]; then
+			echo
+			if [[ -d "$HOME/.acme.sh/*.${dnsTLSDomain}_ecc" && -f "$HOME/.acme.sh/*.${dnsTLSDomain}_ecc/*.${dnsTLSDomain}.key" && -f "$HOME/.acme.sh/*.${dnsTLSDomain}_ecc/*.${dnsTLSDomain}.cer" ]]; then
+				sudo "$HOME/.acme.sh/acme.sh" --installcert -d "*.${dnsTLSDomain}" --fullchainpath "/etc/v2ray-agent/tls/${tlsDomain}.crt" --keypath "/etc/v2ray-agent/tls/${tlsDomain}.key" --ecc >/dev/null
+			fi
+
+		elif [[ -d "$HOME/.acme.sh/${tlsDomain}_ecc" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.key" && -f "$HOME/.acme.sh/${tlsDomain}_ecc/${tlsDomain}.cer" ]]; then
 			sudo "$HOME/.acme.sh/acme.sh" --installcert -d "${tlsDomain}" --fullchainpath "/etc/v2ray-agent/tls/${tlsDomain}.crt" --keypath "/etc/v2ray-agent/tls/${tlsDomain}.key" --ecc >/dev/null
 		fi
+
 		if [[ ! -f "/etc/v2ray-agent/tls/${tlsDomain}.crt" || ! -f "/etc/v2ray-agent/tls/${tlsDomain}.key" ]] || [[ -z $(cat "/etc/v2ray-agent/tls/${tlsDomain}.key") || -z $(cat "/etc/v2ray-agent/tls/${tlsDomain}.crt") ]]; then
 			tail -n 10 /etc/v2ray-agent/tls/acme.log
 			if [[ ${installTLSCount} == "1" ]]; then
@@ -1128,10 +1278,12 @@ installTLS() {
 				echo
 				customSSLEmail "validate email"
 				installTLS "$1"
+			else
+				installTLS "$1"
 			fi
 
-			installTLS "$1"
 		fi
+
 		echoContent green " ---> TLS生成成功"
 	else
 		echoContent yellow " ---> 未安装acme.sh"
@@ -1290,8 +1442,14 @@ renewalTLS() {
 		fi
 	fi
 
-	if [[ -d "$HOME/.acme.sh/${domain}_ecc" ]] && [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" ]] && [[ -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]]; then
-		modifyTime=$(stat "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" | sed -n '7,6p' | awk '{print $2" "$3" "$4" "$5}')
+	if [[ -d "$HOME/.acme.sh/${domain}_ecc" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.key" && -f "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" ]] || [[ "${installDNSACMEStatus}" == "true" ]]; then
+		modifyTime=
+
+		if [[ "${installDNSACMEStatus}" == "true" ]]; then
+			modifyTime=$(stat "$HOME/.acme.sh/*.${dnsTLSDomain}_ecc/*.${dnsTLSDomain}.cer" | sed -n '7,6p' | awk '{print $2" "$3" "$4" "$5}')
+		else
+			modifyTime=$(stat "$HOME/.acme.sh/${domain}_ecc/${domain}.cer" | sed -n '7,6p' | awk '{print $2" "$3" "$4" "$5}')
+		fi
 
 		modifyTime=$(date +%s -d "${modifyTime}")
 		currentTime=$(date +%s)
@@ -2115,11 +2273,16 @@ EOF
 
 	# VLESS_TCP
 	getClients "${configPath}../tmp/02_VLESS_TCP_inbounds.json" "${addClientsStatus}"
+	local defaultPort=443
+	if [[ -n "${customPort}" ]]; then
+		defaultPort=${customPort}
+	fi
+
 	cat <<EOF >/etc/v2ray-agent/v2ray/conf/02_VLESS_TCP_inbounds.json
 {
 "inbounds":[
 {
-  "port": 443,
+  "port": ${defaultPort},
   "protocol": "vless",
   "tag":"VLESSTCP",
   "settings": {
@@ -2184,7 +2347,7 @@ initXrayFrontingConfig() {
 	echoContent red "\n=============================================================="
 	echoContent yellow "# 注意事项\n"
 	echoContent yellow "会将前置替换为${xtlsType}"
-	echoContent yellow "如果前置是Trojan，查看帐号时则会出现两个Trojan协议的节点，有一个不可用xtls"
+	echoContent yellow "如果前置是Trojan，查看账号时则会出现两个Trojan协议的节点，有一个不可用xtls"
 	echoContent yellow "再次执行可切换至上一次的前置\n"
 
 	echoContent yellow "1.切换至${xtlsType}"
@@ -2521,11 +2684,16 @@ EOF
 
 	# VLESS_TCP
 	getClients "${configPath}../tmp/02_VLESS_TCP_inbounds.json" "${addClientsStatus}"
+	local defaultPort=443
+	if [[ -n "${customPort}" ]]; then
+		defaultPort=${customPort}
+	fi
+
 	cat <<EOF >/etc/v2ray-agent/xray/conf/02_VLESS_TCP_inbounds.json
 {
 "inbounds":[
 {
-  "port": 443,
+  "port": ${defaultPort},
   "protocol": "vless",
   "tag":"VLESSTCP",
   "settings": {
@@ -2809,14 +2977,14 @@ showAccounts() {
 		if echo "${currentInstallProtocolType}" | grep -q trojan; then
 			echoContent skyBlue "===================== Trojan TCP TLS/XTLS-direct/XTLS-splice ======================\n"
 			jq .inbounds[0].settings.clients ${configPath}02_trojan_TCP_inbounds.json | jq -c '.[]' | while read -r user; do
-				echoContent skyBlue "\n ---> 帐号:$(echo "${user}" | jq -r .email)"
+				echoContent skyBlue "\n ---> 账号:$(echo "${user}" | jq -r .email)"
 				defaultBase64Code trojanTCPXTLS "$(echo "${user}" | jq -r .email)" "$(echo "${user}" | jq -r .password)"
 			done
 
 		else
 			echoContent skyBlue "===================== VLESS TCP TLS/XTLS-direct/XTLS-splice ======================\n"
 			jq .inbounds[0].settings.clients ${configPath}02_VLESS_TCP_inbounds.json | jq -c '.[]' | while read -r user; do
-				echoContent skyBlue "\n ---> 帐号:$(echo "${user}" | jq -r .email)"
+				echoContent skyBlue "\n ---> 账号:$(echo "${user}" | jq -r .email)"
 				echo
 				defaultBase64Code vlesstcp "$(echo "${user}" | jq -r .email)" "$(echo "${user}" | jq -r .id)"
 			done
@@ -2827,7 +2995,7 @@ showAccounts() {
 			echoContent skyBlue "\n================================ VLESS WS TLS CDN ================================\n"
 
 			jq .inbounds[0].settings.clients ${configPath}03_VLESS_WS_inbounds.json | jq -c '.[]' | while read -r user; do
-				echoContent skyBlue "\n ---> 帐号:$(echo "${user}" | jq -r .email)"
+				echoContent skyBlue "\n ---> 账号:$(echo "${user}" | jq -r .email)"
 				echo
 				local path="${currentPath}ws"
 				#	if [[ ${coreInstallType} == "1" ]]; then
@@ -2846,7 +3014,7 @@ showAccounts() {
 				path="${currentPath}vws"
 			fi
 			jq .inbounds[0].settings.clients ${configPath}05_VMess_WS_inbounds.json | jq -c '.[]' | while read -r user; do
-				echoContent skyBlue "\n ---> 帐号:$(echo "${user}" | jq -r .email)"
+				echoContent skyBlue "\n ---> 账号:$(echo "${user}" | jq -r .email)"
 				echo
 				defaultBase64Code vmessws "$(echo "${user}" | jq -r .email)" "$(echo "${user}" | jq -r .id)"
 			done
@@ -2859,7 +3027,7 @@ showAccounts() {
 			#			local serviceName
 			#			serviceName=$(jq -r .inbounds[0].streamSettings.grpcSettings.serviceName ${configPath}06_VLESS_gRPC_inbounds.json)
 			jq .inbounds[0].settings.clients ${configPath}06_VLESS_gRPC_inbounds.json | jq -c '.[]' | while read -r user; do
-				echoContent skyBlue "\n ---> 帐号:$(echo "${user}" | jq -r .email)"
+				echoContent skyBlue "\n ---> 账号:$(echo "${user}" | jq -r .email)"
 				echo
 				defaultBase64Code vlessgrpc "$(echo "${user}" | jq -r .email)" "$(echo "${user}" | jq -r .id)"
 			done
@@ -2870,7 +3038,7 @@ showAccounts() {
 	if echo ${currentInstallProtocolType} | grep -q 4; then
 		echoContent skyBlue "\n==================================  Trojan TLS  ==================================\n"
 		jq .inbounds[0].settings.clients ${configPath}04_trojan_TCP_inbounds.json | jq -c '.[]' | while read -r user; do
-			echoContent skyBlue "\n ---> 帐号:$(echo "${user}" | jq -r .email)"
+			echoContent skyBlue "\n ---> 账号:$(echo "${user}" | jq -r .email)"
 
 			defaultBase64Code trojan "$(echo "${user}" | jq -r .email)" "$(echo "${user}" | jq -r .password)"
 		done
@@ -2882,7 +3050,7 @@ showAccounts() {
 		#		local serviceName=
 		#		serviceName=$(jq -r .inbounds[0].streamSettings.grpcSettings.serviceName ${configPath}04_trojan_gRPC_inbounds.json)
 		jq .inbounds[0].settings.clients ${configPath}04_trojan_gRPC_inbounds.json | jq -c '.[]' | while read -r user; do
-			echoContent skyBlue "\n ---> 帐号:$(echo "${user}" | jq -r .email)"
+			echoContent skyBlue "\n ---> 账号:$(echo "${user}" | jq -r .email)"
 			echo
 			defaultBase64Code trojangrpc "$(echo "${user}" | jq -r .email)" "$(echo "${user}" | jq -r .password)"
 		done
@@ -3032,7 +3200,7 @@ addCorePort() {
 	echoContent yellow "# 注意事项\n"
 	echoContent yellow "支持批量添加"
 	echoContent yellow "不影响443端口的使用"
-	echoContent yellow "查看帐号时，只会展示默认端口443的帐号"
+	echoContent yellow "查看账号时，只会展示默认端口443的账号"
 	echoContent yellow "不允许有特殊字符，注意逗号的格式"
 	echoContent yellow "录入示例:2053,2083,2087\n"
 
@@ -3063,6 +3231,11 @@ addCorePort() {
 				# 开放端口
 				allowPort "${port}"
 
+				local settingsPort=443
+				if [[ -n "${customPort}" ]]; then
+					settingsPort=${customPort}
+				fi
+
 				cat <<EOF >"${fileName}"
 {
   "inbounds": [
@@ -3072,7 +3245,7 @@ addCorePort() {
 	  "protocol": "dokodemo-door",
 	  "settings": {
 		"address": "127.0.0.1",
-		"port": 443,
+		"port": ${settingsPort},
 		"network": "tcp",
 		"followRedirect": false
 	  },
@@ -4550,6 +4723,10 @@ customXrayInstall() {
 		installTools 1
 		# 申请tls
 		initTLSNginxConfig 2
+		handleXray stop
+		handleNginx start
+		checkIP
+
 		installTLS 3
 		handleNginx stop
 		# 随机path
@@ -4626,6 +4803,11 @@ v2rayCoreInstall() {
 	installTools 2
 	# 申请tls
 	initTLSNginxConfig 3
+
+	handleV2Ray stop
+	handleNginx start
+	checkIP
+
 	installTLS 4
 	handleNginx stop
 	#	initNginxConfig 5
@@ -4656,6 +4838,11 @@ xrayCoreInstall() {
 	installTools 2
 	# 申请tls
 	initTLSNginxConfig 3
+
+	handleXray stop
+	handleNginx start
+	checkIP
+
 	installTLS 4
 	handleNginx stop
 	randomPathFunction 5
@@ -4813,7 +5000,7 @@ menu() {
 	cd "$HOME" || exit
 	echoContent red "\n=============================================================="
 	echoContent green "作者:mack-a"
-	echoContent green "当前版本:v2.5.78"
+	echoContent green "当前版本:v2.6.1"
 	echoContent green "Github:https://github.com/mack-a/v2ray-agent"
 	echoContent green "描述:八合一共存脚本\c"
 	showInstallStatus
