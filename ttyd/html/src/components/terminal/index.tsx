@@ -210,6 +210,7 @@ export class Xterm extends Component<Props, State> {
             }
         });
         terminal.onData(this.onTerminalData);
+        terminal.onBinary(this.onTerminalBinary);
         terminal.onResize(this.onTerminalResize);
         if (document.queryCommandSupported && document.queryCommandSupported('copy')) {
             terminal.onSelectionChange(() => {
@@ -483,5 +484,12 @@ export class Xterm extends Component<Props, State> {
     @bind
     private onTerminalData(data: string) {
         this.sendData(data);
+    }
+
+    @bind
+    private onTerminalBinary(data: string) {
+        const { socket } = this;
+        if (!socket || socket.readyState !== WebSocket.OPEN) return;
+        socket.send(data);
     }
 }
