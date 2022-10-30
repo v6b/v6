@@ -488,8 +488,6 @@ export class Xterm extends Component<Props, State> {
 
     @bind
     private onTerminalBinary(data: string) {
-        const { socket } = this;
-        if (!socket || socket.readyState !== WebSocket.OPEN) return;
-        socket.send(data);
+        this.sendData(Uint8Array.from(data, v => v.charCodeAt(0)));
     }
 }
