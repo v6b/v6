@@ -242,7 +242,7 @@ check_warp() {
     if type -p warp-cli >/dev/null 2>&1; then
       ! systemctl is-active warp-svc >/dev/null 2>&1 && systemctl start warp-svc && sleep 5
       if [[ $(warp-cli --accept-tos settings) =~ WarpProxy ]]; then
-        [[ $(ss -nltp) =~ 'warp-svc' ]] && CLIENT_PORT=$(ss -nltp | grep warp-svc | grep -oP '127.0*\S+' | cut -d: -f2) && STATUS[2]=1 || STATUS[2]=0
+        [[ $(ss -nltp) =~ 'warp-svc' ]] && CLIENT_PORT=$(ss -nltp | grep warp-svc | grep -oP '127\.0*\S+' | cut -d: -f2) && STATUS[2]=1 || STATUS[2]=0
       else
         [[ $(ip a) =~ 'CloudflareWARP' ]] && STATUS[2]=1 || STATUS[2]=0
       fi
@@ -250,7 +250,7 @@ check_warp() {
     fi
 
     type -p wireproxy >/dev/null 2>&1 && [[ ! $(ss -nltp) =~ 'wireproxy' ]] && systemctl restart wireproxy
-    [[ $(ss -nltp) =~ 'wireproxy' ]] && WIREPROXY_PORT=$(ss -nltp | grep wireproxy | grep -oP '127.0*\S+' | cut -d: -f2) && STATUS[3]=1 || STATUS[3]=0
+    [[ $(ss -nltp) =~ 'wireproxy' ]] && WIREPROXY_PORT=$(ss -nltp | grep wireproxy | grep -oP '127\.0*\S+' | cut -d: -f2) && STATUS[3]=1 || STATUS[3]=0
   fi
 
   wgcf_warp() { wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/menu.sh && bash menu.sh; exit; }
