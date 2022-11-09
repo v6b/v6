@@ -2156,12 +2156,11 @@ initHysteriaPort() {
 		echoContent yellow "请输入Hysteria端口[例: 10000]，不可与其他服务重复"
 		read -r -p "端口:" hysteriaPort
 	fi
-
 	if [[ -z ${hysteriaPort} ]]; then
-		echoContent red "\n ---> 端口不可为空"
+		echoContent red " ---> 端口不可为空"
 		initHysteriaPort "$2"
-	elif ((customPort >= 1 && customPort <= 65535)); then
-		echoContent red "\n ---> 端口不合法"
+	elif ((hysteriaPort < 1 || hysteriaPort > 65535)); then
+		echoContent red " ---> 端口不合法"
 		initHysteriaPort "$2"
 	fi
 	allowPort "${hysteriaPort}"
@@ -5220,6 +5219,7 @@ hysteriaCoreInstall() {
 	installHysteria 1
 	initHysteriaConfig 2
 	installHysteriaService 3
+	handleHysteria stop
 	handleHysteria start
 	showAccounts 5
 }
@@ -5377,6 +5377,7 @@ manageHysteria() {
 		echoContent yellow "1.重新安装"
 		echoContent yellow "2.卸载"
 		echoContent yellow "3.更新core"
+		echoContent yellow "4.查看日志"
 		hysteriaStatus=true
 	else
 		echoContent yellow "1.安装"
@@ -5391,6 +5392,8 @@ manageHysteria() {
 	elif [[ "${installHysteriaStatus}" == "3" && "${hysteriaStatus}" == "true" ]]; then
 		installHysteria 1
 		handleHysteria start
+	elif [[ "${installHysteriaStatus}" == "4" && "${hysteriaStatus}" == "true" ]]; then
+		journalctl -fu hysteria
 	fi
 }
 # 主菜单
@@ -5398,7 +5401,7 @@ menu() {
 	cd "$HOME" || exit
 	echoContent red "\n=============================================================="
 	echoContent green "作者:mack-a"
-	echoContent green "当前版本:v2.6.7"
+	echoContent green "当前版本:v2.6.9"
 	echoContent green "Github:https://github.com/mack-a/v2ray-agent"
 	echoContent green "描述:八合一共存脚本\c"
 	showInstallStatus
