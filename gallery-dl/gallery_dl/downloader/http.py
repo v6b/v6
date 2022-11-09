@@ -14,8 +14,6 @@ from requests.exceptions import RequestException, ConnectionError, Timeout
 from .common import DownloaderBase
 from .. import text, util
 
-from email.utils import parsedate_tz
-from datetime import datetime
 from ssl import SSLError
 try:
     from OpenSSL.SSL import Error as OpenSSLError
@@ -188,16 +186,19 @@ class HttpDownloader(DownloaderBase):
                         size, self.maxsize)
                     return False
 
+            build_path = False
+
             # set missing filename extension from MIME type
             if not pathfmt.extension:
                 pathfmt.set_extension(self._find_extension(response))
-                if pathfmt.exists():
-                    pathfmt.temppath = ""
-                    return True
+                build_path = True
 
             # set metadata from HTTP headers
             if self.metadata:
-                kwdict[self.metadata] = self._extract_metadata(response)
+                kwdict[self.metadata] = util.extract_headers(response)
+                build_path = True
+
+            if build_path:
                 pathfmt.build_path()
                 if pathfmt.exists():
                     pathfmt.temppath = ""
@@ -305,22 +306,6 @@ class HttpDownloader(DownloaderBase):
 
             t1 = t2
 
-    def _extract_metadata(self, response):
-        headers = response.headers
-        data = dict(headers)
-
-        hcd = headers.get("content-disposition")
-        if hcd:
-            name = text.extr(hcd, 'filename="', '"')
-            if name:
-                text.nameext_from_url(name, data)
-
-        hlm = headers.get("last-modified")
-        if hlm:
-            data["date"] = datetime(*parsedate_tz(hlm)[:6])
-
-        return data
-
     def _find_extension(self, response):
         """Get filename extension from MIME type"""
         mtype = response.headers.get("Content-Type", "image/jpeg")
@@ -346,6 +331,7 @@ class HttpDownloader(DownloaderBase):
             for ext, check in SIGNATURE_CHECKS.items():
                 if check(file_header):
                     pathfmt.set_extension(ext)
+                    pathfmt.build_path()
                     return True
         return False
 

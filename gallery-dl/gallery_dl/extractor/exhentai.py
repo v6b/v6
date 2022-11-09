@@ -473,6 +473,10 @@ class ExhentaiSearchExtractor(ExhentaiExtractor):
             "pattern": ExhentaiGalleryExtractor.pattern,
             "range": "1-30",
             "count": 30,
+            "keyword": {
+                "gallery_id": int,
+                "gallery_token": r"re:^[0-9a-f]{10}$"
+            },
         }),
     )
 
@@ -490,26 +494,39 @@ class ExhentaiSearchExtractor(ExhentaiExtractor):
             self.params = {"f_search": tag, "page": 0}
         else:
             self.params = text.parse_query(query)
-            self.params["page"] = text.parse_int(self.params.get("page"))
+            if "next" not in self.params:
+                self.params["page"] = text.parse_int(self.params.get("page"))
 
     def items(self):
         self.login()
         data = {"_extractor": ExhentaiGalleryExtractor}
+        search_url = self.search_url
+        params = self.params
 
         while True:
             last = None
-            page = self.request(self.search_url, params=self.params).text
+            page = self.request(search_url, params=params).text
 
             for gallery in ExhentaiGalleryExtractor.pattern.finditer(page):
                 url = gallery.group(0)
                 if url == last:
                     continue
                 last = url
+                data["gallery_id"] = text.parse_int(gallery.group(2))
+                data["gallery_token"] = gallery.group(3)
                 yield Message.Queue, url + "/", data
 
-            if 'class="ptdd">&gt;<' in page or ">No hits found</p>" in page:
+            next_url = text.extr(page, 'nexturl = "', '"', None)
+            if next_url is not None:
+                if not next_url:
+                    return
+                search_url = next_url
+                params = None
+
+            elif 'class="ptdd">&gt;<' in page or ">No hits found</p>" in page:
                 return
-            self.params["page"] += 1
+            else:
+                params["page"] += 1
 
 
 class ExhentaiFavoriteExtractor(ExhentaiSearchExtractor):
