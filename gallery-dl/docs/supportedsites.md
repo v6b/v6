@@ -394,7 +394,7 @@ Consider all sites to be NSFW unless otherwise known.
 <tr>
     <td>Instagram</td>
     <td>https://www.instagram.com/</td>
-    <td>Avatars, Collections, Highlights, Posts, Reels, Saved Posts, Stories, Tag Searches, Tagged Posts, User Profiles</td>
+    <td>Avatars, Collections, Guides, Highlights, Posts, Reels, Saved Posts, Stories, Tag Searches, Tagged Posts, User Profiles</td>
     <td><a href="https://github.com/mikf/gallery-dl#cookies">Cookies</a></td>
 </tr>
 <tr>
@@ -868,7 +868,7 @@ Consider all sites to be NSFW unless otherwise known.
 <tr>
     <td>Wallhaven</td>
     <td>https://wallhaven.cc/</td>
-    <td>Collections, individual Images, Search Results</td>
+    <td>Collections, individual Images, Search Results, User Profiles</td>
     <td><a href="configuration.rst#extractorwallhavenapi-key">API Key</a></td>
 </tr>
 <tr>
@@ -1054,6 +1054,46 @@ Consider all sites to be NSFW unless otherwise known.
     <td>https://horne.red/</td>
     <td>Doujin, Favorites, Feeds, Followeds, Illustrations, individual Images, Nuitas, User Profiles</td>
     <td>Required</td>
+</tr>
+
+<tr>
+    <td colspan="4"><strong>Nitter Instances</strong></td>
+</tr>
+<tr>
+    <td>Nitter.net</td>
+    <td>https://nitter.net/</td>
+    <td>Media Files, Replies, Search Results, Tweets</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Nitter.lacontrevoie.fr</td>
+    <td>https://nitter.lacontrevoie.fr/</td>
+    <td>Media Files, Replies, Search Results, Tweets</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Nitter.pussthecat.org</td>
+    <td>https://nitter.pussthecat.org/</td>
+    <td>Media Files, Replies, Search Results, Tweets</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Nitter.1d4.us</td>
+    <td>https://nitter.1d4.us/</td>
+    <td>Media Files, Replies, Search Results, Tweets</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Nitter.kavin.rocks</td>
+    <td>https://nitter.kavin.rocks/</td>
+    <td>Media Files, Replies, Search Results, Tweets</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Nitter.unixfox.eu</td>
+    <td>https://nitter.unixfox.eu/</td>
+    <td>Media Files, Replies, Search Results, Tweets</td>
+    <td></td>
 </tr>
 
 <tr>
