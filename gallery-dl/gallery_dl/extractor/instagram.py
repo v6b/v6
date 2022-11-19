@@ -44,14 +44,10 @@ class InstagramExtractor(Extractor):
     def items(self):
         self.login()
 
-        api = self.config("api")
-        if api is None or api == "auto":
-            api = InstagramRestAPI if self._logged_in else InstagramGraphqlAPI
-        elif api == "graphql":
-            api = InstagramGraphqlAPI
+        if self.config("api") == "graphql":
+            self.api = InstagramGraphqlAPI(self)
         else:
-            api = InstagramRestAPI
-        self.api = api(self)
+            self.api = InstagramRestAPI(self)
 
         data = self.metadata()
         videos = self.config("videos", True)
@@ -586,7 +582,7 @@ class InstagramAvatarExtractor(InstagramExtractor):
 
     def posts(self):
         if self._logged_in:
-            user_id = self.api.user_id(self.item)
+            user_id = self.api.user_id(self.item, check_private=False)
             user = self.api.user_by_id(user_id)
             avatar = (user.get("hd_profile_pic_url_info") or
                       user["hd_profile_pic_versions"][-1])
@@ -784,14 +780,15 @@ class InstagramRestAPI():
         endpoint = "/v1/users/{}/info/".format(user_id)
         return self._call(endpoint)["user"]
 
-    def user_id(self, screen_name):
+    def user_id(self, screen_name, check_private=True):
         if screen_name.startswith("id:"):
             return screen_name[3:]
         user = self.user_by_name(screen_name)
         if user is None:
             raise exception.AuthorizationError(
                 "Login required to access this profile")
-        if user["is_private"] and not user["followed_by_viewer"]:
+        if check_private and user["is_private"] and \
+                not user["followed_by_viewer"]:
             name = user["username"]
             s = "" if name.endswith("s") else "s"
             raise exception.StopExtraction("%s'%s posts are private", name, s)

@@ -155,6 +155,8 @@ class Job():
         extr = self.extractor
         kwdict["category"] = extr.category
         kwdict["subcategory"] = extr.subcategory
+        if self.metadata_http:
+            kwdict.pop(self.metadata_http, None)
         if self.kwdict:
             kwdict.update(self.kwdict)
 
@@ -561,7 +563,7 @@ class KeywordJob(Job):
         stdout_write("\nKeywords for filenames and --filter:\n"
                      "------------------------------------\n")
 
-        if self.metadata_http:
+        if self.metadata_http and url.startswith("http"):
             kwdict[self.metadata_http] = util.extract_headers(
                 self.extractor.request(url, method="HEAD"))
 
