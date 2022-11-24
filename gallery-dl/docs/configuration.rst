@@ -885,6 +885,27 @@ Description
     Try to follow external URLs of embedded players.
 
 
+extractor.artstation.max-posts
+------------------------------
+Type
+    ``integer``
+Default
+    ``null``
+Description
+    Limit the number of posts/projects to download.
+
+
+extractor.artstation.search.pro-first
+-------------------------------------
+Type
+    ``bool``
+Default
+    ``true``
+Description
+    Enable the "Show Studio and Pro member artwork first" checkbox
+    when retrieving search results.
+
+
 extractor.aryion.recursive
 --------------------------
 Type
