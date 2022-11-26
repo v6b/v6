@@ -1860,6 +1860,40 @@ Description
     You can use ``"all"`` instead of listing all values separately.
 
 
+extractor.nitter.quoted
+-----------------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    Fetch media from quoted Tweets.
+
+
+extractor.nitter.retweets
+-------------------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    Fetch media from Retweets.
+
+
+extractor.nitter.videos
+-----------------------
+Type
+    ``bool`` or ``string``
+Default
+    ``true``
+Description
+    Control video download behavior.
+
+    * ``true``: Download videos
+    * ``"ytdl"``: Download videos using `youtube-dl`_
+    * ``false``: Skip video Tweets
+
+
 extractor.oauth.browser
 -----------------------
 Type
