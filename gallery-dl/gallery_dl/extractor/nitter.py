@@ -10,6 +10,7 @@
 
 from .common import BaseExtractor, Message
 from .. import text
+import binascii
 
 
 class NitterExtractor(BaseExtractor):
@@ -46,10 +47,19 @@ class NitterExtractor(BaseExtractor):
 
                 for url in text.extract_iter(
                         attachments, 'href="', '"'):
-                    name = url.rpartition("%2F")[2]
+
+                    if "/enc/" in url:
+                        name = binascii.a2b_base64(url.rpartition(
+                            "/")[2]).decode().rpartition("/")[2]
+                    else:
+                        name = url.rpartition("%2F")[2]
+
                     if url[0] == "/":
                         url = self.root + url
-                    file = {"url": url}
+                    file = {
+                        "url": url,
+                        "_http_retry_codes": (404,),
+                    }
                     file["filename"], _, file["extension"] = \
                         name.rpartition(".")
                     append(file)
@@ -64,7 +74,13 @@ class NitterExtractor(BaseExtractor):
                     else:
                         for url in text.extract_iter(
                                 attachments, 'data-url="', '"'):
-                            name = url.rpartition("%2F")[2]
+
+                            if "/enc/" in url:
+                                name = binascii.a2b_base64(url.rpartition(
+                                    "/")[2]).decode().rpartition("/")[2]
+                            else:
+                                name = url.rpartition("%2F")[2]
+
                             if url[0] == "/":
                                 url = self.root + url
                             append({
@@ -333,7 +349,7 @@ class NitterTweetExtractor(NitterExtractor):
     directory_fmt = ("{category}", "{user[name]}")
     filename_fmt = "{tweet_id}_{num}.{extension}"
     archive_fmt = "{tweet_id}_{num}"
-    pattern = BASE_PATTERN + r"/[^/?#]+/status/(\d+)"
+    pattern = BASE_PATTERN + r"/([^/?#]+|i/web)/status/(\d+)"
     test = (
         ("https://nitter.net/supernaturepics/status/604341487988576256", {
             "url": "3f2b64e175bf284aa672c3bb53ed275e470b919a",
@@ -388,7 +404,7 @@ class NitterTweetExtractor(NitterExtractor):
             "content": "f29501e44d88437fe460f5c927b7543fda0f6e34",
         }),
         # Reply to deleted tweet (#403, #838)
-        ("https://nitter.unixfox.eu/i/status/1170041925560258560", {
+        ("https://nitter.unixfox.eu/i/web/status/1170041925560258560", {
             "pattern": r"https://nitter\.unixfox\.eu/pic/orig"
                        r"/media%2FEDzS7VrU0AAFL4_\.jpg",
         }),
@@ -400,7 +416,9 @@ class NitterTweetExtractor(NitterExtractor):
         }),
         # quoted tweet (#526, #854)
         ("https://nitter.1d4.us/StobiesGalaxy/status/1270755918330896395", {
-            "pattern": r"https://nitter\.1d4\.us/pic/orig/media%2FEaK.+\.jpg",
+            "pattern": r"https://nitter\.1d4\.us/pic/orig"
+                       r"/enc/bWVkaWEvRWFL\w+LmpwZw==",
+            "keyword": {"filename": r"re:EaK.{12}"},
             "count": 4,
         }),
         # deleted quote tweet (#2225)
@@ -413,7 +431,6 @@ class NitterTweetExtractor(NitterExtractor):
         }),
         # age-restricted (#2354)
         ("https://nitter.unixfox.eu/mightbecurse/status/1492954264909479936", {
-            "options": (("syndication", True),),
             "keywords": {"date": "dt:2022-02-13 20:10:09"},
             "count": 1,
         }),
