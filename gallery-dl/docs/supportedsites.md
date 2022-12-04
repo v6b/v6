@@ -634,7 +634,7 @@ Consider all sites to be NSFW unless otherwise known.
 <tr>
     <td>Pixhost</td>
     <td>https://pixhost.to/</td>
-    <td>individual Images</td>
+    <td>Galleries, individual Images</td>
     <td></td>
 </tr>
 <tr>
@@ -1376,12 +1376,6 @@ Consider all sites to be NSFW unless otherwise known.
 
 <tr>
     <td colspan="4"><strong>lolisafe and chibisafe</strong></td>
-</tr>
-<tr>
-    <td>ZzZz</td>
-    <td>https://zz.ht/</td>
-    <td>Albums</td>
-    <td></td>
 </tr>
 <tr>
     <td>xBunkr</td>
