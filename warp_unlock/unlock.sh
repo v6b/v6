@@ -8,6 +8,10 @@ VERSION='1.09'
 # 最大支持流媒体
 SUPPORT_NUM='2'
 
+# 选择 IP API 服务商
+IP_API=ifconfig.co
+#IP_API=ip.gs
+
 E[0]="Language:\n  1.English (default) \n  2.简体中文"
 C[0]="${E[0]}"
 E[1]="Support change IP for warp-go mode"
@@ -303,7 +307,7 @@ input_streammedia_unlock() {
 # 期望解锁地区
 input_region() {
   if [ -z "$EXPECT" ]; then
-  REGION=$(curl -ksm8 https://ip.gs/country-iso 2>/dev/null)
+  REGION=$(curl -ksm8 https://$IP_API/country-iso 2>/dev/null)
   reading "\n $(text_eval 13) " EXPECT
   until [[ -z "$EXPECT" || "$EXPECT" = [Yy] || "$EXPECT" =~ ^[A-Za-z]{2}$ ]]; do
     reading "\n $(text_eval 13) " EXPECT
@@ -364,10 +368,10 @@ if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a
 
   check_ip() {
     unset IP_INFO WAN COUNTRY ASNORG
-    IP_INFO="\$(curl \$NIC https://ip.gs/json 2>/dev/null)"
-    WAN=\$(expr "\$IP_INFO" : '.*ip\":\"\([^"]*\).*')
-    COUNTRY=\$(expr "\$IP_INFO" : '.*country\":\"\([^"]*\).*')
-    ASNORG=\$(expr "\$IP_INFO" : '.*asn_org\":\"\([^"]*\).*')
+    IP_INFO="\$(curl \$NIC https://$IP_API/json 2>/dev/null)"
+    WAN=\$(expr "\$IP_INFO" : '.*ip\":[ ]*\"\([^"]*\).*')
+    COUNTRY=\$(expr "\$IP_INFO" : '.*country\":[ ]*\"\([^"]*\).*')
+    ASNORG=\$(expr "\$IP_INFO" : '.*asn_org\":[ ]*\"\([^"]*\).*')
   }
 
   warp_restart() {

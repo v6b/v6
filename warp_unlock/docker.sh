@@ -4,6 +4,8 @@ export LANG=en_US.UTF-8
 
 WGCF_DIR='/etc/wireguard'
 DOCKER_DIR='/unlock'
+IP_API=ifconfig.co
+#IP_API=ip.gs
 
 # 自定义字体彩色，read 函数
 red(){ echo -e "\033[31m\033[01m$1\033[0m"; }
@@ -70,7 +72,7 @@ wgcf_install(){
 # 期望解锁地区
 input_region(){
 	if [[ -z "$EXPECT" ]]; then
-	REGION=$(curl -skm8 https://ip.gs/country-iso 2>/dev/null)
+	REGION=$(curl -skm8 https://$IP_API/country-iso 2>/dev/null)
 	reading " The current region is $REGION. Confirm press [y] . If you want another regions, please enter the two-digit region abbreviation. (such as hk,sg. Default is $REGION): " EXPECT
 	until [[ -z $EXPECT || $EXPECT = [Yy] || $EXPECT =~ ^[A-Za-z]{2}$ ]]; do
 		reading " The current region is $REGION. Confirm press [y] . If you want another regions, please enter the two-digit region abbreviation. (such as hk,sg. Default is $REGION): " EXPECT
@@ -112,7 +114,7 @@ tg_message(){ curl -s -X POST "https://api.telegram.org/bot\$TOKEN/sendMessage" 
 
 ip(){
 unset IP_INFO WAN COUNTRY ASNORG
-IP_INFO="\$(curl \$NIC https://ip.gs/json 2>/dev/null)"
+IP_INFO="\$(curl \$NIC https://$IP_API/json 2>/dev/null)"
 WAN=\$(expr "\$IP_INFO" : '.*ip\":\"\([^"]*\).*')
 COUNTRY=\$(expr "\$IP_INFO" : '.*country\":\"\([^"]*\).*')
 ASNORG=\$(expr "\$IP_INFO" : '.*asn_org\":\"\([^"]*\).*')
