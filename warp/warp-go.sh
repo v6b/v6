@@ -301,7 +301,7 @@ check_operating_system() {
   [ "$(echo "$SYS" | sed "s/[^0-9.]//g" | cut -d. -f1)" -lt "${MAJOR[int]}" ] && error " $(text_eval 7) "
 }
 
-# 安装 curl
+# 安装系统依赖及定义 ping 指令
 check_dependencies() {
   # 对于 alpine 系统，升级库并重新安装依赖
   if [ "$SYSTEM" = Alpine ]; then
@@ -318,6 +318,7 @@ check_dependencies() {
       info "\n $(text 9) \n"
     fi
   fi
+  PING6='ping -6' && [ $(type -p ping6) ] && PING6='ping6'
 }
 
 # 检测 IPv4 IPv6 信息，WARP Ineterface 开启，普通还是 Plus账户 和 IP 信息
@@ -693,7 +694,7 @@ EOF
   [[ "$LAN6" != "::1" && "$LAN6" =~ ^([a-f0-9]{1,4}:){2,4}[a-f0-9]{1,4} ]] && INET6=1
 
   if [ "$STATUS" != 2 ]; then
-    [ "$INET6" = 1 ] && ping -6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && IPV6=1 && CDN=-6 && ip6_info
+    [ "$INET6" = 1 ] && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && IPV6=1 && CDN=-6 && ip6_info
     [ "$INET4" = 1 ] && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && IPV4=1 && CDN=-4 && ip4_info
   else
     if grep -qE "^AllowedIPs.*\:\:\/0" /opt/warp-go/warp.conf || [ "$INET6" = 1 ]; then
@@ -891,10 +892,10 @@ install() {
   start=$(date +%s)
 
   # 注册 WARP 账户 (将生成 warp 文件保存账户信息)
-  # 判断 warp-go 的最新版本,如因 gitlab 接口问题未能获取，默认 v1.0.6
+  # 判断 warp-go 的最新版本,如因 gitlab 接口问题未能获取，默认 v1.0.5
   {	
   latest=$(wget -qO- -T1 -t1 https://gitlab.com/api/v4/projects/ProjectWARP%2Fwarp-go/releases | grep -oP '"tag_name":"v\K[^\"]+' | head -n 1)
-  latest=${latest:-'1.0.6'}
+  latest=${latest:-'1.0.5'}
 
   # 安装 warp-go，尽量下载官方的最新版本，如官方 warp-go 下载不成功，将使用 githubusercontents 的 CDN，以更好的支持双栈。并添加执行权限
   mkdir -p /opt/warp-go/ >/dev/null 2>&1
