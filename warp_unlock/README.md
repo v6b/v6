@@ -172,5 +172,7 @@ bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/doc
 服务提供（排名不分先后）:
 * CloudFlare Warp(+): https://1.1.1.1/
 * WGCF 项目原作者: https://github.com/ViRb3/wgcf/
-* 获取公网 IP 及归属地查询: https://ip.gs/
+* 获取公网 IP 及归属地查询: https://ifconfig.co  
+https://ip.gs/  
+https://ip.sb
 * 统计PV网:https://hits.seeyoufarm.com/
