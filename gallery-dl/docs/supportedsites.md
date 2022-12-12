@@ -111,7 +111,7 @@ Consider all sites to be NSFW unless otherwise known.
 </tr>
 <tr>
     <td>Bunkr</td>
-    <td>https://bunkr.is/</td>
+    <td>https://bunkr.ru/</td>
     <td>Albums</td>
     <td></td>
 </tr>
@@ -431,12 +431,6 @@ Consider all sites to be NSFW unless otherwise known.
     <td>Khinsider</td>
     <td>https://downloads.khinsider.com/</td>
     <td>Soundtracks</td>
-    <td></td>
-</tr>
-<tr>
-    <td>Kohlchan</td>
-    <td>https://kohlchan.net/</td>
-    <td>Boards, Threads</td>
     <td></td>
 </tr>
 <tr>
@@ -770,6 +764,12 @@ Consider all sites to be NSFW unless otherwise known.
     <td><a href="https://github.com/mikf/gallery-dl#oauth">OAuth</a></td>
 </tr>
 <tr>
+    <td>Soundgasm</td>
+    <td>https://soundgasm.net/</td>
+    <td>Audio, User Profiles</td>
+    <td></td>
+</tr>
+<tr>
     <td>Speaker Deck</td>
     <td>https://speakerdeck.com/</td>
     <td>Presentations</td>
@@ -1037,6 +1037,22 @@ Consider all sites to be NSFW unless otherwise known.
     <td>Hypnohub</td>
     <td>https://hypnohub.net/</td>
     <td>Favorites, Pools, Posts, Tag Searches</td>
+    <td></td>
+</tr>
+
+<tr>
+    <td colspan="4"><strong>LynxChan Imageboards</strong></td>
+</tr>
+<tr>
+    <td>Kohlchan</td>
+    <td>https://kohlchan.net/</td>
+    <td>Boards, Threads</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Endchan</td>
+    <td>https://endchan.org/</td>
+    <td>Boards, Threads</td>
     <td></td>
 </tr>
 
