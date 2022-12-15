@@ -886,7 +886,7 @@ class TwitterBackgroundExtractor(TwitterExtractor):
 
     def tweets(self):
         self.api._user_id_by_screen_name(self.user)
-        user = user = self._user_obj
+        user = self._user_obj
 
         try:
             url = user["legacy"]["profile_banner_url"]
@@ -1216,15 +1216,16 @@ class TwitterAPI():
         original_retweets = (self.extractor.retweets == "original")
 
         while True:
-            cursor = tweet = None
             data = self._call(endpoint, params)
 
             instr = data["timeline"]["instructions"]
             if not instr:
                 return
-            tweet_ids = []
+
             tweets = data["globalObjects"]["tweets"]
             users = data["globalObjects"]["users"]
+            tweet_id = cursor = None
+            tweet_ids = []
 
             # collect tweet IDs and cursor value
             for entry in instr[0]["addEntries"]["entries"]:
@@ -1243,7 +1244,7 @@ class TwitterAPI():
                     cursor = entry["content"]["operation"]["cursor"]
                     if not cursor.get("stopOnEmptyResponse", True):
                         # keep going even if there are no tweets
-                        tweet = True
+                        tweet_id = True
                     cursor = cursor["value"]
 
                 elif entry_startswith("conversationThread-"):
@@ -1292,7 +1293,7 @@ class TwitterAPI():
                 cursor = (instr[-1]["replaceEntry"]["entry"]
                           ["content"]["operation"]["cursor"]["value"])
 
-            if not cursor or not tweet:
+            if not cursor or (not tweets and not tweet_id):
                 return
             params["cursor"] = cursor
 
