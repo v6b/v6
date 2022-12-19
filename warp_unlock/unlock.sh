@@ -357,7 +357,7 @@ NOT_UNLOCK_STATUS='No 😰'
 LMC999=\$(curl -sSLm4 https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh)
 RESULT_TITLE=\$(echo "\$LMC999" | grep "result.*netflix.com/title/" | sed "s/.*title\/\([^\"]*\).*/\1/")
 REGION_TITLE=\$(echo "\$LMC999" | grep "region.*netflix.com/title/" | sed "s/.*title\/\([^\"]*\).*/\1/")
-RESULT_TITLE=\${RESULT_TITLE:-'81215567'}; REGION_TITLE=\${REGION_TITLE:-'80018499'}
+RESULT_TITLE=\${RESULT_TITLE:-'81280792'}; REGION_TITLE=\${REGION_TITLE:-'80018499'}
 timedatectl set-timezone Asia/Shanghai
 
 if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a) print i" "a[i]}') -le 2 ]]; then
@@ -431,27 +431,27 @@ if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a
   check1() {
     unset PreAssertion assertion disneycookie TokenContent isBanned is403 fakecontent refreshToken disneycontent tmpresult previewcheck isUnabailable region inSupportedLocation
     R[1]=""
-    PreAssertion=\$(curl \$NIC --user-agent "\${UA_Browser}" -s --max-time 10 -X POST "https://global.edge.bamgrid.com/devices" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -H "content-type: application/json; charset=UTF-8" -d '{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}' 2>&1)
+    PreAssertion=\$(curl \$NIC --user-agent "\${UA_Browser}" -s --max-time 10 -X POST "https://disney.api.edge.bamgrid.com/devices" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -H "content-type: application/json; charset=UTF-8" -d '{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}' 2>&1)
     [[ "\$PreAssertion" == "curl"* ]] && R[1]="\$NOT_UNLOCK_STATUS"
     if [[ \${R[1]} != "\$NOT_UNLOCK_STATUS" ]]; then
     assertion=\$(echo \$PreAssertion | \$PYTHON -m json.tool 2> /dev/null | grep assertion | cut -f4 -d'"')
     PreDisneyCookie=\$(curl \$NIC --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '1p')
     disneycookie=\$(echo \$PreDisneyCookie | sed "s/DISNEYASSERTION/\${assertion}/g")
-    TokenContent=\$(curl \$NIC --user-agent "\${UA_Browser}" -s --max-time 10 -X POST "https://global.edge.bamgrid.com/token" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "\$disneycookie")
-    isBanned=\$(echo \$TokenContent | \$PYTHON -m json.tool 2> /dev/null | grep 'forbidden-location')
+    TokenContent=\$(curl \$NIC --user-agent "\${UA_Browser}" -s --max-time 10 -X POST "https://disney.api.edge.bamgrid.com/token" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "\$disneycookie")
+    isBanned=\$(echo \$TokenContent | \$PYTHON -m json.tool 2>/dev/null | grep 'forbidden-location')
     is403=\$(echo \$TokenContent | grep '403 ERROR')
     [[ -n "\$isBanned\$is403" ]] && R[1]="\$NOT_UNLOCK_STATUS"
     fi
 
     if [[ \${R[1]} != "\$NOT_UNLOCK_STATUS" ]]; then
     fakecontent=\$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '8p')
-    refreshToken=\$(echo \$TokenContent | \$PYTHON -m json.tool 2> /dev/null | grep 'refresh_token' | awk '{print \$2}' | cut -f2 -d'"')
+    refreshToken=\$(echo \$TokenContent | \$PYTHON -m json.tool 2>/dev/null | grep 'refresh_token' | awk '{print \$2}' | cut -f2 -d'"')
     disneycontent=\$(echo \$fakecontent | sed "s/ILOVEDISNEY/\${refreshToken}/g")
     tmpresult=\$(curl \$NIC --user-agent "\${UA_Browser}" -X POST -sSL --max-time 10 "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql" -H "authorization: ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "\$disneycontent" 2>&1)
     previewcheck=\$(curl \$NIC -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://disneyplus.com" | grep preview)
-    isUnabailable=\$(echo \$previewcheck | grep 'unavailable')      
-    region=\$(echo \$tmpresult | \$PYTHON -m json.tool 2> /dev/null | grep 'countryCode' | cut -f4 -d'"')
-    inSupportedLocation=\$(echo \$tmpresult | \$PYTHON -m json.tool 2> /dev/null | grep 'inSupportedLocation' | awk '{print \$2}' | cut -f1 -d',')
+    isUnabailable=\$(echo \$previewcheck | grep 'unavailable')
+    region=\$(echo \$tmpresult | \$PYTHON -m json.tool 2>/dev/null | grep 'countryCode' | cut -f4 -d'"')
+    inSupportedLocation=\$(echo \$tmpresult | \$PYTHON -m json.tool 2>/dev/null | grep 'inSupportedLocation' | awk '{print \$2}' | cut -f1 -d',')
     [[ "\$region" == "JP" || ( -n "\$region" && "\$inSupportedLocation" == "true" ) ]] && R[1]="\$UNLOCK_STATUS" || R[1]="\$NOT_UNLOCK_STATUS"
     fi
     CONTENT="Disney+: \${R[1]}."
