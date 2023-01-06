@@ -76,11 +76,6 @@ class TwitterExtractor(Extractor):
             else:
                 data = tweet
 
-            if seen_tweets is not None:
-                if data["id_str"] in seen_tweets:
-                    continue
-                seen_tweets.add(data["id_str"])
-
             if not self.retweets and "retweeted_status_id_str" in data:
                 self.log.debug("Skipping %s (retweet)", data["id_str"])
                 continue
@@ -97,6 +92,13 @@ class TwitterExtractor(Extractor):
             ):
                 self.log.debug("Skipping %s (reply)", data["id_str"])
                 continue
+
+            if seen_tweets is not None:
+                if data["id_str"] in seen_tweets:
+                    self.log.debug(
+                        "Skipping %s (previously seen)", data["id_str"])
+                    continue
+                seen_tweets.add(data["id_str"])
 
             files = []
             if "extended_entities" in data:
@@ -221,14 +223,16 @@ class TwitterExtractor(Extractor):
     def _extract_twitpic(self, tweet, files):
         for url in tweet["entities"].get("urls", ()):
             url = url["expanded_url"]
-            if "//twitpic.com/" in url and "/photos/" not in url:
-                response = self.request(url, fatal=False)
-                if response.status_code >= 400:
-                    continue
-                url = text.extr(
-                    response.text, 'name="twitter:image" value="', '"')
-                if url:
-                    files.append({"url": url})
+            if "//twitpic.com/" not in url or "/photos/" in url:
+                continue
+            if url.startswith("http:"):
+                url = "https" + url[4:]
+            response = self.request(url, fatal=False)
+            if response.status_code >= 400:
+                continue
+            url = text.extr(response.text, 'name="twitter:image" value="', '"')
+            if url:
+                files.append({"url": url})
 
     def _transform_tweet(self, tweet):
         if "author" in tweet:
@@ -365,18 +369,22 @@ class TwitterExtractor(Extractor):
     def _expand_tweets(self, tweets):
         seen = set()
         for tweet in tweets:
-
-            if "legacy" in tweet:
-                cid = tweet["legacy"]["conversation_id_str"]
-            else:
-                cid = tweet["conversation_id_str"]
-
-            if cid not in seen:
-                seen.add(cid)
-                try:
-                    yield from self.api.tweet_detail(cid)
-                except Exception:
-                    yield tweet
+            obj = tweet["legacy"] if "legacy" in tweet else tweet
+            cid = obj.get("conversation_id_str")
+            if not cid:
+                tid = obj["id_str"]
+                self.log.warning(
+                    "Unable to expand %s (no 'conversation_id')", tid)
+                continue
+            if cid in seen:
+                self.log.debug(
+                    "Skipping expansion of %s (previously seen)", cid)
+                continue
+            seen.add(cid)
+            try:
+                yield from self.api.tweet_detail(cid)
+            except Exception:
+                yield tweet
 
     def _make_tweet(self, user, id_str, url, timestamp):
         return {
@@ -1519,6 +1527,12 @@ class TwitterAPI():
             tweet["id_str"] = retweet_id = tweet_id
         else:
             retweet_id = None
+
+        # assume 'conversation_id' is the same as 'id' when the tweet
+        # is not a reply
+        if "conversation_id_str" not in tweet and \
+                "in_reply_to_status_id_str" not in tweet:
+            tweet["conversation_id_str"] = tweet["id_str"]
 
         tweet["created_at"] = text.parse_datetime(
             tweet["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(

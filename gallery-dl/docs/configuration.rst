@@ -59,13 +59,13 @@ extractor.*.filename
 --------------------
 Type
     * ``string``
-    * ``object``
+    * ``object`` (`condition` -> `format string`_)
 Example
-    * .. code:: json
+    .. code:: json
 
         "{manga}_c{chapter}_{page:>03}.{extension}"
 
-    * .. code:: json
+    .. code:: json
 
         {
             "extension == 'mp4'": "{id}_video.{extension}",
@@ -117,13 +117,13 @@ extractor.*.directory
 ---------------------
 Type
     * ``list`` of ``strings``
-    * ``object``
+    * ``object`` (`condition` -> `format strings`_)
 Example
-    * .. code:: json
+    .. code:: json
 
         ["{category}", "{manga}", "c{chapter} - {title}"]
 
-    * .. code:: json
+    .. code:: json
 
         {
             "'nature' in content": ["Nature Pictures"],
@@ -201,7 +201,7 @@ extractor.*.path-restrict
 -------------------------
 Type
     * ``string``
-    * ``object``
+    * ``object`` (`character` -> `replacement character(s)`)
 Default
     ``"auto"``
 Example
@@ -281,7 +281,7 @@ Description
 extractor.*.extension-map
 -------------------------
 Type
-    ``object``
+    ``object`` (`extension` -> `replacement`)
 Default
     .. code:: json
 
@@ -416,7 +416,7 @@ extractor.*.cookies
 -------------------
 Type
     * |Path|_
-    * ``object``
+    * ``object`` (`name` -> `value`)
     * ``list``
 Description
     Source to read additional cookies from. This can be
@@ -467,7 +467,7 @@ extractor.*.proxy
 -----------------
 Type
     * ``string``
-    * ``object``
+    * ``object`` (`scheme` -> `proxy`)
 Default
     ``null``
 Description
@@ -550,11 +550,11 @@ Description
 extractor.*.keywords
 --------------------
 Type
-    ``object``
+    ``object`` (`name` -> `value`)
 Example
     ``{"type": "Pixel Art", "type_id": 123}``
 Description
-    Additional key-value pairs to be added to each metadata dictionary.
+    Additional name-value pairs to be added to each metadata dictionary.
 
 
 extractor.*.keywords-default
@@ -1814,7 +1814,7 @@ Description
 extractor.mangadex.api-parameters
 ---------------------------------
 Type
-    ``object``
+    ``object`` (`name` -> `value`)
 Example
     ``{"order[updatedAt]": "desc"}``
 Description
@@ -1845,8 +1845,24 @@ Description
     List of acceptable content ratings for returned chapters.
 
 
-extractor.mastodon.reblogs
---------------------------
+extractor.[mastodon].access-token
+---------------------------------
+Type
+    ``string``
+Default
+    ``null``
+Description
+    The ``access-token`` value you get from `linking your account to
+    gallery-dl <OAuth_>`__.
+
+    Note: gallery-dl comes with built-in tokens for ``mastodon.social``,
+    ``pawoo`` and ``baraag``. For other instances, you need to obtain an
+    ``access-token`` in order to use usernames in place of numerical
+    user IDs. 
+
+
+extractor.[mastodon].reblogs
+----------------------------
 Type
     ``bool``
 Default
@@ -1855,8 +1871,8 @@ Description
     Fetch media from reblogged posts.
 
 
-extractor.mastodon.replies
---------------------------
+extractor.[mastodon].replies
+----------------------------
 Type
     ``bool``
 Default
@@ -1865,8 +1881,8 @@ Description
     Fetch media from replies to other posts.
 
 
-extractor.mastodon.text-posts
------------------------------
+extractor.[mastodon].text-posts
+-------------------------------
 Type
     ``bool``
 Default
@@ -2105,7 +2121,7 @@ Type
 Default
     ``"auto"``
 Description
-    Specifies the domain used by ``pinterest`` extractots.
+    Specifies the domain used by ``pinterest`` extractors.
 
     Setting this option to ``"auto"``
     uses the same domain as a given input URL.
@@ -2703,6 +2719,8 @@ Description
     for each Tweet in said timeline.
 
     Note: This requires at least 1 additional API call per initial Tweet.
+    Age-restricted replies cannot be expanded when using the
+    `syndication <extractor.twitter.syndication_>`__ API.
 
 
 extractor.twitter.size
@@ -2737,6 +2755,12 @@ Description
       requests in some cases (e.g. when `retweets <extractor.twitter.retweets_>`_
       are enabled).
 
+    Note: This does not apply to search results (including
+    `timeline strategies <extractor.twitter.timeline.strategy_>`__).
+    To retrieve such content from search results, you must log in and
+    disable "Hide sensitive content" in your `search settings
+    <https://twitter.com/settings/search>`__.
+
 
 extractor.twitter.logout
 ------------------------
@@ -2767,6 +2791,9 @@ Default
 Description
     Fetch media from quoted Tweets.
 
+    If this option is enabled, gallery-dl will try to fetch
+    a quoted (original) Tweet when it sees the Tweet which quotes it.
+
 
 extractor.twitter.replies
 -------------------------
@@ -2779,6 +2806,13 @@ Description
 
     If this value is ``"self"``, only consider replies where
     reply and original Tweet are from the same user.
+
+    Note: Twitter will automatically expand conversations if you
+    use the ``/with_replies`` timeline while logged in. For example,
+    media from Tweets which the user replied to will also be downloaded.
+
+    It is possible to exclude unwanted Tweets using `image-filter
+    <extractor.*.image-filter_>`__.
 
 
 extractor.twitter.retweets
@@ -3098,7 +3132,7 @@ Description
 extractor.ytdl.raw-options
 --------------------------
 Type
-    ``object``
+    ``object`` (`name` -> `value`)
 Example
     .. code:: json
 
@@ -3334,13 +3368,14 @@ downloader.*.proxy
 ------------------
 Type
     * ``string``
-    * ``object``
+    * ``object`` (`scheme` -> `proxy`)
 Default
     `extractor.*.proxy`_
 Description
     Proxy server used for file downloads.
 
-    Disable the use of a proxy by explicitly setting this option to ``null``.
+    Disable the use of a proxy for file downloads
+    by explicitly setting this option to ``null``.
 
 
 downloader.http.adjust-extensions
@@ -3378,7 +3413,7 @@ Description
 downloader.http.headers
 -----------------------
 Type
-    ``object``
+    ``object`` (`name` -> `value`)
 Example
     ``{"Accept": "image/webp,*/*", "Referer": "https://example.org/"}``
 Description
@@ -3475,7 +3510,7 @@ Description
 downloader.ytdl.raw-options
 ---------------------------
 Type
-    ``object``
+    ``object`` (`name` -> `value`)
 Example
     .. code:: json
 
@@ -3523,7 +3558,7 @@ output.mode
 -----------
 Type
     * ``string``
-    * ``object``
+    * ``object`` (`key` -> `format string`)
 Default
     ``"auto"``
 Description
@@ -3592,7 +3627,7 @@ Description
 output.colors
 -------------
 Type
-    ``object``
+    ``object`` (`key` -> `ANSI color`)
 Default
     ``{"success": "1;32", "skip": "2"}``
 Description
@@ -3735,7 +3770,7 @@ and `event <exec.event_>`__ field:
 classify.mapping
 ----------------
 Type
-    ``object``
+    ``object`` (`directory` -> `extensions`)
 Default
     .. code:: json
 
@@ -3854,8 +3889,7 @@ Default
 Description
     Selects how to process metadata.
 
-    * ``"json"``: write metadata using `json.dump()
-      <https://docs.python.org/3/library/json.html#json.dump>`__
+    * ``"json"``: write metadata using |json.dump()|_
     * ``"jsonl"``: write metadata in `JSON Lines
       <https://jsonlines.org/>`__ format
     * ``"tags"``: write ``tags`` separated by newlines
@@ -3959,11 +3993,11 @@ Type
     * ``list`` of ``strings``
     * ``object`` (`field name` -> `format string`_)
 Example
-    * .. code:: json
+    .. code:: json
 
         ["blocked", "watching", "status[creator][name]"]
 
-    * .. code:: json
+    .. code:: json
 
         {
             "blocked"         : "***",
@@ -3993,6 +4027,21 @@ Description
     Note: Only applies for ``"mode": "custom"``.
 
 
+metadata.indent
+---------------
+Type
+    * ``integer``
+    * ``string``
+Default
+    ``4``
+Description
+    Indentation level of JSON output.
+
+    See the ``indent`` argument of |json.dump()|_ for further details.
+
+    Note: Only applies for ``"mode": "json"``.
+
+
 metadata.open
 -------------
 Type
@@ -4006,18 +4055,7 @@ Description
     use ``"a"`` to append to a file's content
     or ``"w"`` to truncate it.
 
-    See the ``mode`` parameter of |open()|_ for further details.
-
-
-metadata.private
-----------------
-Type
-    ``bool``
-Default
-    ``false``
-Description
-    Include private fields,
-    i.e. fields whose name starts with an underscore.
+    See the ``mode`` argument of |open()|_ for further details.
 
 
 metadata.encoding
@@ -4029,7 +4067,18 @@ Defsult
 Description
     Name of the encoding used to encode a file's content.
 
-    See the ``encoding`` parameter of |open()|_ for further details.
+    See the ``encoding`` argument of |open()|_ for further details.
+
+
+metadata.private
+----------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    Include private fields,
+    i.e. fields whose name starts with an underscore.
 
 
 metadata.archive
@@ -4531,7 +4580,7 @@ Description
 
     * If given as a single ``float``, it will be used as that exact value.
     * If given as a ``list`` with 2 floating-point numbers ``a`` & ``b`` ,
-      it will be randomly chosen with uniform distribution such that ``a <= N <=b``.
+      it will be randomly chosen with uniform distribution such that ``a <= N <= b``.
       (see `random.uniform() <https://docs.python.org/3/library/random.html#random.uniform>`_)
     * If given as a ``string``, it can either represent a single ``float``
       value (``"2.85"``) or a range  (``"1.5-3.0"``).
@@ -4696,6 +4745,7 @@ Description
 .. |postprocessors| replace:: ``postprocessors``
 .. |mode: color| replace:: ``"mode": "color"``
 .. |open()| replace:: the built-in ``open()`` function
+.. |json.dump()| replace:: ``json.dump()``
 
 .. _base-directory: `extractor.*.base-directory`_
 .. _date-format: `extractor.*.date-format`_
@@ -4710,6 +4760,7 @@ Description
 .. _strptime:           https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
 .. _webbrowser.open():  https://docs.python.org/3/library/webbrowser.html
 .. _open():             https://docs.python.org/3/library/functions.html#open
+.. _json.dump():        https://docs.python.org/3/library/json.html#json.dump
 .. _mature_content:     https://www.deviantart.com/developers/http/v1/20160316/object/deviation
 .. _Authentication:     https://github.com/mikf/gallery-dl#authentication
 .. _OAuth:              https://github.com/mikf/gallery-dl#oauth
