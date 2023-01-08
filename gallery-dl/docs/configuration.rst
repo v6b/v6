@@ -375,7 +375,9 @@ Description
 
     and optional for
 
+    * ``aibooru`` (*)
     * ``aryion``
+    * ``atfbooru`` (*)
     * ``danbooru`` (*)
     * ``e621`` (*)
     * ``exhentai``
@@ -398,7 +400,7 @@ Description
     ``-u/--username`` and ``-p/--password`` command-line options or
     by using a |.netrc|_ file. (see Authentication_)
 
-    (*) The password value for ``danbooru`` and ``e621`` should be
+    (*) The password value for these sites should be
     the API key found in your user profile, not the actual account password.
 
 
@@ -591,11 +593,12 @@ Type
 Default
     ``null``
 Description
-    Insert a reference to the current `PathFormat <https://github.com/mikf/gallery-dl/blob/v1.22.4/gallery_dl/path.py#L20>`__
+    Insert a reference to the current
+    `PathFormat <https://github.com/mikf/gallery-dl/blob/v1.24.2/gallery_dl/path.py#L27>`__
     data structure into metadata dictionaries as the given name.
 
     For example, setting this option to ``"gdl_path"`` would make it possible
-    to access the current file's filename as ``"[gdl_path.filename}"``.
+    to access the current file's filename as ``"{gdl_path.filename}"``.
 
 
 extractor.*.http-metadata
@@ -1858,7 +1861,7 @@ Description
     Note: gallery-dl comes with built-in tokens for ``mastodon.social``,
     ``pawoo`` and ``baraag``. For other instances, you need to obtain an
     ``access-token`` in order to use usernames in place of numerical
-    user IDs. 
+    user IDs.
 
 
 extractor.[mastodon].reblogs
@@ -2167,6 +2170,17 @@ Description
     It is possible to use ``"all"`` instead of listing all values separately.
 
 
+extractor.pixiv.refresh-token
+-----------------------------
+Type
+    ``string``
+Description
+    The ``refresh-token`` value you get
+    from running ``gallery-dl oauth:pixiv`` (see OAuth_) or
+    by using a third-party tool like
+    `gppt <https://github.com/eggplants/get-pixivpy-token>`__.
+
+
 extractor.pixiv.metadata
 ------------------------
 Type
@@ -2175,6 +2189,20 @@ Default
     ``false``
 Description
     Fetch extended ``user`` metadata.
+
+
+extractor.pixiv.metadata-bookmark
+---------------------------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    For works bookmarked by
+    `your own account <extractor.pixiv.refresh-token_>`__,
+    fetch bookmark tags as ``tags_bookmark`` metadata.
+
+    Note: This requires 1 additional API call per bookmarked post.
 
 
 extractor.pixiv.work.related
@@ -2308,7 +2336,7 @@ Description
     Retrieve additional comments by resolving the ``more`` comment
     stubs in the base comment tree.
 
-    This requires 1 additional API call for every 100 extra comments.
+    Note: This requires 1 additional API call for every 100 extra comments.
 
 
 extractor.reddit.date-min & .date-max
@@ -4648,9 +4676,9 @@ Description
           In addition to the default
           `LogRecord attributes <https://docs.python.org/3/library/logging.html#logrecord-attributes>`__,
           it is also possible to access the current
-          `extractor <https://github.com/mikf/gallery-dl/blob/33fe67b594dbf8fb742464c95e0f6952bb60eb8a/gallery_dl/extractor/common.py#L23>`__,
-          `job <https://github.com/mikf/gallery-dl/blob/33fe67b594dbf8fb742464c95e0f6952bb60eb8a/gallery_dl/job.py#L18>`__,
-          `path <https://github.com/mikf/gallery-dl/blob/33fe67b594dbf8fb742464c95e0f6952bb60eb8a/gallery_dl/util.py#L702>`__,
+          `extractor <https://github.com/mikf/gallery-dl/blob/v1.24.2/gallery_dl/extractor/common.py#L26>`__,
+          `job <https://github.com/mikf/gallery-dl/blob/v1.24.2/gallery_dl/job.py#L21>`__,
+          `path <https://github.com/mikf/gallery-dl/blob/v1.24.2/gallery_dl/path.py#L27>`__,
           and `keywords` objects and their attributes, for example
           ``"{extractor.url}"``, ``"{path.filename}"``, ``"{keywords.title}"``
         * Default: ``"[{name}][{levelname}] {message}"``

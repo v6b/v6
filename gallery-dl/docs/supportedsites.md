@@ -346,7 +346,7 @@ Consider all sites to be NSFW unless otherwise known.
 <tr>
     <td>ImageFap</td>
     <td>https://www.imagefap.com/</td>
-    <td>Galleries, individual Images, User Profiles</td>
+    <td>Folders, Galleries, individual Images, User Profiles</td>
     <td></td>
 </tr>
 <tr>
@@ -993,7 +993,7 @@ Consider all sites to be NSFW unless otherwise known.
     <td>Aibooru</td>
     <td>https://aibooru.online/</td>
     <td>Favorites, Pools, Popular Images, Posts, Tag Searches</td>
-    <td></td>
+    <td>Supported</td>
 </tr>
 
 <tr>
