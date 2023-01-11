@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.24.4 - 2023-01-11
+### Additions
+- [downloader:http] add `validate` option
+### Fixes
+- [kemonoparty] fix regression from commit 473bd380 ([#3519](https://github.com/mikf/gallery-dl/issues/3519))
+
 ## 1.24.3 - 2023-01-10
 ### Additions
 - [danbooru] extract `uploader` metadata ([#3457](https://github.com/mikf/gallery-dl/issues/3457))
@@ -29,7 +35,7 @@
 - [twitter] apply tweet type checks before uniqueness check ([#3439](https://github.com/mikf/gallery-dl/issues/3439), [#3455](https://github.com/mikf/gallery-dl/issues/3455))
 - [twitter] force `https://` for TwitPic URLs ([#3449](https://github.com/mikf/gallery-dl/issues/3449))
 - [ytdl] adapt to yt-dlp changes
-- updste and improve documentation ([#3453](https://github.com/mikf/gallery-dl/issues/3453), [#3462](https://github.com/mikf/gallery-dl/issues/3462), [#3496](https://github.com/mikf/gallery-dl/issues/3496))
+- update and improve documentation ([#3453](https://github.com/mikf/gallery-dl/issues/3453), [#3462](https://github.com/mikf/gallery-dl/issues/3462), [#3496](https://github.com/mikf/gallery-dl/issues/3496))
 
 ## 1.24.2 - 2022-12-18
 ### Additions
