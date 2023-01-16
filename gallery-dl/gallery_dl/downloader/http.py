@@ -38,7 +38,7 @@ class HttpDownloader(DownloaderBase):
         self.minsize = self.config("filesize-min")
         self.maxsize = self.config("filesize-max")
         self.retries = self.config("retries", extractor._retries)
-        self.retry_codes = self.config("retry-codes")
+        self.retry_codes = self.config("retry-codes", extractor._retry_codes)
         self.timeout = self.config("timeout", extractor._timeout)
         self.verify = self.config("verify", extractor._verify)
         self.mtime = self.config("mtime", True)
@@ -46,8 +46,6 @@ class HttpDownloader(DownloaderBase):
 
         if self.retries < 0:
             self.retries = float("inf")
-        if self.retry_codes is None:
-            self.retry_codes = [429]
         if self.minsize:
             minsize = text.parse_bytes(self.minsize)
             if not minsize:
@@ -104,7 +102,7 @@ class HttpDownloader(DownloaderBase):
 
         codes = kwdict.get("_http_retry_codes")
         if codes:
-            retry_codes = self.retry_codes.copy()
+            retry_codes = list(self.retry_codes)
             retry_codes += codes
         else:
             retry_codes = self.retry_codes
@@ -392,6 +390,8 @@ MIME_TYPES = {
     "application/x-shockwave-flash": "swf",
 
     "application/ogg": "ogg",
+    # https://www.iana.org/assignments/media-types/model/obj
+    "model/obj": "obj",
     "application/octet-stream": "bin",
 }
 
@@ -421,6 +421,13 @@ SIGNATURE_CHECKS = {
     "7z"  : lambda s: s[0:6] == b"\x37\x7A\xBC\xAF\x27\x1C",
     "pdf" : lambda s: s[0:5] == b"%PDF-",
     "swf" : lambda s: s[0:3] in (b"CWS", b"FWS"),
+    "blend": lambda s: s[0:7] == b"BLENDER",
+    # unfortunately the Wavefront .obj format doesn't have a signature,
+    # so we check for the existence of Blender's comment
+    "obj" : lambda s: s[0:11] == b"# Blender v",
+    # Celsys Clip Studio Paint format
+    # https://github.com/rasensuihei/cliputils/blob/master/README.md
+    "clip": lambda s: s[0:8] == b"CSFCHUNK",
     # check 'bin' files against all other file signatures
     "bin" : lambda s: False,
 }
