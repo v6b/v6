@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright 2018-2020 Leonardo Taccari
-# Copyright 2018-2022 Mike Fährmann
+# Copyright 2018-2023 Mike Fährmann
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -90,6 +90,11 @@ class InstagramExtractor(Extractor):
     def posts(self):
         return ()
 
+    def finalize(self):
+        if self._cursor:
+            self.log.info("Use '-o cursor=%s' to continue downloading "
+                          "from the current position", self._cursor)
+
     def request(self, url, **kwargs):
         response = Extractor.request(self, url, **kwargs)
 
@@ -104,15 +109,16 @@ class InstagramExtractor(Extractor):
                 page = None
 
             if page:
-                if self._cursor:
-                    self.log.info("Use '-o cursor=%s' to continue downloading "
-                                  "from the current position", self._cursor)
                 raise exception.StopExtraction("HTTP redirect to %s page (%s)",
                                                page, url.partition("?")[0])
 
         www_claim = response.headers.get("x-ig-set-www-claim")
         if www_claim is not None:
             self.www_claim = www_claim
+
+        csrf_token = response.cookies.get("csrftoken")
+        if csrf_token:
+            self.csrf_token = csrf_token
 
         return response
 
@@ -794,7 +800,12 @@ class InstagramRestAPI():
 
     def user_clips(self, user_id):
         endpoint = "/v1/clips/user/"
-        data = {"target_user_id": user_id, "page_size": "50"}
+        data = {
+            "target_user_id": user_id,
+            "page_size": "50",
+            "max_id": None,
+            "include_feed_video": "true",
+        }
         return self._pagination_post(endpoint, data)
 
     def user_collection(self, collection_id):
@@ -820,18 +831,17 @@ class InstagramRestAPI():
     def _call(self, endpoint, **kwargs):
         extr = self.extractor
 
-        url = "https://i.instagram.com/api" + endpoint
+        url = "https://www.instagram.com/api" + endpoint
         kwargs["headers"] = {
+            "Accept"          : "*/*",
             "X-CSRFToken"     : extr.csrf_token,
             "X-Instagram-AJAX": "1006242110",
             "X-IG-App-ID"     : "936619743392459",
             "X-ASBD-ID"       : "198387",
             "X-IG-WWW-Claim"  : extr.www_claim,
-            "Origin"          : extr.root,
+            "X-Requested-With": "XMLHttpRequest",
+            "Alt-Used"        : "www.instagram.com",
             "Referer"         : extr.root + "/",
-        }
-        kwargs["cookies"] = {
-            "csrftoken": extr.csrf_token,
         }
         return extr.request(url, **kwargs).json()
 
@@ -851,7 +861,7 @@ class InstagramRestAPI():
                 yield from data["items"]
 
             if not data.get("more_available"):
-                return
+                return extr._update_cursor(None)
             params["max_id"] = extr._update_cursor(data["next_max_id"])
 
     def _pagination_post(self, endpoint, params):
@@ -866,7 +876,7 @@ class InstagramRestAPI():
 
             info = data["paging_info"]
             if not info.get("more_available"):
-                return
+                return extr._update_cursor(None)
             params["max_id"] = extr._update_cursor(info["max_id"])
 
     def _pagination_sections(self, endpoint, params):
@@ -879,7 +889,7 @@ class InstagramRestAPI():
             yield from info["sections"]
 
             if not info.get("more_available"):
-                return
+                return extr._update_cursor(None)
             params["page"] = info["next_page"]
             params["max_id"] = extr._update_cursor(info["next_max_id"])
 
@@ -894,7 +904,7 @@ class InstagramRestAPI():
                 yield from item["media_items"]
 
             if "next_max_id" not in data:
-                return
+                return extr._update_cursor(None)
             params["max_id"] = extr._update_cursor(data["next_max_id"])
 
 
@@ -982,12 +992,7 @@ class InstagramGraphqlAPI():
             "X-Requested-With": "XMLHttpRequest",
             "Referer"         : extr.root + "/",
         }
-        cookies = {
-            "csrftoken": extr.csrf_token,
-        }
-        return extr.request(
-            url, params=params, headers=headers, cookies=cookies,
-        ).json()["data"]
+        return extr.request(url, params=params, headers=headers).json()["data"]
 
     def _pagination(self, query_hash, variables,
                     key_data="user", key_edge=None):
@@ -1003,7 +1008,7 @@ class InstagramGraphqlAPI():
 
             info = data["page_info"]
             if not info["has_next_page"]:
-                return
+                return extr._update_cursor(None)
             elif not data["edges"]:
                 s = "" if self.item.endswith("s") else "s"
                 raise exception.StopExtraction(
