@@ -452,6 +452,12 @@ Consider all sites to be NSFW unless otherwise known.
     <td></td>
 </tr>
 <tr>
+    <td>Lexica</td>
+    <td>https://lexica.art/</td>
+    <td>Search Results</td>
+    <td></td>
+</tr>
+<tr>
     <td>Lightroom</td>
     <td>https://lightroom.adobe.com/</td>
     <td>Galleries</td>
@@ -587,6 +593,12 @@ Consider all sites to be NSFW unless otherwise known.
     <td>NSFWalbum.com</td>
     <td>https://nsfwalbum.com/</td>
     <td>Albums</td>
+    <td></td>
+</tr>
+<tr>
+    <td>Nudecollect</td>
+    <td>https://nudecollect.com/</td>
+    <td>Albums, individual Images</td>
     <td></td>
 </tr>
 <tr>
