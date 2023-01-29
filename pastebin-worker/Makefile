@@ -7,9 +7,9 @@ JS_LOCK = yarn.lock
 target_html_files = index.html tos.html
 
 # script path
-html_renderer = scripts/render.js
+html_render_script = scripts/render.js
 md2html = scripts/md2html.sh
-deploy_static = scripts/deploy-static.sh
+deploy_static_script = scripts/deploy-static.sh
 
 # stub directories to record when files are uploaded
 RENDERED_DIR = dist/rendered
@@ -46,26 +46,28 @@ $(BUILD_DIR)/index.html.liquid: frontend/index.html frontend/index.js frontend/s
 	cp $< $@
 
 # convert liquid template to html file
-$(rendered_html): $(RENDERED_DIR)/%.html: $(BUILD_DIR)/%.html.liquid $(CONF) $(html_renderer)
-	node $(html_renderer) -c $(CONF)  -o $@ $<
+$(rendered_html): $(RENDERED_DIR)/%.html: $(BUILD_DIR)/%.html.liquid $(CONF) $(html_render_script)
+	mkdir -p $(dir $@)
+	node $(html_render_script) -c $(CONF)  -o $@ $<
 	@# remove indents to reduce size
 	perl -pi -e 's/^\s+//g' $@
 
 # convert liquid template to html file
-$(rendered_preview_html): $(RENDERED_PREVIEW_DIR)/%.html: $(BUILD_DIR)/%.html.liquid $(CONF_PREVIEW) $(html_renderer)
-	node $(html_renderer) -c $(CONF_PREVIEW)  -o $@ $<
+$(rendered_preview_html): $(RENDERED_PREVIEW_DIR)/%.html: $(BUILD_DIR)/%.html.liquid $(CONF_PREVIEW) $(html_render_script)
+	mkdir -p $(dir $@)
+	node $(html_render_script) -c $(CONF_PREVIEW)  -o $@ $<
 	@# remove indents to reduce size
 	perl -pi -e 's/^\s+//g' $@
 
 # deploy html file to Cloudflare
-$(deploy_html): $(DEPLOY_DIR)/%.html: $(BUILD_DIR)/%.html $(deploy_static)
-	$(deploy_static) $<
+$(deploy_html): $(DEPLOY_DIR)/%.html: $(RENDERED_DIR)/%.html $(deploy_static_script)
+	$(deploy_static_script) $<
 	@mkdir -p $(dir $@)
 	@touch $@
 
 # deploy html file to Cloudflare preview env
-$(deploy_preview_html): $(DEPLOY_PREVIEW_DIR)/%.html: $(BUILD_DIR)/%.html $(deploy_static)
-	$(deploy_static) --preview $<
+$(deploy_preview_html): $(DEPLOY_PREVIEW_DIR)/%.html: $(RENDERED_PREVIEW_DIR)/%.html $(deploy_static_script)
+	$(deploy_static_script) --preview $<
 	@mkdir -p $(dir $@)
 	@touch $@
 
