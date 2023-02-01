@@ -47,7 +47,7 @@ class ImagefapGalleryExtractor(ImagefapExtractor):
     pattern = BASE_PATTERN + r"/(?:gallery\.php\?gid=|gallery/|pictures/)(\d+)"
 
     test = (
-        ("https://www.imagefap.com/pictures/7102714", {
+        ("https://www.imagefap.com/gallery/7102714", {
             "pattern": r"https://cdnh?\.imagefap\.com"
                        r"/images/full/\d+/\d+/\d+\.jpg",
             "keyword": "2ba96e84c2952c4750e9fa94a3f2b1f965cec2f3",
@@ -68,6 +68,7 @@ class ImagefapGalleryExtractor(ImagefapExtractor):
             },
             "count": 44,
         }),
+        ("https://www.imagefap.com/pictures/7102714"),
         ("https://www.imagefap.com/gallery.php?gid=7102714"),
         ("https://beta.imagefap.com/gallery.php?gid=7102714"),
     )
@@ -78,7 +79,7 @@ class ImagefapGalleryExtractor(ImagefapExtractor):
         self.image_id = ""
 
     def items(self):
-        url = "{}/pictures/{}/".format(self.root, self.gid)
+        url = "{}/gallery/{}".format(self.root, self.gid)
         page = self.request(url).text
         data = self.get_job_metadata(page)
         yield Message.Directory, data
@@ -88,21 +89,20 @@ class ImagefapGalleryExtractor(ImagefapExtractor):
 
     def get_job_metadata(self, page):
         """Collect metadata for extractor-job"""
-        descr, pos = text.extract(
-            page, '<meta name="description" content="Browse ', '"')
-        count, pos = text.extract(page, ' 1 of ', ' pics"', pos)
-        self.image_id = text.extract(page, 'id="img_ed_', '"', pos)[0]
+        extr = text.extract_from(page)
 
-        title, _, descr = descr.partition(" porn picture gallery by ")
-        uploader, _, tags = descr.partition(" to see hottest ")
-        self._count = text.parse_int(count)
-        return {
+        data = {
             "gallery_id": text.parse_int(self.gid),
-            "title": text.unescape(title),
-            "uploader": uploader,
-            "tags": tags[:-11].split(", "),
-            "count": self._count,
+            "tags": extr('name="keywords" content="', '"').split(", "),
+            "uploader": extr("porn picture gallery by ", " to see hottest"),
+            "title": text.unescape(extr("<title>", "<")),
+            "count": text.parse_int(extr(' 1 of ', ' pics"')),
         }
+
+        self.image_id = extr('id="img_ed_', '"')
+        self._count = data["count"]
+
+        return data
 
     def get_images(self):
         """Collect image-urls and -metadata"""
@@ -128,7 +128,7 @@ class ImagefapGalleryExtractor(ImagefapExtractor):
                 data["image_id"] = text.parse_int(data["filename"])
                 yield image_url, data
 
-            if cnt < 24 and num >= total:
+            if not cnt or cnt < 24 and num >= total:
                 return
             params["idx"] += cnt
 
