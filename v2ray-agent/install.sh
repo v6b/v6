@@ -3542,11 +3542,15 @@ addCorePort() {
     echoContent yellow "如已安装hysteria，会同时安装hysteria新端口"
     echoContent yellow "录入示例:2053,2083,2087\n"
 
-    echoContent yellow "1.添加端口"
-    echoContent yellow "2.删除端口"
+    echoContent yellow "1.查看已添加端口"
+    echoContent yellow "2.添加端口"
+    echoContent yellow "3.删除端口"
     echoContent red "=============================================================="
     read -r -p "请选择:" selectNewPortType
     if [[ "${selectNewPortType}" == "1" ]]; then
+        find ${configPath} -name "*dokodemodoor*" | grep -v "hysteria" | awk -F "[c][o][n][f][/]" '{print $2}' | awk -F "[_]" '{print $4}' | awk -F "[.]" '{print ""NR""":"$1}'
+        exit 0
+    elif [[ "${selectNewPortType}" == "2" ]]; then
         read -r -p "请输入端口号:" newPort
         read -r -p "请输入默认的端口号，同时会更改订阅端口以及节点端口，[回车]默认443:" defaultPort
 
@@ -3624,14 +3628,20 @@ EOF
             reloadCore
             addCorePort
         fi
-    elif [[ "${selectNewPortType}" == "2" ]]; then
-
-        find ${configPath} -name "*dokodemodoor*" | awk -F "[c][o][n][f][/]" '{print ""NR""":"$2}'
+    elif [[ "${selectNewPortType}" == "3" ]]; then
+        find ${configPath} -name "*dokodemodoor*" | grep -v "hysteria" | awk -F "[c][o][n][f][/]" '{print $2}' | awk -F "[_]" '{print $4}' | awk -F "[.]" '{print ""NR""":"$1}'
         read -r -p "请输入要删除的端口编号:" portIndex
         local dokoConfig
-        dokoConfig=$(find ${configPath} -name "*dokodemodoor*" | awk -F "[c][o][n][f][/]" '{print ""NR""":"$2}' | grep "${portIndex}:")
+        dokoConfig=$(find ${configPath} -name "*dokodemodoor*" | grep -v "hysteria" | awk -F "[c][o][n][f][/]" '{print $2}' | awk -F "[_]" '{print $4}' | awk -F "[.]" '{print ""NR""":"$1}' | grep "${portIndex}:")
         if [[ -n "${dokoConfig}" ]]; then
-            rm "${configPath}/$(echo "${dokoConfig}" | awk -F "[:]" '{print $2}')"
+            rm "${configPath}02_dokodemodoor_inbounds_$(echo "${dokoConfig}" | awk -F "[:]" '{print $2}').json"
+            local hysteriaDokodemodoorFilePath=
+
+            hysteriaDokodemodoorFilePath="${configPath}02_dokodemodoor_inbounds_hysteria_$(echo "${dokoConfig}" | awk -F "[:]" '{print $2}').json"
+            if [[ -f "${hysteriaDokodemodoorFilePath}" ]]; then
+                rm "${hysteriaDokodemodoorFilePath}"
+            fi
+
             reloadCore
             addCorePort
         else
@@ -4169,11 +4179,16 @@ ipv6Routing() {
     checkIPv6
     echoContent skyBlue "\n功能 1/${totalProgress} : IPv6分流"
     echoContent red "\n=============================================================="
-    echoContent yellow "1.添加域名"
-    echoContent yellow "2.卸载IPv6分流"
+    echoContent yellow "1.查看已分流域名"
+    echoContent yellow "2.添加域名"
+    echoContent yellow "3.卸载IPv6分流"
     echoContent red "=============================================================="
     read -r -p "请选择:" ipv6Status
     if [[ "${ipv6Status}" == "1" ]]; then
+
+        jq -r -c '.routing.rules[]|select (.outboundTag=="IPv6-out")|.domain' ${configPath}09_routing.json | jq -r
+        exit 0
+    elif [[ "${ipv6Status}" == "2" ]]; then
         echoContent red "=============================================================="
         echoContent yellow "# 注意事项\n"
         echoContent yellow "1.规则仅支持预定义域名列表[https://github.com/v2fly/domain-list-community]"
@@ -4220,7 +4235,7 @@ EOF
 
         echoContent green " ---> 添加成功"
 
-    elif [[ "${ipv6Status}" == "2" ]]; then
+    elif [[ "${ipv6Status}" == "3" ]]; then
 
         unInstallRouting IPv6-out outboundTag
 
@@ -4320,11 +4335,16 @@ blacklist() {
 
     echoContent skyBlue "\n进度  $1/${totalProgress} : 域名黑名单"
     echoContent red "\n=============================================================="
-    echoContent yellow "1.添加域名"
-    echoContent yellow "2.删除黑名单"
+    echoContent yellow "1.查看已屏蔽域名"
+    echoContent yellow "2.添加域名"
+    echoContent yellow "3.删除黑名单"
     echoContent red "=============================================================="
+
     read -r -p "请选择:" blacklistStatus
     if [[ "${blacklistStatus}" == "1" ]]; then
+        jq -r -c '.routing.rules[]|select (.outboundTag=="blackhole-out")|.domain' ${configPath}09_routing.json | jq -r
+        exit 0
+    elif [[ "${blacklistStatus}" == "2" ]]; then
         echoContent red "=============================================================="
         echoContent yellow "# 注意事项\n"
         echoContent yellow "1.规则仅支持预定义域名列表[https://github.com/v2fly/domain-list-community]"
@@ -4363,7 +4383,7 @@ EOF
 
         echoContent green " ---> 添加成功"
 
-    elif [[ "${blacklistStatus}" == "2" ]]; then
+    elif [[ "${blacklistStatus}" == "3" ]]; then
 
         unInstallRouting blackhole-out outboundTag
 
@@ -4447,10 +4467,6 @@ warpRouting() {
     echoContent skyBlue "\n进度  $1/${totalProgress} : WARP分流"
     echoContent red "=============================================================="
     #	echoContent yellow "# 注意事项\n"
-    #	echoContent yellow "1.官方warp经过几轮测试有bug，重启会导致warp失效，并且无法启动，也有可能CPU使用率暴涨"
-    #	echoContent yellow "2.不重启机器可正常使用，如果非要使用官方warp，建议不重启机器"
-    #	echoContent yellow "3.有的机器重启后仍正常使用"
-    #	echoContent yellow "4.重启后无法使用，也可卸载重新安装"
     # 安装warp
     if [[ -z $(which warp-cli) ]]; then
         echo
@@ -4464,11 +4480,16 @@ warpRouting() {
     fi
 
     echoContent red "\n=============================================================="
-    echoContent yellow "1.添加域名"
-    echoContent yellow "2.卸载WARP分流"
+    echoContent yellow "1.查看已分流域名"
+    echoContent yellow "2.添加域名"
+    echoContent yellow "3.卸载WARP分流"
     echoContent red "=============================================================="
     read -r -p "请选择:" warpStatus
     if [[ "${warpStatus}" == "1" ]]; then
+
+        jq -r -c '.routing.rules[]|select (.outboundTag=="warp-socks-out")|.domain' ${configPath}09_routing.json | jq -r
+        exit 0
+    elif [[ "${warpStatus}" == "2" ]]; then
         echoContent red "=============================================================="
         echoContent yellow "# 注意事项\n"
         echoContent yellow "1.规则仅支持预定义域名列表[https://github.com/v2fly/domain-list-community]"
@@ -4477,7 +4498,7 @@ warpRouting() {
         echoContent yellow "4.如内核启动失败请检查域名后重新添加域名"
         echoContent yellow "5.不允许有特殊字符，注意逗号的格式"
         echoContent yellow "6.每次添加都是重新添加，不会保留上次域名"
-        echoContent yellow "7.录入示例:google,youtube,facebook\n"
+        echoContent yellow "7.录入示例:google,youtube,facebook,cn\n"
         read -r -p "请按照上面示例录入域名:" domainList
 
         if [[ -f "${configPath}09_routing.json" ]]; then
@@ -4514,7 +4535,7 @@ EOF
 
         echoContent green " ---> 添加成功"
 
-    elif [[ "${warpStatus}" == "2" ]]; then
+    elif [[ "${warpStatus}" == "3" ]]; then
 
         ${removeType} cloudflare-warp >/dev/null 2>&1
 
@@ -5450,7 +5471,7 @@ menu() {
     cd "$HOME" || exit
     echoContent red "\n=============================================================="
     echoContent green "作者:mack-a"
-    echoContent green "当前版本:v2.6.25"
+    echoContent green "当前版本:v2.6.26"
     echoContent green "Github:https://github.com/mack-a/v2ray-agent"
     echoContent green "描述:八合一共存脚本\c"
     showInstallStatus
