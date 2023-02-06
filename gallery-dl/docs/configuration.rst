@@ -380,6 +380,7 @@ Description
     * ``atfbooru`` (*)
     * ``danbooru`` (*)
     * ``e621`` (*)
+    * ``e926`` (*)
     * ``exhentai``
     * ``idolcomplex``
     * ``imgbb``
@@ -759,6 +760,19 @@ Description
     Prefix for archive IDs.
 
 
+extractor.*.archive-pragma
+--------------------------
+Type
+    ``list`` of ``strings``
+Example
+    ``["journal_mode=WAL", "synchronous=NORMAL"]``
+Description
+    A list of SQLite ``PRAGMA`` statements to run during archive initialization.
+
+    See `<https://www.sqlite.org/pragma.html>`__
+    for available ``PRAGMA`` statements and further details.
+
+
 extractor.*.postprocessors
 --------------------------
 Type
@@ -1102,8 +1116,21 @@ Description
     follow the ``source`` and download from there if possible.
 
 
-extractor.danbooru.metadata
----------------------------
+extractor.danbooru.ugoira
+-------------------------
+Type
+    ``bool``
+Default
+    ``false``
+Description
+    Controls the download target for Ugoira posts.
+
+    * ``true``: Original ZIP archives
+    * ``false``: Converted video files
+
+
+extractor.[Danbooru].metadata
+-----------------------------
 Type
     * ``bool``
     * ``string``
@@ -1124,8 +1151,8 @@ Description
     Note: This requires 1 additional HTTP request per post.
 
 
-extractor.danbooru.threshold
-----------------------------
+extractor.{Danbooru].threshold
+------------------------------
 Type
     * ``string``
     * ``integer``
@@ -1134,25 +1161,11 @@ Default
 Description
     Stop paginating over API results if the length of a batch of returned
     posts is less than the specified number. Defaults to the per-page limit
-    of the current instance, which is 320 for ``e621`` and 200 for
-    everything else.
+    of the current instance, which is 200.
 
     Note: Changing this setting is normally not necessary. When the value is
     greater than the per-page limit, gallery-dl will stop after the first
     batch. The value cannot be less than 1.
-
-
-extractor.danbooru.ugoira
--------------------------
-Type
-    ``bool``
-Default
-    ``false``
-Description
-    Controls the download target for Ugoira posts.
-
-    * ``true``: Original ZIP archives
-    * ``false``: Converted video files
 
 
 extractor.derpibooru.api-key
@@ -1385,6 +1398,40 @@ Default
     ``0``
 Description
     Minimum wait time in seconds before API requests.
+
+
+extractor.[E621].metadata
+-------------------------
+Type
+    * ``bool``
+    * ``string``
+    * ``list`` of ``strings``
+Default
+    ``false``
+Example
+    * ``notes,pools``
+    * ``["notes", "pools"``
+Description
+    Extract additional metadata (notes, pool metadata) if available.
+
+    Note: This requires 0-2 additional HTTP requests per post.
+
+
+extractor.[E621].threshold
+--------------------------
+Type
+    * ``string``
+    * ``integer``
+Default
+    ``"auto"``
+Description
+    Stop paginating over API results if the length of a batch of returned
+    posts is less than the specified number. Defaults to the per-page limit
+    of the current instance, which is 320.
+
+    Note: Changing this setting is normally not necessary. When the value is
+    greater than the per-page limit, gallery-dl will stop after the first
+    batch. The value cannot be less than 1.
 
 
 extractor.exhentai.domain
@@ -2839,6 +2886,16 @@ Description
     `syndication <extractor.twitter.syndication_>`__ API.
 
 
+extractor.twitter.transform
+---------------------------
+Type
+    ``bool``
+Default
+    ``true``
+Description
+    Transform Tweet and User metadata into a simpler, uniform format.
+
+
 extractor.twitter.size
 ----------------------
 Type
@@ -3983,9 +4040,11 @@ Description
     File to store IDs of executed commands in,
     similar to `extractor.*.archive`_.
 
-    ``archive-format`` and ``archive-prefix`` options,
-    akin to `extractor.*.archive-format`_ and `extractor.*.archive-prefix`_,
-    are supported as well.
+    ``archive-format``, ``archive-prefix``, and ``archive-pragma`` options,
+    akin to
+    `extractor.*.archive-format`_,
+    `extractor.*.archive-prefix`_, and
+    `extractor.*.archive-pragma`_, are supported as well.
 
 
 exec.async
@@ -4243,9 +4302,11 @@ Description
     File to store IDs of generated metadata files in,
     similar to `extractor.*.archive`_.
 
-    ``archive-format`` and ``archive-prefix`` options,
-    akin to `extractor.*.archive-format`_ and `extractor.*.archive-prefix`_,
-    are supported as well.
+    ``archive-format``, ``archive-prefix``, and ``archive-pragma`` options,
+    akin to
+    `extractor.*.archive-format`_,
+    `extractor.*.archive-prefix`_, and
+    `extractor.*.archive-pragma`_, are supported as well.
 
 
 metadata.mtime
