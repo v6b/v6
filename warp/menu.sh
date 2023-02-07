@@ -2,7 +2,7 @@
 export LANG=en_US.UTF-8
 
 # 当前脚本版本号
-VERSION=2.46
+VERSION=2.47
 
 # 选择 IP API 服务商
 IP_API=https://api.ip.sb/geoip; ISP=isp
@@ -11,8 +11,8 @@ IP_API=https://api.ip.sb/geoip; ISP=isp
 
 E[0]="\n Language:\n 1. English (default) \n 2. 简体中文\n"
 C[0]="${E[0]}"
-E[1]="Switch the IPv4 / IPv6 priority by [warp s 4/6/d]."
-C[1]="通过 [warp s 4/6/d] 来切换 IPv4 / IPv6 的优先级别"
+E[1]="Iptables + dnsmasq + ipset solution supports chatGPT. Install via the 12 option in the menu or [bash menu.sh e]"
+C[1]="Iptables + dnsmasq + ipset 方案支持 chatGPT. 安装方式: 菜单 12 选项或者 [bash menu.sh e]"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp/issues]"
 E[3]="The TUN module is not loaded. You should turn it on in the control panel. Ask the supplier for more help. Feedback: [https://github.com/fscarmen/warp/issues]"
@@ -1196,7 +1196,10 @@ server=/fonts.googleapis.com/1.1.1.1
 server=/yt3.ggpht.com/1.1.1.1
 server=/gstatic.com/1.1.1.1
 
+# > Custom Website
 ipset=/www.cloudflare.com/warp
+ipset=/openai.com/warp
+ipset=/ip.sb/warp
 ipset=/ip.gs/warp
 ipset=/ifconfig.co/warp
 ipset=/googlevideo.com/warp
@@ -1272,7 +1275,8 @@ EOF
   chmod +x /etc/wireguard/up /etc/wireguard/down
 
   # 修改 wgcf.conf 和 warp.conf 文件
-  sed -i "s/^Post.*/#&/g;\$a PersistentKeepalive = 5; 7 i Table = off\nPostUp = /etc/wireguard/up\nPredown = /etc/wireguard/down" /etc/wireguard/wgcf.conf
+  sed -i "s/^Post.*/#&/g;/MTU/a\Table = off\nPostUp = /etc/wireguard/up\nPredown = /etc/wireguard/down" /etc/wireguard/wgcf.conf
+  sed -i "\$a PersistentKeepalive = 5" /etc/wireguard/wgcf.conf
   [ "$m" = 0 ] && sed -i "2i server=2606:4700:4700::1111\nserver=2001:4860:4860::8888\nserver=2001:4860:4860::8844" /etc/dnsmasq.d/warp.conf
   ! grep -q 'warp' /etc/iproute2/rt_tables && echo '250   warp' >>/etc/iproute2/rt_tables
   systemctl disable systemd-resolved --now >/dev/null 2>&1 && sleep 2
