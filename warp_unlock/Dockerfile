@@ -14,7 +14,7 @@ RUN apk add --no-cache tzdata wireguard-tools curl \
  && gzip -d gost.gz \
  && echo "*/5 * * * * nohup bash /etc/wireguard/warp_unlock.sh >/dev/null 2>&1 &" >> /etc/crontabs/root \
  && echo 'null' > status.log \
- && echo -e "wg-quick up wgcf\ncrond\n./gost -L :40000" > run.sh \
+ && echo -e '#!/usr/bin/env bash\n\nwg-quick up wgcf\ncrond\n./gost -L :40000' > run.sh \
  && chmod +x gost run.sh
 
 ENTRYPOINT ./run.sh

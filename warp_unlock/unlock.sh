@@ -3,7 +3,7 @@
 export LANG=en_US.UTF-8
 
 # 当前脚本版本号和新增功能
-VERSION='1.09'
+VERSION='1.10'
 
 # 最大支持流媒体
 SUPPORT_NUM='2'
@@ -15,8 +15,8 @@ IP_API=https://api.ip.sb/geoip; ISP=isp
 
 E[0]="Language:\n  1.English (default) \n  2.简体中文"
 C[0]="${E[0]}"
-E[1]="Support change IP for warp-go mode"
-C[1]="支持 warp-go 模式下更换 IP"
+E[1]="Upgrade the Netflix unlocking section"
+C[1]="升级解锁奈飞的方式"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp_unlock/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp_unlock/issues]"
 E[3]="Choose:"
@@ -43,8 +43,8 @@ E[13]="The current region is \$REGION. Confirm press [y] . If you want another r
 C[13]="当前地区是:\$REGION，需要解锁当前地区请按 y , 如需其他地址请输入两位地区简写 \(如 hk,sg，默认:\$REGION\):"
 E[14]="Wrong input."
 C[14]="输入错误"
-E[15]="Select the stream media you wanna unlock (Multiple selections are possible, such as 123. The default is select all)\n 1. Netflix\n 2. Disney+"
-C[15]="选择你期望解锁的流媒体 (可多选，如 123，默认为全选)\n 1. Netflix\n 2. Disney+"
+E[15]="Select the stream media you wanna unlock (Multiple selections are possible, such as 12. The default is select all)\n 1. Netflix\n 2. Disney+"
+C[15]="选择你期望解锁的流媒体 (可多选，如 12，默认为全选)\n 1. Netflix\n 2. Disney+"
 E[16]="The script Born to make stream media unlock by WARP. Detail:[https://github.com/fscarmen/warp_unlock]\n Features:\n\t • Support a variety of main stream streaming media detection.\n\t • Multiple ways to unlock.\n\t • Support WARP Socks5 Proxy to detect and replace IP.\n\t • log output"
 C[16]="本项目专为 WARP 解锁流媒体而生。详细说明：[https://github.com/fscarmen/warp_unlock]\n 脚本特点:\n\t • 支持多种主流串流影视检测\n\t • 多种方式解锁\n\t • 支持 WARP Socks5 Proxy 检测和更换 IP\n\t • 日志输出"
 E[17]="Version"
@@ -301,7 +301,7 @@ input_streammedia_unlock() {
     done
   fi
   UNLOCK_SELECT=$(for ((e=0; e<"$SUPPORT_NUM"; e++)); do
-	                [ "${STREAM_UNLOCK[e]}" = 1 ] && echo -e "[[ ! \${R[*]} =~ 'No' ]] && check$e;" || echo -e "#[[ ! \${R[*]} =~ 'No' ]] && check$e;"
+                    [ "${STREAM_UNLOCK[e]}" = 1 ] && echo -e "[[ ! \${R[*]} =~ 'No' ]] && check$e;" || echo -e "#[[ ! \${R[*]} =~ 'No' ]] && check$e;"
                   done)
 }
 
@@ -326,22 +326,22 @@ input_tg() {
 
 # 根据用户选择在线生成解锁程序，放在 /etc/wireguard/unlock.sh
 export_unlock_file() {
-input_streammedia_unlock
+  input_streammedia_unlock
 
-input_region
+  input_region
 
-input_tg
+  input_tg
 
-# 检测 Disney+ 需要用到 python 依赖
-[[ "${STREAM_UNLOCK[1]}" = 1 && -z "$PYTHON" ]] && check_python
+  # 检测 Disney+ 需要用到 python 依赖
+  [[ "${STREAM_UNLOCK[1]}" = 1 && -z "$PYTHON" ]] && check_python
 
-# 根据解锁模式写入定时任务或systemd
-sh -c "$TASK"
+  # 根据解锁模式写入定时任务或systemd
+  sh -c "$TASK"
 
-# 生成 warp_unlock.sh 文件，判断当前流媒体解锁状态，遇到不解锁时更换 WARP IP，直至刷成功。5分钟后还没有刷成功，将不会重复该进程而浪费系统资源
-# 感谢以下两位作者: lmc999 [https://github.com/lmc999/RegionRestrictionCheck] 和 luoxue-bot [https://github.com/luoxue-bot/warp_auto_change_ip]
-# 根据 lmc999 脚本检测 Netflix Title，如获取不到，使用兜底默认值
-cat <<EOF >/usr/bin/warp_unlock.sh
+  # 生成 warp_unlock.sh 文件，判断当前流媒体解锁状态，遇到不解锁时更换 WARP IP，直至刷成功。5分钟后还没有刷成功，将不会重复该进程而浪费系统资源
+  # 感谢以下两位作者: lmc999 [https://github.com/lmc999/RegionRestrictionCheck] 和 luoxue-bot [https://github.com/luoxue-bot/warp_auto_change_ip]
+  # 根据 lmc999 脚本检测 Netflix Title，如获取不到，使用兜底默认值
+  cat <<EOF >/usr/bin/warp_unlock.sh
 #!/usr/bin/env bash
 MODE="$CHOOSE1"
 EXPECT="$EXPECT"
@@ -355,9 +355,12 @@ PYTHON="$PYTHON"
 UNLOCK_STATUS='Yes 🎉'
 NOT_UNLOCK_STATUS='No 😰'
 LMC999=\$(curl -sSLm4 https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh)
-RESULT_TITLE=\$(echo "\$LMC999" | grep "result.*netflix.com/title/" | sed "s/.*title\/\([^\"]*\).*/\1/")
+RESULT_TITLE=(\$(echo "\$LMC999" | grep "result.*netflix.com/title/" | sed "s/.*title\/\([^\"]*\).*/\1/"))
 REGION_TITLE=\$(echo "\$LMC999" | grep "region.*netflix.com/title/" | sed "s/.*title\/\([^\"]*\).*/\1/")
-RESULT_TITLE=\${RESULT_TITLE:-'81280792'}; REGION_TITLE=\${REGION_TITLE:-'80018499'}
+[[ ! \${RESULT_TITLE[0]} =~ ^[0-9]+$ ]] && RESULT_TITLE[0]='81280792'
+[[ ! \${RESULT_TITLE[1]} =~ ^[0-9]+$ ]] && RESULT_TITLE[1]='70143836'
+[[ ! "\$REGION_TITLE" =~ ^[0-9]+$ ]] && REGION_TITLE='80018499'
+
 timedatectl set-timezone Asia/Shanghai
 
 if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a) print i" "a[i]}') -le 2 ]]; then
@@ -415,9 +418,14 @@ if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a
   wireproxy_restart() { systemctl restart wireproxy; sleep 5; check_ip; }
 
   check0() {
-    RESULT[0]=""; REGION[0]=""; R[0]="";
-    RESULT[0]=\$(curl --user-agent "\${UA_Browser}" \$NIC -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/\$RESULT_TITLE"  2>&1)
-    if [[ \${RESULT[0]} = 200 ]]; then
+    RESULT[0]=""; REGION[0]=""; R[0]=""
+
+    for ((l=0; l<\${#RESULT_TITLE[@]}; l++)); do
+      RESULT_NETFLIX[l]=\$(curl --user-agent "\${UA_Browser}" \$NIC -fsL --write-out %{http_code} --output /dev/null --max-time 10 "https://www.netflix.com/title/\${RESULT_TITLE[l]}")
+      [ "\${RESULT_NETFLIX[l]}" = 200 ] && break
+    done
+
+    if [[ \${RESULT_NETFLIX[@]} =~ 200 ]]; then
       REGION[0]=\$(curl --user-agent "\${UA_Browser}" \$NIC -fs --max-time 10 --write-out %{redirect_url} --output /dev/null "https://www.netflix.com/title/\$REGION_TITLE" | sed 's/.*com\/\([^-/]\{1,\}\).*/\1/g' | tr '[:lower:]' '[:upper:]')
       REGION[0]=\${REGION[0]:-'US'}
     fi

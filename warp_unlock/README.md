@@ -14,6 +14,8 @@ Born to make stream media unlock by WARP
 * * *
 
 ## 更新信息和 TODO
+2023.3.26 1.10 Upgrade the Netflix unlocking section; 升级解锁奈飞的部分
+
 2022.9.16  1.09 Support change IP for warp-go mode; 支持 warp-go 模式下更换 IP
 
 2022.4.9  1.08 Support change IP for Client WARP mode; 支持 Client WRAP 模式下更换 IP
