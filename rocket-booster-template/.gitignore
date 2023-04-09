@@ -119,6 +119,5 @@ dist
 worker
 .cargo-ok
 
-# Miscellaneous
+# macOS
 .DS_store
-.mf

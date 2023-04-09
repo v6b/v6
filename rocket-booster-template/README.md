@@ -24,5 +24,5 @@ npm install
 
 Edit or add route definitions in `src/index.ts`. Please read the examples and route definition section below for more details.
 
-- Run `npm run dev` to preview Reflare with local development server provided by [Miniflare](https://miniflare.dev).
+- Run `npm run dev` to preview Reflare with local development server.
 - Run `npm run deploy` to publish Reflare on Cloudflare Workers.
