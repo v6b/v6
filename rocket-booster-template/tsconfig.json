@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "dist",
     "module": "ESNext",
     "target": "ESNext",
     "lib": [
@@ -26,9 +26,5 @@
   },
   "include": [
     "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
   ]
 }

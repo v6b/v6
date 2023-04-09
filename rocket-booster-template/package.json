@@ -1,12 +1,12 @@
 {
   "name": "reflare-template",
   "version": "1.0.0",
-  "description": "🚀 The template to kickstart Reflare",
+  "description": "The template to kickstart Reflare",
   "private": true,
   "scripts": {
     "build": "tsc",
     "dev": "wrangler dev",
-    "deploy": "wrangler publish"
+    "publish": "wrangler publish"
   },
   "license": "MIT",
   "devDependencies": {
