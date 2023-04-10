@@ -23,4 +23,5 @@ npx wrangler login
 - Edit or add route definitions in `src/index.ts`. Please refer to [the documentation of Reflare](https://github.com/xiaoyang-sde/reflare/blob/master/README.md).
 
 - Run `npm run dev` to preview Reflare with a local development server.
+
 - Run `npm run publish` to publish Reflare on Cloudflare Workers.

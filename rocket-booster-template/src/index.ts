@@ -15,5 +15,5 @@ export default {
     });
 
     return reflare.handle(request);
-  }
-}
+  },
+};
