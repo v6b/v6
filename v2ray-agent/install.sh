@@ -84,11 +84,13 @@ checkCPUVendor() {
                 xrayCoreCPUVendor="Xray-linux-64"
                 v2rayCoreCPUVendor="v2ray-linux-64"
                 hysteriaCoreCPUVendor="hysteria-linux-amd64"
+                wgcfCoreCPUVendor="wgcf_version_linux_amd64"
                 ;;
             'armv8' | 'aarch64')
                 xrayCoreCPUVendor="Xray-linux-arm64-v8a"
                 v2rayCoreCPUVendor="v2ray-linux-arm64-v8a"
                 hysteriaCoreCPUVendor="hysteria-linux-arm64"
+                wgcfCoreCPUVendor="wgcf_version_linux_arm64"
                 ;;
             *)
                 echo "  不支持此CPU架构--->"
@@ -100,6 +102,8 @@ checkCPUVendor() {
         echoContent red "  无法识别此CPU架构，默认amd64、x86_64--->"
         xrayCoreCPUVendor="Xray-linux-64"
         v2rayCoreCPUVendor="v2ray-linux-64"
+        hysteriaCoreCPUVendor="hysteria-linux-amd64"
+        wgcfCoreCPUVendor="wgcf_version_linux_amd64"
     fi
 }
 
@@ -114,7 +118,7 @@ initVar() {
     xrayCoreCPUVendor=""
     v2rayCoreCPUVendor=""
     hysteriaCoreCPUVendor=""
-
+    wgcfCoreCPUVendor=""
     # 域名
     domain=
 
@@ -903,40 +907,19 @@ EOF
 
 # 安装warp
 installWarp() {
-    ${installType} gnupg2 -y >/dev/null 2>&1
-    if [[ "${release}" == "debian" ]]; then
-        curl -s https://pkg.cloudflareclient.com/pubkey.gpg | sudo apt-key add - >/dev/null 2>&1
-        echo "deb http://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list >/dev/null 2>&1
-        sudo apt update >/dev/null 2>&1
+    local version=
+    version=$(curl -s https://api.github.com/repos/ViRb3/wgcf/releases | jq -r '.[]|select (.prerelease==false)|.tag_name' | head -1)
 
-    elif [[ "${release}" == "ubuntu" ]]; then
-        curl -s https://pkg.cloudflareclient.com/pubkey.gpg | sudo apt-key add - >/dev/null 2>&1
-        echo "deb http://pkg.cloudflareclient.com/ focal main" | sudo tee /etc/apt/sources.list.d/cloudflare-client.list >/dev/null 2>&1
-        sudo apt update >/dev/null 2>&1
+    echoContent green " ---> wgcf版本:${version}"
+    local wgcfDownloadName=${wgcfCoreCPUVendor//version/${version//v/}}
+    wget -c -q "${wgetShowProgressStatus}" -P /etc/v2ray-agent/warp/ "https://github.com/ViRb3/wgcf/releases/download/${version}/${wgcfDownloadName}"
 
-    elif [[ "${release}" == "centos" ]]; then
-        ${installType} yum-utils >/dev/null 2>&1
-        sudo rpm -ivh "http://pkg.cloudflareclient.com/cloudflare-release-el${centosVersion}.rpm" >/dev/null 2>&1
-    fi
-
-    echoContent green " ---> 安装WARP"
-    ${installType} cloudflare-warp >/dev/null 2>&1
-    if [[ -z $(which warp-cli) ]]; then
-        echoContent red " ---> 安装WARP失败"
+    if [[ ! -f "/etc/v2ray-agent/warp/${wgcfDownloadName}" ]]; then
+        echoContent red " ---> wgcf核心下载失败，请重新尝试安装"
         exit 0
     fi
-    systemctl enable warp-svc
-    warp-cli --accept-tos register
-    warp-cli --accept-tos set-mode proxy
-    warp-cli --accept-tos set-proxy-port 31303
-    warp-cli --accept-tos connect
-    warp-cli --accept-tos enable-always-on
-
-    #	if [[]];then
-    #	fi
-    # todo curl --socks5 127.0.0.1:31303 https://www.cloudflare.com/cdn-cgi/trace
-    # systemctl daemon-reload
-    # systemctl enable cloudflare-warp
+    chmod 655 "/etc/v2ray-agent/warp/${wgcfDownloadName}"
+    mv "/etc/v2ray-agent/warp/${wgcfDownloadName}" "/etc/v2ray-agent/warp/wgcf"
 }
 
 # 检查端口实际开放状态
@@ -5030,17 +5013,38 @@ installSniffing() {
 warpRouting() {
     echoContent skyBlue "\n进度  $1/${totalProgress} : WARP分流"
     echoContent red "=============================================================="
-    #	echoContent yellow "# 注意事项\n"
+    echoContent yellow "# 注意事项\n"
+    echoContent yellow "# 免责声明：采用Xray-core官方文章中推荐的wgcf进行申请账号，需要依赖第三方开源项目\n"
+    read -r -p "是否同意安装？[y/n]:" installCloudflareWarpStatus
+    if [[ "${installCloudflareWarpStatus}" != "y" ]]; then
+        echoContent yellow " ---> 放弃安装"
+        exit 0
+    fi
+
     # 安装warp
-    if [[ -z $(which warp-cli) ]]; then
+    if [[ ! -f "/etc/v2ray-agent/warp/wgcf" ]]; then
         echo
-        read -r -p "WARP未安装，是否安装 ？[y/n]:" installCloudflareWarpStatus
-        if [[ "${installCloudflareWarpStatus}" == "y" ]]; then
-            installWarp
-        else
-            echoContent yellow " ---> 放弃安装"
-            exit 0
-        fi
+        installWarp
+    fi
+    # 申请账号
+
+    if [[ -f "/etc/v2ray-agent/warp/wgcf" && ! -f "/etc/v2ray-agent/warp/wgcf-account.toml" && ! -f "/etc/v2ray-agent/warp/wgcf-account.toml" ]]; then
+        /etc/v2ray-agent/warp/wgcf register --accept-tos >/dev/null 2>&1
+        /etc/v2ray-agent/warp/wgcf generate              >/dev/null 2>&1
+        mv /root/wgcf-account.toml /etc/v2ray-agent/warp/
+        mv /root/wgcf-profile.conf /etc/v2ray-agent/warp/
+    fi
+    local privateKey=
+    local publicKey=
+    local address=
+    local endpoint=
+    if [[ -f "/etc/v2ray-agent/warp/wgcf-account.toml" && -f "/etc/v2ray-agent/warp/wgcf-profile.conf" ]]; then
+
+        address=$(grep "Address" "/etc/v2ray-agent/warp/wgcf-profile.conf" | cut -d " " -f 3)
+        address="[$(echo "$address" | sed 's/^/"/; s/$/"/' | tr '\n' ',' | sed 's/,$//')]"
+        endpoint=$(grep "Endpoint" "/etc/v2ray-agent/warp/wgcf-profile.conf" | cut -d " " -f 3)
+        privateKey=$(grep "PrivateKey" "/etc/v2ray-agent/warp/wgcf-profile.conf" | cut -d " " -f 3)
+        publicKey=$(grep "PublicKey" "/etc/v2ray-agent/warp/wgcf-profile.conf" | cut -d " " -f 3)
     fi
 
     echoContent red "\n=============================================================="
@@ -5050,7 +5054,7 @@ warpRouting() {
     echoContent red "=============================================================="
     read -r -p "请选择:" warpStatus
     if [[ "${warpStatus}" == "1" ]]; then
-        jq -r -c '.routing.rules[]|select (.outboundTag=="warp-socks-out")|.domain' ${configPath}09_routing.json | jq -r
+        jq -r -c '.routing.rules[]|select (.outboundTag=="wireguard-out")|.domain' ${configPath}09_routing.json | jq -r
         exit 0
     elif [[ "${warpStatus}" == "2" ]]; then
         echoContent red "=============================================================="
@@ -5066,9 +5070,9 @@ warpRouting() {
         read -r -p "请按照上面示例录入域名:" domainList
 
         if [[ -f "${configPath}09_routing.json" ]]; then
-            unInstallRouting warp-socks-out outboundTag
+            unInstallRouting wireguard-out outboundTag
 
-            routing=$(jq -r ".routing.rules += [{\"type\":\"field\",\"domain\":[\"geosite:${domainList//,/\",\"geosite:}\"],\"outboundTag\":\"warp-socks-out\"}]" ${configPath}09_routing.json)
+            routing=$(jq -r ".routing.rules += [{\"type\":\"field\",\"domain\":[\"geosite:${domainList//,/\",\"geosite:}\"],\"outboundTag\":\"wireguard-out\"}]" ${configPath}09_routing.json)
 
             echo "${routing}" | jq . >${configPath}09_routing.json
 
@@ -5083,17 +5087,17 @@ warpRouting() {
             "domain": [
             	"geosite:${domainList//,/\",\"geosite:}"
             ],
-            "outboundTag": "warp-socks-out"
+            "outboundTag": "wireguard-out"
           }
         ]
   }
 }
 EOF
         fi
-        unInstallOutbounds warp-socks-out
+        unInstallOutbounds wireguard-out
 
         local outbounds
-        outbounds=$(jq -r '.outbounds += [{"protocol":"socks","settings":{"servers":[{"address":"127.0.0.1","port":31303}]},"tag":"warp-socks-out"}]' ${configPath}10_ipv4_outbounds.json)
+        outbounds=$(jq -r '.outbounds += [{"protocol":"wireguard","settings":{"secretKey":"'"${privateKey}"'","address":'"${address}"',"peers":[{"publicKey":"'"${publicKey}"'","endpoint":"'"${endpoint}"'"}]},"tag":"wireguard-out"}]' ${configPath}10_ipv4_outbounds.json)
 
         echo "${outbounds}" | jq . >${configPath}10_ipv4_outbounds.json
 
@@ -5101,11 +5105,10 @@ EOF
 
     elif [[ "${warpStatus}" == "3" ]]; then
 
-        ${removeType} cloudflare-warp >/dev/null 2>&1
+        rm -rf /etc/v2ray-agent/xray/warp/*
+        unInstallRouting wireguard-out outboundTag
 
-        unInstallRouting warp-socks-out outboundTag
-
-        unInstallOutbounds warp-socks-out
+        unInstallOutbounds wireguard-out
 
         echoContent green " ---> WARP分流卸载成功"
     else
@@ -6745,7 +6748,7 @@ menu() {
     cd "$HOME" || exit
     echoContent red "\n=============================================================="
     echoContent green "作者：mack-a"
-    echoContent green "当前版本：v2.8.8"
+    echoContent green "当前版本：v2.8.9"
     echoContent green "Github：https://github.com/mack-a/v2ray-agent"
     echoContent green "描述：八合一共存脚本\c"
     showInstallStatus
