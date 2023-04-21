@@ -5015,22 +5015,31 @@ warpRouting() {
     echoContent red "=============================================================="
     echoContent yellow "# 注意事项\n"
     echoContent yellow "# 免责声明：采用Xray-core官方文章中推荐的wgcf进行申请账号，需要依赖第三方开源项目\n"
-    read -r -p "是否同意安装？[y/n]:" installCloudflareWarpStatus
-    if [[ "${installCloudflareWarpStatus}" != "y" ]]; then
-        echoContent yellow " ---> 放弃安装"
-        exit 0
-    fi
 
     # 安装warp
     if [[ ! -f "/etc/v2ray-agent/warp/wgcf" ]]; then
+        read -r -p "是否同意安装？[y/n]:" installCloudflareWarpStatus
+        if [[ "${installCloudflareWarpStatus}" != "y" ]]; then
+            echoContent yellow " ---> 放弃安装"
+            exit 0
+        fi
         echo
         installWarp
     fi
-    # 申请账号
 
+    # 申请账号
     if [[ -f "/etc/v2ray-agent/warp/wgcf" && ! -f "/etc/v2ray-agent/warp/wgcf-account.toml" && ! -f "/etc/v2ray-agent/warp/wgcf-account.toml" ]]; then
-        /etc/v2ray-agent/warp/wgcf register --accept-tos >/dev/null 2>&1
-        /etc/v2ray-agent/warp/wgcf generate              >/dev/null 2>&1
+        /etc/v2ray-agent/warp/wgcf register --accept-tos >/etc/v2ray-agent/warp/wgcf.log 2>&1
+        /etc/v2ray-agent/warp/wgcf generate >/etc/v2ray-agent/warp/wgcf.log 2>&1
+        if [[ -f "/etc/v2ray-agent/warp/wgcf.log" ]] && cat /etc/v2ray-agent/warp/wgcf.log | grep -q "Too Many"; then
+            echoContent green " ---> 申请次数过多，请15分钟之后再尝试"
+            exit 0
+        fi
+        if [[ ! -f "/root/wgcf-account.toml" || ! -f "/root/wgcf-profile.conf" ]]; then
+            echoContent green " ---> 安装失败"
+            cat /etc/v2ray-agent/warp/wgcf.log
+            exit 0
+        fi
         mv /root/wgcf-account.toml /etc/v2ray-agent/warp/
         mv /root/wgcf-profile.conf /etc/v2ray-agent/warp/
     fi
@@ -6748,7 +6757,7 @@ menu() {
     cd "$HOME" || exit
     echoContent red "\n=============================================================="
     echoContent green "作者：mack-a"
-    echoContent green "当前版本：v2.8.9"
+    echoContent green "当前版本：v2.8.10"
     echoContent green "Github：https://github.com/mack-a/v2ray-agent"
     echoContent green "描述：八合一共存脚本\c"
     showInstallStatus
