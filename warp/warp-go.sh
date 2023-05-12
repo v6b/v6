@@ -361,7 +361,7 @@ ip4_info() {
   TRACE4=$(curl -ks4m8 ${IP_API[3]} $INTERFACE4 | grep warp | sed "s/warp=//g")
   if [ -n "$TRACE4" ]; then
     IP4=$(curl -ks4m8 -A Mozilla $IP4_API $INTERFACE4)
-    until [[ -n "$IP4" || "$ERROR4" = 10 ]]; do
+    until [[ ( -n "$IP4" && ! "$IP4" =~ 'error code' ) || "$ERROR4" = 10 ]]; do
       IP4=$(curl -ks4m8 -A Mozilla $IP4_API $INTERFACE4)
       sleep 1
       (( ERROR4++ )) && [ "$ERROR4" = 7 ] && IP4_API=${IP_API[2]} && ISP4=${ISP[2]} && IP4_KEY=${IP[2]}
@@ -378,7 +378,7 @@ ip6_info() {
   TRACE6=$(curl -ks6m8 ${IP_API[3]} $INTERFACE6 | grep warp | sed "s/warp=//g")
   if [ -n "$TRACE6" ]; then
     IP6=$(curl -ks6m8 -A Mozilla $IP6_API $INTERFACE6)
-    until [[ -n "$IP6" || "$ERROR6" = 10 ]]; do
+    until [[ ( -n "$IP6" && ! "$IP6" =~ 'error code' ) || "$ERROR6" = 10 ]]; do
       IP6=$(curl -ks6m8 -A Mozilla $IP6_API $INTERFACE6)
       sleep 1
       (( ERROR6++ )) && [ "$ERROR6" = 7 ] && IP6_API=${IP_API[2]} && ISP6=${ISP[2]} && IP6_KEY=${IP[2]}
