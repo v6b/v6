@@ -604,14 +604,14 @@ registe_api() {
   until [ -e /opt/warp-go/$REGISTE_FILE ]; do
     ((i++)) || true
     [ "$i" -gt "$j" ] && rm -f /opt/warp-go/warp.conf.tmp* && error " $(text_eval 50) "
-    [ -n "$2" ] && hint " $(text_eval $3) "
+    [ -n "$3" ] && hint " $(text_eval $3) "
     curl -sm8 -Lo /opt/warp-go/$REGISTE_FILE "https://api.zeroteam.top/warp?format=warp-go"
     if grep -sq 'Account' /opt/warp-go/$REGISTE_FILE; then
       echo -e "\n[Script]\nPostUp =\nPostDown =" >> /opt/warp-go/$REGISTE_FILE && sed -i 's/\r//' /opt/warp-go/$REGISTE_FILE
       if [ -n "$LICENSE" ]; then
-        /opt/warp-go/warp-go --update --config=/opt/warp-go/warp.conf --license=$LICENSE --device-name=$NAME >/dev/null 2>&1 && echo "$LICENSE" > /opt/warp-go/License
+        /opt/warp-go/warp-go --update --config=/opt/warp-go/$REGISTE_FILE --license=$LICENSE --device-name=$NAME >/dev/null 2>&1 && echo "$LICENSE" > /opt/warp-go/License
       elif [ -n "$TOKEN" ]; then
-        /opt/warp-go/warp-go --update --config=/opt/warp-go/$REGISTE_FILE --team-config=$TOKEN --device-name=$NAME >/dev/null 2>&1
+        /opt/warp-go/warp-go --update --config=/opt/warp-go/$REGISTE_FILE --team-config=$TOKEN --device-name=$NAME >/dev/null 2>&1 && sed -i "s/Type =.*/Type = team/g" /opt/warp-go/$REGISTE_FILE
       elif [[ -e /opt/warp-go/License && -e /opt/warp-go/Device_Name ]]; then
         /opt/warp-go/warp-go --update --config=/opt/warp-go/$REGISTE_FILE --license=$(cat /opt/warp-go/License 2>/dev/null) --device-name=$(cat /opt/warp-go/Device_Name 2>/dev/null) >/dev/null 2>&1
       fi

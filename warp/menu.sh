@@ -1240,14 +1240,18 @@ server=/fonts.googleapis.com/1.1.1.1
 server=/yt3.ggpht.com/1.1.1.1
 server=/gstatic.com/1.1.1.1
 
-# > Custom Website
-ipset=/www.cloudflare.com/warp
+# > Custom ChatGPT
 ipset=/openai.com/warp
 ipset=/ai.com/warp
+
+# > IP api
 ipset=/ip.sb/warp
 ipset=/ip.gs/warp
 ipset=/ifconfig.co/warp
 ipset=/ip-api.com/warp
+
+# > Custom Website
+ipset=/www.cloudflare.com/warp
 ipset=/googlevideo.com/warp
 ipset=/youtube.com/warp
 ipset=/youtubei.googleapis.com/warp
@@ -1263,6 +1267,7 @@ ipset=/nflximg.com/warp
 ipset=/nflximg.net/warp
 ipset=/nflxso.net/warp
 ipset=/nflxvideo.net/warp
+ipset=/239.255.255.250/warp
 
 # > TVBAnywhere+
 ipset=/uapisfm.tvbanywhere.com.sg/warp
