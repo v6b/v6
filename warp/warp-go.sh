@@ -1028,8 +1028,6 @@ KeepAlive = 30
 #PostUp = 
 #PostDown =
 EOF
-
-cp /opt/warp-go/warp.conf /root/hahahah
       fi
 
     # 注册免费和 Plus 账户
