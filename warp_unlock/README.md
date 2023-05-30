@@ -78,15 +78,14 @@ bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unl
 ### 2.带参数 (pass parameter)
   | paremeter 参数 | value 值 | describe 具体动作说明 |
   | ----------|------- | --------------- |
-  | -E || English 英文 |
-  | -C || Chinese 中文 |
-  | -U || Uninstall 卸载  |
-  | -4 || Brush IPv4 IP 刷 IPv4 |
-  | -6 || Brush IPv6 IP 刷 IPv6 |
-  | -S || Brush Socks5  刷 Socks5 |
+  | -E |   | English 英文 |
+  | -C |   | Chinese 中文 |
+  | -U |   | Uninstall 卸载  |
   | -M | 1 | Mode 1: detect every 5   minute 每5分钟检测 |
-  | -M | 2 | Mode 2: run by screen   以 screen 方式运行 |
+  | -M | 2 | Mode 2: run by systemd   以 systemd 方式运行 |
   | -M | 3 | Mode 3: run by nohup &   以 hup & 方式运行 |
+  | -M | 4 | Mode 4: run by screen   以 screen 方式运行 |
+  | -M | 5 | Mode 5: run by pm2 daemon  以 pm2 进程守护方式运行 |  
   | -A | ** | region abbreviation,such as us. 地区简码,如 us |
   | -N | n | Unlock Neflix 解锁奈飞 |
   | -N | d | Unlock Disney+ 解锁迪士尼 |

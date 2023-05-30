@@ -61,8 +61,8 @@ E[22]="The script runs on today: \$TODAY. Total:\$TOTAL"
 C[22]="脚本当天运行次数:\$TODAY，累计运行次数：\$TOTAL"
 E[23]="Please choose to brush WARP IP:\n 1. WARP IPv4 Interface\n 2. WARP IPv6 Interface"
 C[23]="请选择刷 WARP IP 方式:\n 1. WARP IPv4 网络接口\n 2. WARP IPv6 网络接口"
-E[24]="No WARP method specified."
-C[24]="没有指定的 WARP 方式"
+E[24]=""
+C[24]=""
 E[25]="No unlock method specified."
 C[25]="没有指定的解锁模式"
 E[26]="Expected region abbreviation should be two digits (eg hk,sg)."
@@ -378,23 +378,70 @@ if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a
     ASNORG=\$(expr "\$IP_INFO" : '.*'$ISP'\":[ ]*\"\([^"]*\).*')
   }
 
+  # api 注册账户,优先使用 warp-go 团队 api,后备使用官方 api 脚本
+  registe_api() {
+    local REGISTE_FILE="\$1"
+    local i=0; local j=5
+    until [ -e /opt/warp-go/\$REGISTE_FILE ]; do
+      ((i++)) || true
+      [ "\$i" -gt "\$j" ] && rm -f /opt/warp-go/warp.conf.tmp* && echo -e " Failed to register warp account. Script aborted. " && exit 1
+      if ! grep -sq 'PrivateKey' /opt/warp-go/\$REGISTE_FILE; then
+        unset CF_API_REGISTE API_DEVICE_ID API_ACCESS_TOKEN API_PRIVATEKEY API_TYPE
+        rm -f /opt/warp-go/\$REGISTE_FILE
+        CF_API_REGISTE="\$(bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) -r)"
+        rm -f warp-account.conf
+        if grep -q 'private_key' <<< "\$CF_API_REGISTE"; then
+          local API_DEVICE_ID=\$(expr "\$CF_API_REGISTE " | grep -m1 'id' | cut -d\" -f4)
+          local API_ACCESS_TOKEN=\$(expr "\$CF_API_REGISTE " | grep '"token' | cut -d\" -f4)
+          local API_PRIVATEKEY=\$(expr "\$CF_API_REGISTE " | grep 'private_key' | cut -d\" -f4)
+          local API_TYPE=\$(expr "\$CF_API_REGISTE " | grep 'account_type' | cut -d\" -f4)
+          cat > /opt/warp-go/\$REGISTE_FILE << ABC
+[Account]
+Device = \$API_DEVICE_ID
+PrivateKey = \$API_PRIVATEKEY
+Token = \$API_ACCESS_TOKEN
+Type = \$API_TYPE
+
+[Device]
+Name = WARP
+MTU  = 1280
+
+[Peer]
+PublicKey = bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
+Endpoint = 162.159.193.10:1701
+KeepAlive = 30
+# AllowedIPs = 0.0.0.0/0
+# AllowedIPs = ::/0
+
+ABC
+        fi
+      fi
+  
+      if grep -sq 'Account' /opt/warp-go/\$REGISTE_FILE; then
+        echo -e "\n[Script]\nPostUp =\nPostDown =" >> /opt/warp-go/\$REGISTE_FILE && sed -i 's/\r//' /opt/warp-go/\$REGISTE_FILE
+
+        LICENSE="\$(cat /opt/warp-go/License 2>/dev/null)"
+        NAME="\$(cat /opt/warp-go/Device_Name 2>/dev/null)"
+
+        [[ -n "\$LICENSE" && -n "\$NAME" ]] && /opt/warp-go/warp-go --update --config=/opt/warp-go/\$REGISTE_FILE --license=\$LICENSE --device-name=\$NAME >/dev/null 2>&1
+      else
+        rm -f /opt/warp-go/\$REGISTE_FILE
+      fi
+   done
+  }
+
   warp_restart() {
-    if [[ \$(ip a) =~ ": WARP:" ]];then
+    if [[ \$(ip link show | awk -F': ' '{print $2}') =~ 'WARP' ]];then
       cp -f /opt/warp-go/warp.conf{,.tmp1}
-      k=0
-      until [[ -e /opt/warp-go/warp.conf.tmp2 ]]; do
-        ((k++)) || true
-        [[ \$k = 11 ]] && rm -f /opt/warp-go/warp.conf.tmp* && echo -e " Failed to register warp account. Script aborted. " && exit 1
-        /opt/warp-go/warp-go --register --config=/opt/warp-go/warp.conf.tmp2 --license=\$(cat /opt/warp-go/License 2>/dev/null) --device-name=\$(cat /opt/warp-go/Device_Name 2>/dev/null) >/dev/null 2>&1
-        [[ \$? != 0 ]] && sleep 30
-      done
+      registe_api warp.conf.tmp2
+      [ -e /opt/warp-go/warp.conf.tmp2 ] && sleep 10
       sed -i '1,6!d' /opt/warp-go/warp.conf.tmp2
       tail -n +7 /opt/warp-go/warp.conf.tmp1 >> /opt/warp-go/warp.conf.tmp2
       mv /opt/warp-go/warp.conf.tmp2 /opt/warp-go/warp.conf
       /opt/warp-go/warp-go --config=/opt/warp-go/warp.conf.tmp1 --remove >/dev/null 2>&1
       rm -f /opt/warp-go/warp.conf.tmp*
       systemctl restart warp-go
-      sleep 30
+      sleep 10
     else
       systemctl restart wg-quick@wgcf
       sleep 2
@@ -522,37 +569,29 @@ statistics_of_run-times
 select_laguage
 
 # 传参 2/2
-while getopts ":CcEeUu46SsPpM:m:A:a:N:n:T:t:" OPTNAME; do
+while getopts ":UuM:m:A:a:N:n:T:t:" OPTNAME; do
   case "$OPTNAME" in
-    'C'|'c' ) L='C';;
-    'E'|'e' ) L='E';;
     'U'|'u' ) if [ ! -e /usr/bin/warp_unlock.sh ]; then
                 error " $(text 27) "
-    	      else
-			    UN=1; uninstall; exit 0
-              fi;;
-    '4' ) TRACE4=$(curl -ks4m8 https://www.cloudflare.com/cdn-cgi/trace | grep warp | sed "s/warp=//g")
-          [[ ! $TRACE4 =~ on|plus ]] && error " $(text 24) " || STATUS=(1 0 0 0);;
-    '6' ) TRACE6=$(curl -ks6m8 https://www.cloudflare.com/cdn-cgi/trace | grep warp | sed "s/warp=//g")
-          [[ ! $TRACE6 =~ on|plus ]] && error " $(text 24) " || STATUS=(0 1 0 0);;
-    'S'|'s' ) [[ ! $(ss -nltp) =~ 'warp-svc' ]] && error " $(text 24) " || STATUS=(0 0 1 0);;
-    'P'|'p' ) [[ ! $(ss -nltp) =~ 'wireproxy' ]] && error " $(text 24) " || STATUS=(0 0 0 1);;
+    	        else
+			          UN=1; uninstall; exit 0
+              fi ;;
     'M'|'m' ) [ -z "$UNLOCK_MODE_NOW" ] && check_unlock_running
               if [ -n "$UNLOCK_MODE_NOW" ]; then
                 error " $(text 28) "
               else
-			    [[ $OPTARG != [1-5] ]] && error " $(text 25) " || CHOOSE1=$OPTARG
-              fi;;
-    'A'|'a' ) [[ ! "$OPTARG" =~ ^[A-Za-z]{2}$ ]] && error " $(text 26) " || EXPECT="$OPTARG";;
+			          [[ $OPTARG != [1-5] ]] && error " $(text 25) " || CHOOSE1=$OPTARG
+              fi ;;
+    'A'|'a' ) [[ ! "$OPTARG" =~ ^[A-Za-z]{2}$ ]] && error " $(text 26) " || EXPECT="$OPTARG" ;;
     'N'|'n' ) for ((d=0; d<"$SUPPORT_NUM"; d++)); do
                 [[ $d = 0 ]] && echo 'null' > /usr/bin/status.log || echo 'null' >> /usr/bin/status.log
               done
               echo "$OPTARG" | grep -qi 'n' && STREAM_UNLOCK[0]='1' || STREAM_UNLOCK[0]='0'
-              echo "$OPTARG" | grep -qi 'd' && STREAM_UNLOCK[1]='1' || STREAM_UNLOCK[1]='0';;
+              echo "$OPTARG" | grep -qi 'd' && STREAM_UNLOCK[1]='1' || STREAM_UNLOCK[1]='0' ;;
     'T'|'t' ) TOKEN="$(echo $OPTARG | cut -d'@' -f1)"
               USERID="$(echo $OPTARG | cut -d'@' -f2)"
               CUSTOM="$(echo $OPTARG | cut -d'@' -f3)"
-              CUSTOM="${CUSTOM:-'Stream Media Unlock'}";;
+              CUSTOM="${CUSTOM:-'Stream Media Unlock'}" ;;
   esac
 done
 
@@ -567,6 +606,7 @@ MODE2=("while true; do" "sleep 1h; done")
 action1() {
   unset MODE2
   [ -n "$UNLOCK_MODE_NOW" ] && uninstall
+  check_dependencies cron
   TASK="sed -i '/warp_unlock.sh/d' /etc/crontab && echo \"*/5 * * * * root bash /usr/bin/warp_unlock.sh\" >> /etc/crontab"
   RESULT_OUTPUT="\n $(text 10) \n"
   export_unlock_file
