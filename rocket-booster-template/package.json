@@ -12,9 +12,9 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230518.0",
     "typescript": "^5.0.4",
-    "wrangler": "3.0.1"
+    "wrangler": "^2.2.4"
   },
   "dependencies": {
-    "reflare": "^1.1.4"
+    "reflare": "^1.1.5"
   }
 }

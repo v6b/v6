@@ -9,7 +9,7 @@ export default {
     reflare.push({
       path: '/*',
       upstream: {
-        domain: 'httpbin.org',
+        domain: 'httpbingo.org',
         protocol: 'https',
       },
     });
