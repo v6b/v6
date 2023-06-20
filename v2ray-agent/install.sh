@@ -7004,10 +7004,15 @@ dns:
   default-nameserver:
   - 223.5.5.5
   nameserver:
-  - https://dns.alidns.com/dns-query#h3=true
-  - https://223.5.5.5/dns-query
+  - 'tls://8.8.4.4#DNS_Proxy'
+  - 'tls://1.0.0.1#DNS_Proxy'
   proxy-server-nameserver:
   - https://dns.alidns.com/dns-query#h3=true
+  nameserver-policy:
+    "geosite:cn,private":
+    - 223.5.5.5
+    - 114.114.114.114
+    - https://dns.alidns.com/dns-query#h3=true
 
 proxy-providers:
   provider1:
