@@ -328,8 +328,7 @@ warp i jp
             {
                 "type":"field",
                 "domain":[
-                    "openai",
-                    "ai.com",
+                    "geosite:openai",
                     "ip.gs"
                 ],
                 "outboundTag":"warp-IPv4"
@@ -337,8 +336,8 @@ warp i jp
             {
                 "type":"field",
                 "domain":[
-                    "p3terx.com",
-                    "netflix"
+                    "geosite:netflix",
+                    "p3terx.com"
                 ],
                 "outboundTag":"warp-IPv6"
             }
@@ -435,8 +434,7 @@ kill -9 $(pgrep -f warp)   ##杀掉正在运行的进程
             {
                 "type":"field",
                 "domain":[
-                    "openai",
-                    "ai.com",
+                    "geosite:openai",
                     "ip.gs"
                 ],
                 "outboundTag":"WARP-socks5-v4"
@@ -444,8 +442,9 @@ kill -9 $(pgrep -f warp)   ##杀掉正在运行的进程
             {
                 "type":"field",
                 "domain":[
-                    "p3terx.com",
-                    "netflix"
+                    "geosite:google",
+                    "geosite:netflix",
+                    "p3terx.com"
                 ],
                 "outboundTag":"WARP-socks5-v6"
             }
@@ -496,9 +495,8 @@ kill -9 $(pgrep -f warp)   ##杀掉正在运行的进程
                 "type":"field",
                 "domain":[
                     "geosite:google",
-                    "domain:ip.gs",
-                    "domain:openai.com",
-                    "domain:ai.com"
+                    "geosite:openai",
+                    "ip.gs"
                 ],
                 "outboundTag":"WARP-interface-v4"
             },
@@ -506,7 +504,7 @@ kill -9 $(pgrep -f warp)   ##杀掉正在运行的进程
                 "type":"field",
                 "domain":[
                     "geosite:netflix",
-                    "domain:p3terx.com"
+                    "p3terx.com"
                 ],
                 "outboundTag":"WARP-interface-v6"
             }
