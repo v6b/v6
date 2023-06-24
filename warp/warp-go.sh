@@ -452,7 +452,7 @@ change_ip() {
     sed -i '1,6!d' /opt/warp-go/warp.conf.tmp2
     tail -n +7 /opt/warp-go/warp.conf.tmp1 >> /opt/warp-go/warp.conf.tmp2
     mv /opt/warp-go/warp.conf.tmp2 /opt/warp-go/warp.conf
-    delete_api warp.conf.tmp1
+    bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/warp.conf.tmp1 --cancle >/dev/null 2>&1
     rm -f /opt/warp-go/warp.conf.tmp*
     ${SYSTEMCTL_RESTART[int]}
     sleep $l
@@ -543,7 +543,7 @@ uninstall() {
   # 卸载
   systemctl disable --now warp-go >/dev/null 2>&1
   kill -15 $(pgrep warp-go) >/dev/null 2>&1
-  delete_api warp.conf
+  bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/warp.conf --cancle >/dev/null 2>&1
   rm -rf /opt/warp-go /lib/systemd/system/warp-go.service /usr/bin/warp-go /tmp/warp-go*
   [ -s /opt/warp-go/tun.sh ] && rm -f /opt/warp-go/tun.sh && sed -i '/tun.sh/d' /etc/crontab
 
@@ -610,14 +610,6 @@ copy_config() {
   local UPDATE_DEVICE_ID=$(awk -F' *= *' '/^Device/{print $2}' /opt/warp-go/$REGISTE_FILE)
   local UPDATE_DEVICE_TOKEN=$(awk -F' *= *' '/^Token/{print $2}' /opt/warp-go/$REGISTE_FILE)
   echo -e "\"id\": \"$UPDATE_DEVICE_ID\"\n\"token\": \"$UPDATE_DEVICE_TOKEN\"" > /opt/warp-go/warp.conf.tmp
-}
-
-# api 删除账户, 使用官方 api 脚本
-delete_api() {
-  local REGISTE_FILE="$1"
-  copy_config $REGISTE_FILE
-  bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/warp.conf.tmp --cancle 2>/dev/null
-  rm -f /opt/warp-go/warp.conf.tmp
 }
 
 # api 注册账户, 使用官方 api 脚本
@@ -941,7 +933,7 @@ update() {
                 ;;
           esac
           cp -f /opt/warp-go/warp.conf{,.tmp1}
-          delete_api warp.conf
+          bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/warp.conf --cancle >/dev/null 2>&1
           [ -s /opt/warp-go/warp.conf ] && rm -f /opt/warp-go/warp.conf
           registe_api warp.conf 58 59
           head -n +6 /opt/warp-go/warp.conf > /opt/warp-go/warp.conf.tmp2
