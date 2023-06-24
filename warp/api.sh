@@ -187,7 +187,7 @@ cancle_account() {
 # reserved 解码
 decode_reserved() {
   [[ -z "$id" && -z "$token" ]] && fetch_account_information
-  [ -z "$client_id" ] && { fetch_client_id=$(device_information); client_id=$(expr " $token" | awk -F'"' '/client_id/{print $4}'); }
+  [ -z "$client_id" ] && { fetch_client_id=$(device_information); client_id=$(expr " $fetch_client_id" | awk -F'"' '/client_id/{print $4}'); }
   reserved=$(echo "$client_id" | base64 -d | xxd -p | fold -w2 | while read HEX; do printf '%d ' "0x${HEX}"; done | awk '{print "["$1", "$2", "$3"]"}')
   echo -e "client id: $client_id\nreserved : $reserved"
 }
