@@ -5,7 +5,7 @@ Born to make stream media unlock by WARP
 
 # 目录
 
-- [更新信息和 TODO](README.md#更新信息和-todo)
+- [更新信息](README.md#更新信息)
 - [脚本特点(附 5 种模式对比)](README.md#脚本特点)
 - [VPS 运行脚本(附 TG bot 创建方法)](README.md#VPS-运行脚本)
 - [Docker 自动解锁方案](README.md#Docker-自动解锁方案)
@@ -13,28 +13,35 @@ Born to make stream media unlock by WARP
 
 * * *
 
-## 更新信息和 TODO
-2023.3.26 1.10 Upgrade the Netflix unlocking section; 升级解锁奈飞的部分
+## 更新信息
+2023.6.26 1.11 1. Warp-go uses the official api to register and cancel accounts; 2. Client proxy mode dual-stack supports changing IP; 3. Client warp mode dual-stack supports changing IP 1. warp-go 使用官方 api 注册和注销账户; 2. Client proxy 模式双栈支持更换 IP; 3. Client warp 模式双栈支持更换 IP
 
-2022.9.16  1.09 Support change IP for warp-go mode; 支持 warp-go 模式下更换 IP
+<details>
+    <summary>历史更新 history（点击即可展开或收起）</summary>
+<br>
 
-2022.4.9  1.08 Support change IP for Client WARP mode; 支持 Client WRAP 模式下更换 IP
-
-2022.4.2  1.07 1. Support change IP for WireProxy; 2. Add Misaka one-key warp. 1. 支持 WireProxy 更换 IP; 2. 新增 Misaka WARP 一键脚本
-
-2022.2.23 1.06 1. Add two modes to unlock: systemd service and pm2 daemon; 1. 增加两个解锁模式: systemd 服务和 pm2 进程守护
-
-2022.2.20 AC 交叉编译（cross-compilation）上传镜像，支持 AMD64、 ARM64 和 s390x
-
-2022.2.15 Happy Lantern Festival. Bring you a new experience of docker unlock, another way to unlock Netflix. Project based on alpine. Content wgcf and unblocking Netflix scripts. Change unlock warp ip automatically. Provide a socks5 proxy for the host. Thanks Oreo ,Coia Prant and Brother Big B   
-元宵节快乐。为大家带来个 docker 解锁的全新体验，换个姿势解锁 Netflix。项目以 alpine 为基础系统，内含 wgcf 和解锁 Netflix 脚本，自动切换解锁 WARP IP，为宿主机提供 socks5 代理，感谢 "猫佬"、"Coia Prant"和"大B哥"
-
-2022.2.2 1.05 1. Support switch unlock modes and stream media freely; 2. Remove ASN information. Add icon in TG push; 3. Limit the log to 1000 lines; 1. 轻松地切换解锁模式和流媒体平台; 2. 去掉日志里的线路供应商信息，在 TG push 里加入icon; 3. 限制日志在1000行
-
-2022.1.31 1.04 1. Support push the logs to Telegram. 1. 日志结果输出到 Telegram.
-
-2022.1.30 1.03 1. Suppport pass parameter. You can run like this:```bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -E -A us -4 -N nd -M 2```; 2. Improve log details     
-1. 支持传参，你可以这样运行脚本:  ```bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -E -A us -4 -N nd -M 2```; 2. 把日志详细
+>2023.3.26 1.10 Upgrade the Netflix unlocking section; 升级解锁奈飞的部分
+>
+>2022.9.16  1.09 Support change IP for warp-go mode; 支持 warp-go 模式下更换 IP
+>
+>2022.4.9  1.08 Support change IP for Client WARP mode; 支持 Client WRAP 模式下更换 IP
+>
+>2022.4.2  1.07 1. Support change IP for WireProxy; 2. Add Misaka one-key warp. 1. 支持 WireProxy 更换 IP; 2. 新增 Misaka WARP 一键脚本
+>
+>2022.2.23 1.06 1. Add two modes to unlock: systemd service and pm2 daemon; 1. 增加两个解锁模式: systemd 服务和 pm2 进程守护
+>
+>2022.2.20 AC 交叉编译（cross-compilation）上传镜像，支持 AMD64、 ARM64 和 s390x
+>
+>2022.2.15 Happy Lantern Festival. Bring you a new experience of docker unlock, another way to unlock Netflix. Project based on alpine. Content wgcf and unblocking Netflix scripts. Change unlock warp ip automatically. Provide a socks5 proxy for the host. Thanks Oreo ,Coia Prant and Brother Big B   
+>元宵节快乐。为大家带来个 docker 解锁的全新体验，换个姿势解锁 Netflix。项目以 alpine 为基础系统，内含 wgcf 和解锁 Netflix 脚本，自动切换解锁 WARP IP，为宿主机提供 socks5 代理，感谢 "猫佬"、"Coia Prant"和"大B哥"
+>
+>2022.2.2 1.05 1. Support switch unlock modes and stream media freely; 2. Remove ASN information. Add icon in TG push; 3. Limit the log to 1000 lines; 1. 轻松地切换解锁模式和流媒体平台; 2. 去掉日志里的线路供应商信息，在 TG push 里加入icon; 3. 限制日志在1000行
+>
+>2022.1.31 1.04 1. Support push the logs to Telegram. 1. 日志结果输出到 Telegram.
+>
+>2022.1.30 1.03 1. Suppport pass parameter. You can run like this:```bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -E -A us -4 -N nd -M 2```; 2. Improve log details     
+>1. 支持传参，你可以这样运行脚本:  ```bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -E -A us -4 -N nd -M 2```; 2. 日志显示更详细
+</details>
 
 2022.1.29 1.02 1. Support Disney+ 1. 支持 Disney+
 
@@ -53,7 +60,7 @@ beta 2022.1.26 Media unlock daemon. Check it every 5 minutes. If unlocked, the s
 
 ## 脚本特点
 * 支持多种主流串流影视检测，可以单选或多选
-* 支持 WARP Socks5 Proxy 检测和更换 IP 
+* 支持 warp socks5 / interface 检测和更换 IP 
 * 日志输出
 * 多种方式解锁: 1.crontab 每 5 分钟检测一次状态; 2. screen 后台运行; 3. nohup & 后台运行; 4. systemd service 进程守护; 5. pm2 daemon 进程守护
 

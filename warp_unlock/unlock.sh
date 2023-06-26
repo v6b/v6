@@ -3,7 +3,7 @@
 export LANG=en_US.UTF-8
 
 # 当前脚本版本号和新增功能
-VERSION='1.10'
+VERSION='1.11'
 
 # 最大支持流媒体
 SUPPORT_NUM='2'
@@ -15,8 +15,8 @@ IP_API=https://api.ip.sb/geoip; ISP=isp
 
 E[0]="Language:\n  1.English (default) \n  2.简体中文"
 C[0]="${E[0]}"
-E[1]="Upgrade the Netflix unlocking section"
-C[1]="升级解锁奈飞的方式"
+E[1]="1. Warp-go uses the official api to register and cancel accounts; 2. Client proxy mode dual-stack supports changing IP; 3. Client warp mode dual-stack supports changing IP"
+C[1]="1. warp-go 使用官方 api 注册和注销账户; 2. Client proxy 模式双栈支持更换 IP; 3. Client warp 模式双栈支持更换 IP"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp_unlock/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp_unlock/issues]"
 E[3]="Choose:"
@@ -59,10 +59,10 @@ E[21]="Media unlock daemon installed successfully. A jobs has been created, chec
 C[21]="媒体解锁守护进程已安装成功，已创建一个jobs，查看 [pgrep -laf warp_unlock]，关闭 [kill -9 \$(pgrep -f warp_unlock)]，VPS 重启仍生效。进入任务运行日志将保存在 /root/result.log"
 E[22]="The script runs on today: \$TODAY. Total:\$TOTAL"
 C[22]="脚本当天运行次数:\$TODAY，累计运行次数：\$TOTAL"
-E[23]="Please choose to brush WARP IP:\n 1. WARP IPv4 Interface\n 2. WARP IPv6 Interface"
-C[23]="请选择刷 WARP IP 方式:\n 1. WARP IPv4 网络接口\n 2. WARP IPv6 网络接口"
-E[24]=""
-C[24]=""
+E[23]="Please choose to brush WARP IP:\n 1. WARP - IPv4\n 2. WARP - IPv6"
+C[23]="请选择刷 WARP IP 方式:\n 1. WARP - IPv4\n 2. WARP - IPv6"
+E[24]="No option. The script is aborted. Feedback: [https://github.com/fscarmen/warp_unlock/issues]"
+C[24]="没有该选项，脚本退出，问题反馈:[https://github.com/fscarmen/warp_unlock/issues]"
 E[25]="No unlock method specified."
 C[25]="没有指定的解锁模式"
 E[26]="Expected region abbreviation should be two digits (eg hk,sg)."
@@ -87,8 +87,8 @@ E[35]="Please customize the WARP+ device name (Default is [warp-go] if left blan
 C[35]="请自定义 WARP+ 设备名 (如果不输入，默认为 [warp-go]):"
 E[36]="Press [y] to confirm whether to uninstall dependencies: nodejs and npm. Other keys do not uninstall by default:"
 C[36]="是否卸载依赖 nodejs 和 npm，确认请按 [y] ，其他键默认不卸载:"
-E[37]=""
-C[37]=""
+E[37]="Please choose to brush WARP IP:\n 1. Client - IPv4\n 2. Client - IPv6"
+C[37]="请选择刷 WARP IP 方式:\n 1. Client - IPv4\n 2. Client - IPv6"
 E[38]=""
 C[38]=""
 E[39]=""
@@ -103,26 +103,24 @@ E[43]="Media unlock daemon installed successfully. A systemd service has been cr
 C[43]="媒体解锁守护进程已安装成功，已创建一个 systemd 服务，查看 [systemctl status warp_unlock]，关闭 [systemctl disable --now warp_unlock]，VPS 重启仍生效。进入任务运行日志将保存在 /root/result.log"
 E[44]="Media unlock daemon installed successfully. pm2 daemon is running, check pm2 [list] and close [pm2 delete warp_unlock; pm2 unstartup systemd;]. The VPS restart will still take effect. The running log of the scheduled task will be saved in /root/result.log"
 C[44]="媒体解锁守护进程已安装成功，pm2 守护进程正在工作中，查看 [pm2 list]，关闭 [pm2 delete warp_unlock; pm2 unstartup systemd; ]，VPS 重启仍生效。进入任务运行日志将保存在 /root/result.log"
-E[45]="Please choose to brush WARP IP:\n 1. WireProxy\n 2. WARP Socks5 Proxy"
-C[45]="请选择刷 WARP IP 方式:\n 1. WireProxy\n 2. WARP Socks5 代理"
-E[46]="Please choose to brush WARP IP:\n 1. WireProxy\n 2. WARP IPv6 Interface"
-C[46]="请选择刷 WARP IP 方式:\n 1. WireProxy\n 2. WARP IPv6 网络接口"
-E[47]="Please choose to brush WARP IP:\n 1. WireProxy\n 2. WARP Socks5 Proxy\n 3. WARP IPv6 Interface\n"
-C[47]="请选择刷 WARP IP 方式:\n 1. WireProxy\n 2. WARP Socks5 代理\n 3. WARP IPv6 网络接口"
-E[48]="Please choose to brush WARP IP:\n 1. WireProxy\n 2. WARP IPv4 Interface"
-C[48]="请选择刷 WARP IP 方式:\n 1. WireProxy\n 2. WARP IPv4 网络接口"
+E[45]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6"
+C[45]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6"
+E[46]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WARP - IPv6"
+C[46]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WARP - IPv6"
+E[47]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv6"
+C[47]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv6"
+E[48]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WARP - IPv4"
+C[48]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WARP - IPv4"
 E[49]="Please choose to brush WARP IP:\n 1. WARP Socks5 Proxy\n 2. WARP IPv4 Interface"
 C[49]="请选择刷 WARP IP 方式:\n 1. WARP Socks5 代理\n 2. WARP IPv4 网络接口\n"
-E[50]="Please choose to brush WARP IP:\n 1. WireProxy\n 2. WARP Socks5 Proxy\n 3. WARP IPv4 Interface"
-C[50]="请选择刷 WARP IP 方式:\n 1. WireProxy\n 2. WARP Socks5 代理\n 3. WARP IPv4 网络接口"
-E[51]="Please choose to brush WARP IP:\n 1. WireProxy\n 2. WARP IPv4 Interface\n 3. WARP IPv6 Interface"
-C[51]="请选择刷 WARP IP 方式:\n 1. WireProxy\n 2. WARP IPv4 网络接口\n 3. WARP IPv6 网络接口"
-E[52]="Please choose to brush WARP IP:\n 1. WARP Socks5 Proxy\n 2. WARP IPv4 Interface\n 3. WARP IPv6 Interface"
-C[52]="请选择刷 WARP IP 方式:\n 1. WARP Socks5 代理\n 2. WARP IPv4 网络接口\n 3. WARP IPv6 网络接口"
-E[53]="Please choose to brush WARP IP:\n 1. WireProxy\n 2. WARP Socks5 Proxy\n 3. WARP IPv4 Interface\n 4. WARP IPv6 Interface"
-C[53]="请选择刷 WARP IP 方式:\n 1. WireProxy\n 2. WARP Socks5 代理\n 3. WARP IPv4 网络接口\n 4. WARP IPv6 网络接口"
-E[54]="No option. The script is aborted. Feedback: [https://github.com/fscarmen/warp_unlock/issues]"
-C[54]="没有该选项，脚本退出，问题反馈:[https://github.com/fscarmen/warp_unlock/issues]"
+E[50]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv4"
+C[50]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv4"
+E[51]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WARP - IPv4\n 3. WARP - IPv6"
+C[51]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WARP - IPv4\n 3. WARP - IPv6"
+E[52]="Please choose to brush WARP IP:\n 1. Client - IPv4\n 2. Client - IPv6\n 3. WARP - IPv4\n 4. WARP - IPv6"
+C[52]="请选择刷 WARP IP 方式:\n 1. Client - IPv4\n 2. Client - IPv6\n 3. WARP - IPv4\n 4. WARP - IPv6"
+E[53]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv4\n 5. WARP - IPv6"
+C[53]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv4\n 5. WARP - IPv6"
 
 # 自定义字体彩色，read 函数，友道翻译函数，安装依赖函数
 red() { echo -e "\033[31m\033[01m$*\033[0m"; }
@@ -165,18 +163,20 @@ select_laguage() {
 }
 
 check_system_info() {
-  # 多方式判断操作系统，试到有值为止。只支持 Debian 10/11、Ubuntu 18.04/20.04 或 CentOS 7/8 ,如非上述操作系统，退出脚本
-  CMD=( "$(grep -i pretty_name /etc/os-release 2>/dev/null | cut -d \" -f2)"
-        "$(hostnamectl 2>/dev/null | grep -i system | cut -d : -f2)"
-        "$(lsb_release -sd 2>/dev/null)"
-        "$(grep -i description /etc/lsb-release 2>/dev/null | cut -d \" -f2)"
-        "$(grep . /etc/redhat-release 2>/dev/null)"
-        "$(grep . /etc/issue 2>/dev/null | cut -d \\ -f1 | sed '/^[ ]*$/d')"
-      )
-
-  for a in "${CMD[@]}"; do
-    SYS="$a" && [ -n "$SYS" ] && break
-  done
+  # 多方式判断操作系统，试到有值为止。只支持 Debian 10/11/12、Ubuntu 18.04/20.04/22.04 或 CentOS 7/8/9 ,如非上述操作系统，退出脚本
+  if [ -s /etc/os-release ]; then
+    SYS="$(grep -i pretty_name /etc/os-release | cut -d \" -f2)"
+  elif [ $(type -p hostnamectl) ]; then
+    SYS="$(hostnamectl | grep -i system | cut -d : -f2)"
+  elif [ $(type -p lsb_release) ]; then
+    SYS="$(lsb_release -sd)"
+  elif [ -s /etc/lsb-release ]; then
+    SYS="$(grep -i description /etc/lsb-release | cut -d \" -f2)"
+  elif [ -s /etc/redhat-release ]; then
+    SYS="$(grep . /etc/redhat-release)"
+  elif [ -s /etc/issue ]; then
+    SYS="$(grep . /etc/issue | cut -d '\' -f1 | sed '/^[ ]*$/d')"
+  fi
 
   REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|amazon linux|alma|rocky")
   RELEASE=("Debian" "Ubuntu" "CentOS")
@@ -210,8 +210,9 @@ check_unlock_running() {
   PYTHON=$(grep -s "PYTHON=" /usr/bin/warp_unlock.sh | cut -d \" -f2)
 }
 
-# 判断是否已经安装 WARP 网络接口或者 Socks5 代理,如已经安装组件尝试启动。再分情况作相应处理
+# 判断是否已经安装 WARP 网络接口或者 Socks5 代理,如已经安装组件尝试启动，再分情况作相应处理。STATUS[0]: warp/warp-go IPv4; STATUS[1]: warp/warp-go IPv6; STATUS[2]: client proxy / client warp; STATUS[3]: wireproxy
 check_warp() {
+  # 检查 STATUS[0]: warp/warp-go IPv4; STATUS[1]: warp/warp-go IPv6
   if [ -z "${STATUS[*]}" ]; then
     if [[ $(ip a) =~ ": WARP:"|": wgcf:" ]]; then
       WARP="--interface wgcf"
@@ -235,27 +236,30 @@ check_warp() {
           esac
         fi
       fi
-      TRACE4=$(curl -ks4m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | grep warp | sed "s/warp=//g")
-      TRACE6=$(curl -ks6m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | grep warp | sed "s/warp=//g")
+      TRACE4=$(curl -ks4m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | awk -F= '/^warp/{print $2}')
+      TRACE6=$(curl -ks6m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | awk -F= '/^warp/{print $2}')
       [[ "$TRACE4" =~ on|plus ]] && STATUS[0]=1 || STATUS[0]=0
       [[ "$TRACE6" =~ on|plus ]] && STATUS[1]=1 || STATUS[1]=0
     else
-      STATUS=(0 0)
+      STATUS[0]=0; STATUS[1]=0  
     fi
 
-    # 在已安装 Client 的前提下，区分模式 Mode
-    if type -p warp-cli >/dev/null 2>&1; then
-      ! systemctl is-active warp-svc >/dev/null 2>&1 && systemctl start warp-svc && sleep 5
-      if [[ $(warp-cli --accept-tos settings) =~ WarpProxy ]]; then
-        [[ $(ss -nltp) =~ 'warp-svc' ]] && CLIENT_PORT=$(ss -nltp | grep warp-svc | grep -oP '127\.0*\S+' | cut -d: -f2) && STATUS[2]=1 || STATUS[2]=0
-      else
-        [[ $(ip a) =~ 'CloudflareWARP' ]] && STATUS[2]=1 || STATUS[2]=0
-      fi
-    else STATUS[2]=0
+    # 检查 STATUS[2]: client proxy / client warp, 在已安装 Client 的前提下，区分模式 Mode
+    if [ "$(type -p warp-cli)" ]; then
+      [ "$(systemctl is-active warp-svc)" != 'active' ] && systemctl start warp-svc && sleep 5
+      CLIENT_MODE=$(warp-cli --accept-tos settings | grep 'Mode')
+      [[ "$CLIENT_MODE" =~ 'Warp' ]] && STATUS[2]=1 && [[ "$CLIENT_MODE" =~ 'WarpProxy' ]] && CLIENT_PORT=$(awk '{print $NF}' <<< "$CLIENT_MODE")
+    else
+      STATUS[2]=0
     fi
 
-    type -p wireproxy >/dev/null 2>&1 && [[ ! $(ss -nltp) =~ 'wireproxy' ]] && systemctl restart wireproxy
-    [[ $(ss -nltp) =~ 'wireproxy' ]] && WIREPROXY_PORT=$(ss -nltp | grep wireproxy | grep -oP '127\.0*\S+' | cut -d: -f2) && STATUS[3]=1 || STATUS[3]=0
+    # 检查 STATUS[3]: wireproxy
+    if [ "$(type -p wireproxy)" ]; then
+      [[ ! "$(ss -nltp | awk -F\" '{print $2}' | sed '/^$/d')" =~ 'wireproxy' ]] && systemctl restart wireproxy
+      [[ "$(ss -nltp | awk -F\" '{print $2}' | sed '/^$/d')" =~ 'wireproxy' ]] && WIREPROXY_PORT=$(ss -nltp | awk '/"wireproxy"/{print $4}' | awk -F: '{print $2}') && STATUS[3]=1
+    else
+      STATUS[3]=0
+    fi
   fi
 
   wgcf_warp() { wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/menu.sh && bash menu.sh; exit; }
@@ -263,18 +267,20 @@ check_warp() {
   p3terx() { bash <(curl -fsSL git.io/warp.sh) menu; exit; }
   misaka() { wget -N --no-check-certificate https://gitlab.com/misakablog/warp-script/-/raw/main/warp.sh && bash warp.sh; exit; }
 
-  CASE_IPV4() { NIC="-ks4m8 $WARP"; RESTART="warp_restart"; }
-  CASE_IPV6() { NIC="-ks6m8 $WARP"; RESTART="warp_restart"; }
-  CASE_CLIENT() { NIC='-ks4m8 --interface CloudflareWARP' && RESTART="client_restart" && [[ $(warp-cli --accept-tos settings) =~ WarpProxy ]] && NIC="-sx socks5h://localhost:$CLIENT_PORT"; }
-  CASE_WIREPROXY() { NIC="-sx socks5h://localhost:$WIREPROXY_PORT"; RESTART="wireproxy_restart"; }
+  CASE_WARP4() { NIC="-ks4m8 $WARP"; RESTART="warp_restart"; }
+  CASE_WARP6() { NIC="-ks6m8 $WARP"; RESTART="warp_restart"; }
+  CASE_CLIENT4() { NIC='-ks4m8 --interface CloudflareWARP' && RESTART="client_restart" && [ "$(warp-cli --accept-tos settings | awk '/^Mode/{print $2}')" = WarpProxy ] && NIC="-4 -sx socks5://127.0.0.1:$CLIENT_PORT"; }
+  CASE_CLIENT6() { NIC='-ks6m8 --interface CloudflareWARP' && RESTART="client_restart" && [ "$(warp-cli --accept-tos settings | awk '/^Mode/{print $2}')" = WarpProxy ] && NIC="-6 -sx socks5://127.0.0.1:$CLIENT_PORT"; }
+  CASE_WIREPROXY4() { NIC="-s4x socks5://127.0.0.1:$WIREPROXY_PORT"; RESTART="wireproxy_restart"; }
 
-  INSTALL_CHECK=("0 0 0 0" "1 1 1 1" "0 1 1 1" "1 0 1 1" "1 1 0 1" "1 1 1 0" "0 0 1 1" "0 1 0 1" "0 1 1 0" "1 0 0 1" "1 0 1 0" "1 1 0 0" "0 0 0 1"  "0 0 1 0" "0 1 0 0" "1 0 0 0")
-  SHOW=("\n $(text 4) \n" "\n $(text 53) \n" "\n $(text 47) \n" "\n $(text 50) \n" "\n $(text 51) \n" "\n $(text 52) \n" "\n $(text 45) \n" "\n $(text 46) \n" "\n $(text 6) \n" "\n $(text 48) \n" "\n $(text 49) \n" "\n $(text 23) \n")
-  NUM=("0|1|2|3|4" "1|2|3|4" "1|2|3" "1|2|3" "1|2|3" "1|2|3" "1|2" "1|2" "1|2" "1|2" "1|2" "1|2")
-  DO1=("wgcf_warp" "CASE_WIREPROXY" "CASE_WIREPROXY" "CASE_WIREPROXY" "CASE_WIREPROXY" "CASE_CLIENT" "CASE_WIREPROXY" "CASE_WIREPROXY" "CASE_CLIENT" "CASE_WIREPROXY" "CASE_CLIENT" "CASE_IPV4" "CASE_WIREPROXY" "CASE_CLIENT" "CASE_IPV6" "CASE_IPV4")
-  DO2=("warp-go" "CASE_CLIENT" "CASE_CLIENT" "CASE_CLIENT" "CASE_IPV4" "CASE_IPV4" "CASE_CLIENT" "CASE_IPV6" "CASE_IPV6" "CASE_IPV4" "CASE_IPV4" "CASE_IPV6")
-  DO3=("p3terx" "CASE_IPV4" "CASE_IPV6" "CASE_IPV4" "CASE_IPV6" "CASE_IPV6")
-  DO4=("misaka" "CASE_IPV6")
+  INSTALL_CHECK=("0 0 0 0" "1 1 1 1" "0 1 1 1" "1 0 1 1" "1 1 1 0" "1 1 0 1" "0 0 1 1" "0 1 1 0" "1 0 1 0" "0 1 0 1" "1 0 0 1" "1 1 0 0" "0 0 1 0" "0 0 0 1" "0 1 0 0" "1 0 0 0")
+  SHOW=("\n $(text 4) \n" "\n $(text 53) \n" "\n $(text 47) \n" "\n $(text 50) \n" "\n $(text 52) \n" "\n $(text 51) \n" "\n $(text 45) \n" "\n $(text 6) \n" "\n $(text 49) \n" "\n $(text 46) \n" "\n $(text 48) \n" "\n $(text 23) \n" "\n $(text 37) \n")
+  NUM=("0|1|2|3|4" "1|2|3|4|5" "1|2|3|4" "1|2|3|4" "1|2|3|4" "1|2|3" "1|2|3" "1|2|3" "1|2|3" "1|2" "1|2" "1|2" "1|2")
+  DO1=("wgcf_warp" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_WARP4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WARP6" "CASE_WARP4")
+  DO2=("warp-go" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_CLIENT6" "CASE_WARP4" "CASE_CLIENT4" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_WARP4" "CASE_WARP6" "CASE_CLIENT6")
+  DO3=("p3terx" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_WARP4" "CASE_WARP6" "CASE_CLIENT6" "CASE_WARP6" "CASE_WARP4")
+  DO4=("misaka" "CASE_WARP4" "CASE_WARP6" "CASE_WARP4" "CASE_WARP6")
+  DO5=(" " "CASE_WARP6")
   DO0=("exit")
 
   for ((f=0; f<${#INSTALL_CHECK[@]}; f++)); do
@@ -283,10 +289,10 @@ check_warp() {
 	
   # 默认只安装一种 WARP 形式时，不用选择。如两种或以上则让用户选择哪个方式的解锁
   CHOOSE2=1
-  if grep -qvwE "12|13|14|15" <<< "$f"; then
+  if grep -qvwE "13|14|15" <<< "$f"; then
     hint "${SHOW[f]}" && reading " $(text 3) " CHOOSE2
     [[ "$f" = 0 && "$CHOOSE2" != [0-4] ]] && CHOOSE2=1
-    grep -qvwE "${NUM[f]}" <<< "$CHOOSE2" && error " $(text 54) "
+    grep -qvwE "${NUM[f]}" <<< "$CHOOSE2" && error " $(text 24) "
   fi
   $(eval echo \${DO$CHOOSE2[f]})
 }
@@ -372,7 +378,7 @@ if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a
 
   check_ip() {
     unset IP_INFO WAN COUNTRY ASNORG
-    IP_INFO="\$(curl \$NIC -A Mozilla $IP_API 2>/dev/null)"
+    IP_INFO="\$(curl \$NIC -A Mozilla $IP_API)"
     WAN=\$(expr "\$IP_INFO" : '.*ip\":[ ]*\"\([^"]*\).*')
     COUNTRY=\$(expr "\$IP_INFO" : '.*country\":[ ]*\"\([^"]*\).*')
     ASNORG=\$(expr "\$IP_INFO" : '.*'$ISP'\":[ ]*\"\([^"]*\).*')
@@ -388,8 +394,7 @@ if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a
       if ! grep -sq 'PrivateKey' /opt/warp-go/\$REGISTE_FILE; then
         unset CF_API_REGISTE API_DEVICE_ID API_ACCESS_TOKEN API_PRIVATEKEY API_TYPE
         rm -f /opt/warp-go/\$REGISTE_FILE
-        CF_API_REGISTE="\$(bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) -r)"
-        rm -f warp-account.conf
+        CF_API_REGISTE="\$(bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh | sed 's# > \$registe_path##g') -r)"
         if grep -q 'private_key' <<< "\$CF_API_REGISTE"; then
           local API_DEVICE_ID=\$(expr "\$CF_API_REGISTE " | grep -m1 'id' | cut -d\" -f4)
           local API_ACCESS_TOKEN=\$(expr "\$CF_API_REGISTE " | grep '"token' | cut -d\" -f4)
@@ -419,11 +424,8 @@ ABC
   
       if grep -sq 'Account' /opt/warp-go/\$REGISTE_FILE; then
         echo -e "\n[Script]\nPostUp =\nPostDown =" >> /opt/warp-go/\$REGISTE_FILE && sed -i 's/\r//' /opt/warp-go/\$REGISTE_FILE
-
-        LICENSE="\$(cat /opt/warp-go/License 2>/dev/null)"
-        NAME="\$(cat /opt/warp-go/Device_Name 2>/dev/null)"
-
-        [[ -n "\$LICENSE" && -n "\$NAME" ]] && /opt/warp-go/warp-go --update --config=/opt/warp-go/\$REGISTE_FILE --license=\$LICENSE --device-name=\$NAME >/dev/null 2>&1
+        [ -s /opt/warp-go/License ] && bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/\$REGISTE_FILE --license \$(cat /opt/warp-go/License) >/dev/null 2>&1
+        [ -s /opt/warp-go/Device_Name ] && bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/\$REGISTE_FILE --name \$(cat /opt/warp-go/Device_Name) >/dev/null 2>&1
       else
         rm -f /opt/warp-go/\$REGISTE_FILE
       fi
@@ -438,31 +440,42 @@ ABC
       sed -i '1,6!d' /opt/warp-go/warp.conf.tmp2
       tail -n +7 /opt/warp-go/warp.conf.tmp1 >> /opt/warp-go/warp.conf.tmp2
       mv /opt/warp-go/warp.conf.tmp2 /opt/warp-go/warp.conf
-      /opt/warp-go/warp-go --config=/opt/warp-go/warp.conf.tmp1 --remove >/dev/null 2>&1
+      bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/warp.conf.tmp1 --cancle >/dev/null 2>&1
       rm -f /opt/warp-go/warp.conf.tmp*
       systemctl restart warp-go
       sleep 10
     else
       systemctl restart wg-quick@wgcf
       sleep 2
-      ss -nltp | grep 'dnsmasq' >/dev/null 2>&1 && systemctl restart dnsmasq >/dev/null 2>&1
+      [[ "\$(ss -nltp | awk -F\" '{print \$2}' | sed '/^$/d')" =~ 'dnsmasq' ]] && systemctl restart dnsmasq >/dev/null 2>&1
       sleep 2
     fi
     check_ip
   }
 
   client_restart() {
-    [[ \$(warp-cli --accept-tos settings) =~ WarpProxy ]] && CLIENT_PROXY=1
-    warp-cli --accept-tos delete >/dev/null 2>&1
-    [[ \$CLIENT_PROXY != 1 ]] && ( ip -4 rule delete from 172.16.0.2/32 lookup 51820; ip -4 rule delete table main suppress_prefixlength 0 )
-    warp-cli --accept-tos register >/dev/null 2>&1 &&
-    [[ -e /etc/wireguard/license ]] && warp-cli --accept-tos set-license \$(cat /etc/wireguard/license) >/dev/null 2>&1
-    sleep 10
-    [[ \$CLIENT_PROXY != 1 ]] && ( ip -4 rule add from 172.16.0.2 lookup 51820; ip -4 route add default dev CloudflareWARP table 51820; ip -4 rule add table main suppress_prefixlength 0 )
+    local CLIENT_MODE=\$(warp-cli --accept-tos settings | awk '/Mode/{print \$2}')
+    if [ "\$CLIENT_MODE" = 'Warp' ]; then
+      [ "\$NIC" = '-ks4m8 --interface CloudflareWARP' ] && IP_RULE='-4' || IP_RULE='-6'
+      warp-cli --accept-tos delete >/dev/null 2>&1
+      ip \$IP_RULE rule delete from 172.16.0.2/32 lookup 51820
+      ip \$IP_RULE rule delete table main suppress_prefixlength 0
+      warp-cli --accept-tos register >/dev/null 2>&1 &&
+      [ -s /etc/wireguard/license ] && warp-cli --accept-tos set-license \$(cat /etc/wireguard/license) >/dev/null 2>&1
+      sleep 10
+      ip \$IP_RULE rule add from 172.16.0.2 lookup 51820
+      ip \$IP_RULE route add default dev CloudflareWARP table 51820
+      ip \$IP_RULE rule add table main suppress_prefixlength 0
+    elif [ "\$CLIENT_MODE" = 'WarpProxy' ]; then
+      warp-cli --accept-tos delete >/dev/null 2>&1
+      warp-cli --accept-tos register >/dev/null 2>&1 &&
+      [ -s /etc/wireguard/license ] && warp-cli --accept-tos set-license \$(cat /etc/wireguard/license) >/dev/null 2>&1
+      sleep 10
+    fi
     check_ip
   }
 
-  wireproxy_restart() { systemctl restart wireproxy; sleep 5; check_ip; }
+  wireproxy_restart() { systemctl restart wireproxy; sleep 5; x; }
 
   check0() {
     RESULT[0]=""; REGION[0]=""; R[0]=""
