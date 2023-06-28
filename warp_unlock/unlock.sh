@@ -3,7 +3,7 @@
 export LANG=en_US.UTF-8
 
 # 当前脚本版本号和新增功能
-VERSION='1.11'
+VERSION='1.12'
 
 # 最大支持流媒体
 SUPPORT_NUM='2'
@@ -15,14 +15,14 @@ IP_API=https://api.ip.sb/geoip; ISP=isp
 
 E[0]="Language:\n  1.English (default) \n  2.简体中文"
 C[0]="${E[0]}"
-E[1]="1. Warp-go uses the official api to register and cancel accounts; 2. Client proxy mode dual-stack supports changing IP; 3. Client warp mode dual-stack supports changing IP"
-C[1]="1. warp-go 使用官方 api 注册和注销账户; 2. Client proxy 模式双栈支持更换 IP; 3. Client warp 模式双栈支持更换 IP"
+E[1]="1. Wireproxy dual-stack supports changing IP; 2. Client proxy mode dual-stack supports changing IP; 3. Client warp mode dual-stack supports changing IP"
+C[1]="1. Wireproxy 模式双栈支持更换 IP; 2. Client proxy 模式双栈支持更换 IP; 3. Client warp 模式双栈支持更换 IP"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp_unlock/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp_unlock/issues]"
 E[3]="Choose:"
 C[3]="请选择:"
-E[4]="Neither the WARP network interface nor Socks5 are installed, please select the installation script:\n 1. fscarmen's wgcf warp (Default)\n 2. fscarmen's warp-go\n 3. P3terx\n 4. Misaka\n 0. Exit"
-C[4]="WARP 网络接口和 Socks5 都没有安装，请选择安装脚本:\n 1. fscarmen's wgcf warp (默认)\n 2. fscarmen's warp-go\n 3. P3terx\n 4. Misaka\n 0. 退出"
+E[4]="Neither the WARP network interface nor Socks5 are installed, please select the installation script:\n 1. fscarmen's wgcf warp (Default)\n 2. fscarmen's warp-go\n 3. P3terx\n 4. Misaka\n 5. ygkkk\n 0. Exit"
+C[4]="WARP 网络接口和 Socks5 都没有安装，请选择安装脚本:\n 1. fscarmen's wgcf warp (默认)\n 2. fscarmen's warp-go\n 3. P3terx\n 4. Misaka\n 5. ygkkk\n 0. 退出"
 E[5]="The script supports Debian, Ubuntu, CentOS or Alpine systems only. Feedback: [https://github.com/fscarmen/warp_unlock/issues]"
 C[5]="本脚本只支持 Debian、Ubuntu、CentOS 或 Alpine 系统,问题反馈:[https://github.com/fscarmen/warp_unlock/issues]"
 E[6]="Please choose to brush WARP IP:\n 1. WARP Socks5 Proxy\n 2. WARP IPv6 Interface"
@@ -89,8 +89,8 @@ E[36]="Press [y] to confirm whether to uninstall dependencies: nodejs and npm. O
 C[36]="是否卸载依赖 nodejs 和 npm，确认请按 [y] ，其他键默认不卸载:"
 E[37]="Please choose to brush WARP IP:\n 1. Client - IPv4\n 2. Client - IPv6"
 C[37]="请选择刷 WARP IP 方式:\n 1. Client - IPv4\n 2. Client - IPv6"
-E[38]=""
-C[38]=""
+E[38]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6"
+C[38]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6"
 E[39]=""
 C[39]=""
 E[40]="Mode 1: Check it every 5 minutes"
@@ -103,24 +103,24 @@ E[43]="Media unlock daemon installed successfully. A systemd service has been cr
 C[43]="媒体解锁守护进程已安装成功，已创建一个 systemd 服务，查看 [systemctl status warp_unlock]，关闭 [systemctl disable --now warp_unlock]，VPS 重启仍生效。进入任务运行日志将保存在 /root/result.log"
 E[44]="Media unlock daemon installed successfully. pm2 daemon is running, check pm2 [list] and close [pm2 delete warp_unlock; pm2 unstartup systemd;]. The VPS restart will still take effect. The running log of the scheduled task will be saved in /root/result.log"
 C[44]="媒体解锁守护进程已安装成功，pm2 守护进程正在工作中，查看 [pm2 list]，关闭 [pm2 delete warp_unlock; pm2 unstartup systemd; ]，VPS 重启仍生效。进入任务运行日志将保存在 /root/result.log"
-E[45]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6"
-C[45]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6"
-E[46]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WARP - IPv6"
-C[46]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WARP - IPv6"
-E[47]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv6"
-C[47]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv6"
-E[48]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WARP - IPv4"
-C[48]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WARP - IPv4"
+E[45]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6"
+C[45]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6"
+E[46]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. WARP - IPv6"
+C[46]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. WARP - IPv6"
+E[47]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6\n 5. WARP - IPv6"
+C[47]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6\n 5. WARP - IPv6"
+E[48]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. WARP - IPv4"
+C[48]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. WARP - IPv4"
 E[49]="Please choose to brush WARP IP:\n 1. WARP Socks5 Proxy\n 2. WARP IPv4 Interface"
 C[49]="请选择刷 WARP IP 方式:\n 1. WARP Socks5 代理\n 2. WARP IPv4 网络接口\n"
-E[50]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv4"
-C[50]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv4"
-E[51]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WARP - IPv4\n 3. WARP - IPv6"
-C[51]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WARP - IPv4\n 3. WARP - IPv6"
+E[50]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6\n 5. WARP - IPv4"
+C[50]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6\n 5. WARP - IPv4"
+E[51]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. WARP - IPv4\n 4. WARP - IPv6"
+C[51]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. WARP - IPv4\n 4. WARP - IPv6"
 E[52]="Please choose to brush WARP IP:\n 1. Client - IPv4\n 2. Client - IPv6\n 3. WARP - IPv4\n 4. WARP - IPv6"
 C[52]="请选择刷 WARP IP 方式:\n 1. Client - IPv4\n 2. Client - IPv6\n 3. WARP - IPv4\n 4. WARP - IPv6"
-E[53]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv4\n 5. WARP - IPv6"
-C[53]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. Client - IPv4\n 3. Client - IPv6\n 4. WARP - IPv4\n 5. WARP - IPv6"
+E[53]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6\n 5. WARP - IPv4\n 6. WARP - IPv6"
+C[53]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6\n 5. WARP - IPv4\n 6. WARP - IPv6"
 
 # 自定义字体彩色，read 函数，友道翻译函数，安装依赖函数
 red() { echo -e "\033[31m\033[01m$*\033[0m"; }
@@ -140,25 +140,25 @@ check_dependencies() {
 
 # 脚本当天及累计运行次数统计
 statistics_of_run-times() {
-  COUNT=$(curl -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffscarmen%2Fwarp_unlock%2Fmain%2Funlock.sh&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false" 2>&1) &&
-  TODAY=$(expr "$COUNT" : '.*\s\([0-9]\{1,\}\)\s/.*') && TOTAL=$(expr "$COUNT" : '.*/\s\([0-9]\{1,\}\)\s.*')
+  COUNT=$(curl -ksm1 "https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2Ffscarmen%2Fwarp_unlock%2Fmain%2Funlock.sh&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false" 2>&1 | grep -m1 -oE "[0-9]+[ ]+/[ ]+[0-9]+") &&
+  TODAY=$(cut -d " " -f1 <<< "$COUNT") && TOTAL=$(cut -d " " -f3 <<< "$COUNT")
 }
 
 # 选择语言，先判断 warp 脚本里的语言选择，没有的话再让用户选择，默认英语
 select_laguage() {
   if [ -z "$L" ]; then
     if [ -e /opt/warp-go/language ]; then
-	  L=$(cat /opt/warp-go/language 2>&1)
-	elif [ -e /etc/wireguard/language ]; then
-	  L=$(cat /etc/wireguard/language 2>&1)
-	else
+	    L=$(cat /opt/warp-go/language 2>&1)
+	  elif [ -e /etc/wireguard/language ]; then
+	    L=$(cat /etc/wireguard/language 2>&1)
+	  else
       case $(cat /etc/wireguard/language 2>&1) in
         E ) L=E;;
         C ) L=C;;
         * ) L=E && hint "\n $(text 0) \n" && reading " $(text 3) " LANGUAGE
 		[ "$LANGUAGE" = 2 ] && L=C;;
       esac
-	fi
+	  fi
   fi
 }
 
@@ -222,17 +222,20 @@ check_warp() {
         if grep -qE 'Type[ ]+=[ ]+team' /opt/warp-go/warp.conf; then
           hint "\n $(text 32) \n" && reading " $(text 3) " CHANGE_ACCOUNT
           case "$CHANGE_ACCOUNT" in
-            2 ) [ -z "$LICENSE" ] && reading " $(text 42) " LICENSE
-                local i=5
-                until [[ "$LICENSE" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; do
-                  (( i-- )) || true
-                  [ "$i" = 0 ] && error " $(text 33) " && exit 1 || reading " $(text 34) " LICENSE
-                done
-                [[ -n "$LICENSE" && -z "$NAME" ]] && reading " $(text 35) " NAME
-                [ -n "$NAME" ] && NAME="${NAME//[[:space:]]/_}" || NAME=${NAME:-'warp-go'}
-                echo "$LICENSE" > /opt/warp-go/License
-                echo "$NAME" > /opt/warp-go/Device_Name;;
-            3 ) exit 0;;
+            2 )
+              [ -z "$LICENSE" ] && reading " $(text 42) " LICENSE
+              local i=5
+              until [[ "$LICENSE" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; do
+                (( i-- )) || true
+                [ "$i" = 0 ] && error " $(text 33) " && exit 1 || reading " $(text 34) " LICENSE
+              done
+              [[ -n "$LICENSE" && -z "$NAME" ]] && reading " $(text 35) " NAME
+              [ -n "$NAME" ] && NAME="${NAME//[[:space:]]/_}" || NAME=${NAME:-'warp-go'}
+              echo "$LICENSE" > /opt/warp-go/License
+              echo "$NAME" > /opt/warp-go/Device_Name
+              ;;
+            3 )
+              exit 0
           esac
         fi
       fi
@@ -265,22 +268,25 @@ check_warp() {
   wgcf_warp() { wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/menu.sh && bash menu.sh; exit; }
   warp-go() { wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/warp-go.sh && bash warp-go.sh; exit; }
   p3terx() { bash <(curl -fsSL git.io/warp.sh) menu; exit; }
-  misaka() { wget -N --no-check-certificate https://gitlab.com/misakablog/warp-script/-/raw/main/warp.sh && bash warp.sh; exit; }
+  misaka() { wget -N --no-check-certificate https://gitlab.com/Misaka-blog/warp-script/-/raw/main/warp.sh && bash warp.sh; exit; }
+  ygkkk() { bash <(wget -qO- https://gitlab.com/rwkgyg/CFwarp/raw/main/CFwarp.sh 2> /dev/null); exit; }
 
   CASE_WARP4() { NIC="-ks4m8 $WARP"; RESTART="warp_restart"; }
   CASE_WARP6() { NIC="-ks6m8 $WARP"; RESTART="warp_restart"; }
   CASE_CLIENT4() { NIC='-ks4m8 --interface CloudflareWARP' && RESTART="client_restart" && [ "$(warp-cli --accept-tos settings | awk '/^Mode/{print $2}')" = WarpProxy ] && NIC="-4 -sx socks5://127.0.0.1:$CLIENT_PORT"; }
   CASE_CLIENT6() { NIC='-ks6m8 --interface CloudflareWARP' && RESTART="client_restart" && [ "$(warp-cli --accept-tos settings | awk '/^Mode/{print $2}')" = WarpProxy ] && NIC="-6 -sx socks5://127.0.0.1:$CLIENT_PORT"; }
-  CASE_WIREPROXY4() { NIC="-s4x socks5://127.0.0.1:$WIREPROXY_PORT"; RESTART="wireproxy_restart"; }
+  CASE_WIREPROXY4() { NIC="-ks4m8 -x socks5://127.0.0.1:$WIREPROXY_PORT"; RESTART="wireproxy_restart"; }
+  CASE_WIREPROXY6() { NIC="-ks6m8 -x socks5://127.0.0.1:$WIREPROXY_PORT"; RESTART="wireproxy_restart"; }
 
   INSTALL_CHECK=("0 0 0 0" "1 1 1 1" "0 1 1 1" "1 0 1 1" "1 1 1 0" "1 1 0 1" "0 0 1 1" "0 1 1 0" "1 0 1 0" "0 1 0 1" "1 0 0 1" "1 1 0 0" "0 0 1 0" "0 0 0 1" "0 1 0 0" "1 0 0 0")
-  SHOW=("\n $(text 4) \n" "\n $(text 53) \n" "\n $(text 47) \n" "\n $(text 50) \n" "\n $(text 52) \n" "\n $(text 51) \n" "\n $(text 45) \n" "\n $(text 6) \n" "\n $(text 49) \n" "\n $(text 46) \n" "\n $(text 48) \n" "\n $(text 23) \n" "\n $(text 37) \n")
-  NUM=("0|1|2|3|4" "1|2|3|4|5" "1|2|3|4" "1|2|3|4" "1|2|3|4" "1|2|3" "1|2|3" "1|2|3" "1|2|3" "1|2" "1|2" "1|2" "1|2")
-  DO1=("wgcf_warp" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_WARP4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WARP6" "CASE_WARP4")
-  DO2=("warp-go" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_CLIENT6" "CASE_WARP4" "CASE_CLIENT4" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_WARP4" "CASE_WARP6" "CASE_CLIENT6")
-  DO3=("p3terx" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_WARP4" "CASE_WARP6" "CASE_CLIENT6" "CASE_WARP6" "CASE_WARP4")
-  DO4=("misaka" "CASE_WARP4" "CASE_WARP6" "CASE_WARP4" "CASE_WARP6")
-  DO5=(" " "CASE_WARP6")
+  SHOW=("\n $(text 4) \n" "\n $(text 53) \n" "\n $(text 47) \n" "\n $(text 50) \n" "\n $(text 52) \n" "\n $(text 51) \n" "\n $(text 45) \n" "\n $(text 6) \n" "\n $(text 49) \n" "\n $(text 46) \n" "\n $(text 48) \n" "\n $(text 23) \n" "\n $(text 37) \n" "\n $(text 38) \n")
+  NUM=("0|1|2|3|4|5" "1|2|3|4|5|6" "1|2|3|4|5" "1|2|3|4|5" "1|2|3|4" "1|2|3|4" "1|2|3|4" "1|2|3" "1|2|3" "1|2|3" "1|2|3" "1|2" "1|2" "1|2")
+  DO1=("wgcf_warp" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_IPV4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_IPV6" "CASE_IPV4")
+  DO2=("warp-go" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_CLIENT6" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_IPV6" "CASE_CLIENT6" "CASE_WIREPROXY6")
+  DO3=("p3terx" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_IPV4" "CASE_IPV4" "CASE_CLIENT4" "CASE_IPV6" "CASE_IPV4" "CASE_CLIENT6" "CASE_IPV4")
+  DO4=("misaka" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_IPV6" "CASE_IPV6" "CASE_CLIENT6")
+  DO5=("ygkkk" "CASE_IPV4" "CASE_IPV6" "CASE_IPV4")
+  DO6=(" "  "CASE_IPV6")
   DO0=("exit")
 
   for ((f=0; f<${#INSTALL_CHECK[@]}; f++)); do
@@ -289,9 +295,9 @@ check_warp() {
 	
   # 默认只安装一种 WARP 形式时，不用选择。如两种或以上则让用户选择哪个方式的解锁
   CHOOSE2=1
-  if grep -qvwE "13|14|15" <<< "$f"; then
+  if grep -qvwE "14|15" <<< "$f"; then
     hint "${SHOW[f]}" && reading " $(text 3) " CHOOSE2
-    [[ "$f" = 0 && "$CHOOSE2" != [0-4] ]] && CHOOSE2=1
+    [[ "$f" = 0 && "$CHOOSE2" != [0-5] ]] && CHOOSE2=1
     grep -qvwE "${NUM[f]}" <<< "$CHOOSE2" && error " $(text 24) "
   fi
   $(eval echo \${DO$CHOOSE2[f]})
@@ -475,7 +481,7 @@ ABC
     check_ip
   }
 
-  wireproxy_restart() { systemctl restart wireproxy; sleep 5; x; }
+  wireproxy_restart() { systemctl restart wireproxy; sleep 5; check_ip; }
 
   check0() {
     RESULT[0]=""; REGION[0]=""; R[0]=""
@@ -502,25 +508,25 @@ ABC
     PreAssertion=\$(curl \$NIC --user-agent "\${UA_Browser}" -s --max-time 10 -X POST "https://disney.api.edge.bamgrid.com/devices" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -H "content-type: application/json; charset=UTF-8" -d '{"deviceFamily":"browser","applicationRuntime":"chrome","deviceProfile":"windows","attributes":{}}' 2>&1)
     [[ "\$PreAssertion" == "curl"* ]] && R[1]="\$NOT_UNLOCK_STATUS"
     if [[ \${R[1]} != "\$NOT_UNLOCK_STATUS" ]]; then
-    assertion=\$(echo \$PreAssertion | \$PYTHON -m json.tool 2> /dev/null | grep assertion | cut -f4 -d'"')
-    PreDisneyCookie=\$(curl \$NIC --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '1p')
-    disneycookie=\$(echo \$PreDisneyCookie | sed "s/DISNEYASSERTION/\${assertion}/g")
-    TokenContent=\$(curl \$NIC --user-agent "\${UA_Browser}" -s --max-time 10 -X POST "https://disney.api.edge.bamgrid.com/token" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "\$disneycookie")
-    isBanned=\$(echo \$TokenContent | \$PYTHON -m json.tool 2>/dev/null | grep 'forbidden-location')
-    is403=\$(echo \$TokenContent | grep '403 ERROR')
-    [[ -n "\$isBanned\$is403" ]] && R[1]="\$NOT_UNLOCK_STATUS"
+      assertion=\$(echo \$PreAssertion | \$PYTHON -m json.tool 2> /dev/null | grep assertion | cut -f4 -d'"')
+      PreDisneyCookie=\$(curl \$NIC --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '1p')
+      disneycookie=\$(echo \$PreDisneyCookie | sed "s/DISNEYASSERTION/\${assertion}/g")
+      TokenContent=\$(curl \$NIC --user-agent "\${UA_Browser}" -s --max-time 10 -X POST "https://disney.api.edge.bamgrid.com/token" -H "authorization: Bearer ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "\$disneycookie")
+      isBanned=\$(echo \$TokenContent | \$PYTHON -m json.tool 2>/dev/null | grep 'forbidden-location')
+      is403=\$(echo \$TokenContent | grep '403 ERROR')
+      [[ -n "\$isBanned\$is403" ]] && R[1]="\$NOT_UNLOCK_STATUS"
     fi
 
     if [[ \${R[1]} != "\$NOT_UNLOCK_STATUS" ]]; then
-    fakecontent=\$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '8p')
-    refreshToken=\$(echo \$TokenContent | \$PYTHON -m json.tool 2>/dev/null | grep 'refresh_token' | awk '{print \$2}' | cut -f2 -d'"')
-    disneycontent=\$(echo \$fakecontent | sed "s/ILOVEDISNEY/\${refreshToken}/g")
-    tmpresult=\$(curl \$NIC --user-agent "\${UA_Browser}" -X POST -sSL --max-time 10 "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql" -H "authorization: ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "\$disneycontent" 2>&1)
-    previewcheck=\$(curl \$NIC -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://disneyplus.com" | grep preview)
-    isUnabailable=\$(echo \$previewcheck | grep 'unavailable')
-    region=\$(echo \$tmpresult | \$PYTHON -m json.tool 2>/dev/null | grep 'countryCode' | cut -f4 -d'"')
-    inSupportedLocation=\$(echo \$tmpresult | \$PYTHON -m json.tool 2>/dev/null | grep 'inSupportedLocation' | awk '{print \$2}' | cut -f1 -d',')
-    [[ "\$region" == "JP" || ( -n "\$region" && "\$inSupportedLocation" == "true" ) ]] && R[1]="\$UNLOCK_STATUS" || R[1]="\$NOT_UNLOCK_STATUS"
+      fakecontent=\$(curl -s --max-time 10 "https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/cookies" | sed -n '8p')
+      refreshToken=\$(echo \$TokenContent | \$PYTHON -m json.tool 2>/dev/null | grep 'refresh_token' | awk '{print \$2}' | cut -f2 -d'"')
+      disneycontent=\$(echo \$fakecontent | sed "s/ILOVEDISNEY/\${refreshToken}/g")
+      tmpresult=\$(curl \$NIC --user-agent "\${UA_Browser}" -X POST -sSL --max-time 10 "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql" -H "authorization: ZGlzbmV5JmJyb3dzZXImMS4wLjA.Cu56AgSfBTDag5NiRA81oLHkDZfu5L3CKadnefEAY84" -d "\$disneycontent" 2>&1)
+      previewcheck=\$(curl \$NIC -s -o /dev/null -L --max-time 10 -w '%{url_effective}\n' "https://disneyplus.com" | grep preview)
+      isUnabailable=\$(echo \$previewcheck | grep 'unavailable')
+      region=\$(echo \$tmpresult | \$PYTHON -m json.tool 2>/dev/null | grep 'countryCode' | cut -f4 -d'"')
+      inSupportedLocation=\$(echo \$tmpresult | \$PYTHON -m json.tool 2>/dev/null | grep 'inSupportedLocation' | awk '{print \$2}' | cut -f1 -d',')
+      [[ "\$region" == "JP" || ( -n "\$region" && "\$inSupportedLocation" == "true" ) ]] && R[1]="\$UNLOCK_STATUS" || R[1]="\$NOT_UNLOCK_STATUS"
     fi
     CONTENT="Disney+: \${R[1]}."
     log_message
@@ -584,27 +590,36 @@ select_laguage
 # 传参 2/2
 while getopts ":UuM:m:A:a:N:n:T:t:" OPTNAME; do
   case "$OPTNAME" in
-    'U'|'u' ) if [ ! -e /usr/bin/warp_unlock.sh ]; then
-                error " $(text 27) "
-    	        else
-			          UN=1; uninstall; exit 0
-              fi ;;
-    'M'|'m' ) [ -z "$UNLOCK_MODE_NOW" ] && check_unlock_running
-              if [ -n "$UNLOCK_MODE_NOW" ]; then
-                error " $(text 28) "
-              else
-			          [[ $OPTARG != [1-5] ]] && error " $(text 25) " || CHOOSE1=$OPTARG
-              fi ;;
-    'A'|'a' ) [[ ! "$OPTARG" =~ ^[A-Za-z]{2}$ ]] && error " $(text 26) " || EXPECT="$OPTARG" ;;
-    'N'|'n' ) for ((d=0; d<"$SUPPORT_NUM"; d++)); do
-                [[ $d = 0 ]] && echo 'null' > /usr/bin/status.log || echo 'null' >> /usr/bin/status.log
-              done
-              echo "$OPTARG" | grep -qi 'n' && STREAM_UNLOCK[0]='1' || STREAM_UNLOCK[0]='0'
-              echo "$OPTARG" | grep -qi 'd' && STREAM_UNLOCK[1]='1' || STREAM_UNLOCK[1]='0' ;;
-    'T'|'t' ) TOKEN="$(echo $OPTARG | cut -d'@' -f1)"
-              USERID="$(echo $OPTARG | cut -d'@' -f2)"
-              CUSTOM="$(echo $OPTARG | cut -d'@' -f3)"
-              CUSTOM="${CUSTOM:-'Stream Media Unlock'}" ;;
+    'U'|'u' )
+      if [ ! -e /usr/bin/warp_unlock.sh ]; then
+        error " $(text 27) "
+    	else
+			  UN=1; uninstall; exit 0
+      fi
+      ;;
+    'M'|'m' )
+      [ -z "$UNLOCK_MODE_NOW" ] && check_unlock_running
+      if [ -n "$UNLOCK_MODE_NOW" ]; then
+        error " $(text 28) "
+      else
+			  [[ $OPTARG != [1-5] ]] && error " $(text 25) " || CHOOSE1=$OPTARG
+      fi
+      ;;
+    'A'|'a' )
+      [[ ! "$OPTARG" =~ ^[A-Za-z]{2}$ ]] && error " $(text 26) " || EXPECT="$OPTARG"
+      ;;
+    'N'|'n' )
+      for ((d=0; d<"$SUPPORT_NUM"; d++)); do
+        [[ $d = 0 ]] && echo 'null' > /usr/bin/status.log || echo 'null' >> /usr/bin/status.log
+      done
+      echo "$OPTARG" | grep -qi 'n' && STREAM_UNLOCK[0]='1' || STREAM_UNLOCK[0]='0'
+      echo "$OPTARG" | grep -qi 'd' && STREAM_UNLOCK[1]='1' || STREAM_UNLOCK[1]='0'
+      ;;
+    'T'|'t' )
+      TOKEN="$(echo $OPTARG | cut -d'@' -f1)"
+      USERID="$(echo $OPTARG | cut -d'@' -f2)"
+      CUSTOM="$(echo $OPTARG | cut -d'@' -f3)"
+      CUSTOM="${CUSTOM:-'Stream Media Unlock'}"
   esac
 done
 
@@ -693,8 +708,11 @@ menu() {
   red "======================================================================================================================\n"
   [ -z "$CHOOSE1" ] && hint " $MENU_SHOW " && reading " $(text 3) " CHOOSE1
   case "$CHOOSE1" in
-    [0-6] ) action$CHOOSE1;;
-    * ) red " $(text 14) "; sleep 1; menu;;
+    [0-6] )
+      action$CHOOSE1
+      ;;
+    * )
+      red " $(text 14) "; sleep 1; menu
   esac
 }
 
