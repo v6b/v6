@@ -3,7 +3,7 @@
 export LANG=en_US.UTF-8
 
 # 当前脚本版本号和新增功能
-VERSION='1.12'
+VERSION='1.13'
 
 # 最大支持流媒体
 SUPPORT_NUM='2'
@@ -15,14 +15,14 @@ IP_API=https://api.ip.sb/geoip; ISP=isp
 
 E[0]="Language:\n  1.English (default) \n  2.简体中文"
 C[0]="${E[0]}"
-E[1]="1. Wireproxy dual-stack supports changing IP; 2. Client proxy mode dual-stack supports changing IP; 3. Client warp mode dual-stack supports changing IP"
-C[1]="1. Wireproxy 模式双栈支持更换 IP; 2. Client proxy 模式双栈支持更换 IP; 3. Client warp 模式双栈支持更换 IP"
+E[1]="Wireguard-go-reserved supports changing IP."
+C[1]="Wireguard-go-reserved 支持更换 IP"
 E[2]="The script must be run as root, you can enter sudo -i and then download and run again. Feedback: [https://github.com/fscarmen/warp_unlock/issues]"
 C[2]="必须以root方式运行脚本，可以输入 sudo -i 后重新下载运行，问题反馈:[https://github.com/fscarmen/warp_unlock/issues]"
 E[3]="Choose:"
 C[3]="请选择:"
-E[4]="Neither the WARP network interface nor Socks5 are installed, please select the installation script:\n 1. fscarmen's wgcf warp (Default)\n 2. fscarmen's warp-go\n 3. P3terx\n 4. Misaka\n 5. ygkkk\n 0. Exit"
-C[4]="WARP 网络接口和 Socks5 都没有安装，请选择安装脚本:\n 1. fscarmen's wgcf warp (默认)\n 2. fscarmen's warp-go\n 3. P3terx\n 4. Misaka\n 5. ygkkk\n 0. 退出"
+E[4]="Neither the WARP network interface nor Socks5 are installed, please select the installation script:\n 1. fscarmen's warp (Default)\n 2. fscarmen's warp-go\n 3. P3terx\n 4. Misaka\n 5. ygkkk\n 0. Exit"
+C[4]="WARP 网络接口和 Socks5 都没有安装，请选择安装脚本:\n 1. fscarmen's warp (默认)\n 2. fscarmen's warp-go\n 3. P3terx\n 4. Misaka\n 5. ygkkk\n 0. 退出"
 E[5]="The script supports Debian, Ubuntu, CentOS or Alpine systems only. Feedback: [https://github.com/fscarmen/warp_unlock/issues]"
 C[5]="本脚本只支持 Debian、Ubuntu、CentOS 或 Alpine 系统,问题反馈:[https://github.com/fscarmen/warp_unlock/issues]"
 E[6]="Please choose to brush WARP IP:\n 1. WARP Socks5 Proxy\n 2. WARP IPv6 Interface"
@@ -83,8 +83,8 @@ E[33]="Input errors up to 5 times.The script is aborted."
 C[33]="输入错误达5次，脚本退出"
 E[34]="License should be 26 characters, please re-enter WARP+ License. Otherwise press Enter to continue. \(\${i} times remaining\): "
 C[34]="License 应为26位字符,请重新输入 WARP+ License \(剩余\${i}次\): "
-E[35]="Please customize the WARP+ device name (Default is [warp-go] if left blank):"
-C[35]="请自定义 WARP+ 设备名 (如果不输入，默认为 [warp-go]):"
+E[35]="Please customize the WARP+ device name (Default is [warp] if left blank):"
+C[35]="请自定义 WARP+ 设备名 (如果不输入，默认为 [warp]):"
 E[36]="Press [y] to confirm whether to uninstall dependencies: nodejs and npm. Other keys do not uninstall by default:"
 C[36]="是否卸载依赖 nodejs 和 npm，确认请按 [y] ，其他键默认不卸载:"
 E[37]="Please choose to brush WARP IP:\n 1. Client - IPv4\n 2. Client - IPv6"
@@ -214,37 +214,61 @@ check_unlock_running() {
 check_warp() {
   # 检查 STATUS[0]: warp/warp-go IPv4; STATUS[1]: warp/warp-go IPv6
   if [ -z "${STATUS[*]}" ]; then
-    if [[ $(ip a) =~ ": WARP:"|": wgcf:" ]]; then
-      WARP="--interface wgcf"
-      if [[ $(ip a) =~ ": WARP:" ]]; then
-        WARP="--interface WARP"
-        # 检测账户类型为 Team 的不能更换
-        if grep -qE 'Type[ ]+=[ ]+team' /opt/warp-go/warp.conf; then
-          hint "\n $(text 32) \n" && reading " $(text 3) " CHANGE_ACCOUNT
-          case "$CHANGE_ACCOUNT" in
-            2 )
-              [ -z "$LICENSE" ] && reading " $(text 42) " LICENSE
-              local i=5
-              until [[ "$LICENSE" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; do
-                (( i-- )) || true
-                [ "$i" = 0 ] && error " $(text 33) " && exit 1 || reading " $(text 34) " LICENSE
-              done
-              [[ -n "$LICENSE" && -z "$NAME" ]] && reading " $(text 35) " NAME
-              [ -n "$NAME" ] && NAME="${NAME//[[:space:]]/_}" || NAME=${NAME:-'warp-go'}
-              echo "$LICENSE" > /opt/warp-go/License
-              echo "$NAME" > /opt/warp-go/Device_Name
-              ;;
-            3 )
-              exit 0
-          esac
-        fi
+    IP_ADDRESS=$(ip a)
+    if [[ "$IP_ADDRESS" =~ ": wgcf:"|": warp:" ]]; then
+      [[ "$IP_ADDRESS" =~ ": wgcf:" ]] && WARP="--interface wgcf" || WARP="--interface warp"
+      # 检测账户类型为 Team 的不能更换
+      if [ -s /etc/wireguard/info.log ] && ! grep -q 'Device name' /etc/wireguard/info.log; then
+        hint "\n $(text 32) \n" && reading " $(text 3) " CHANGE_ACCOUNT
+        case "$CHANGE_ACCOUNT" in
+          2 )
+            [ -z "$LICENSE" ] && reading " $(text 42) " LICENSE
+            local i=5
+            until [[ "$LICENSE" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; do
+              (( i-- )) || true
+              [ "$i" = 0 ] && error " $(text 33) " && exit 1 || reading " $(text 34) " LICENSE
+            done
+            [[ -n "$LICENSE" && -z "$NAME" ]] && reading " $(text 35) " NAME
+            [ -n "$NAME" ] && NAME="${NAME//[[:space:]]/_}" || NAME=${NAME:-'warp'}
+            echo "$LICENSE" > /opt/wireguard/License
+            echo -e "Device name   : $NAME\nAccount type  : limited" > /etc/wireguard/info.log
+            ;;
+          3 )
+            exit 0
+        esac
+      fi
+      TRACE4=$(curl -ks4m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | awk -F= '/^warp/{print $2}')
+      TRACE6=$(curl -ks6m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | awk -F= '/^warp/{print $2}')
+      [[ "$TRACE4" =~ on|plus ]] && STATUS[0]=1 || STATUS[0]=0
+      [[ "$TRACE6" =~ on|plus ]] && STATUS[1]=1 || STATUS[1]=0
+    elif [[ "$IP_ADDRESS" =~ ": WARP:" ]]; then
+      WARP="--interface WARP"
+      # 检测账户类型为 Team 的不能更换
+      if grep -qE 'Type[ ]+=[ ]+team' /opt/warp-go/warp.conf; then
+        hint "\n $(text 32) \n" && reading " $(text 3) " CHANGE_ACCOUNT
+        case "$CHANGE_ACCOUNT" in
+          2 )
+            [ -z "$LICENSE" ] && reading " $(text 42) " LICENSE
+            local i=5
+            until [[ "$LICENSE" =~ ^[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}-[A-Z0-9a-z]{8}$ ]]; do
+              (( i-- )) || true
+              [ "$i" = 0 ] && error " $(text 33) " && exit 1 || reading " $(text 34) " LICENSE
+            done
+            [[ -n "$LICENSE" && -z "$NAME" ]] && reading " $(text 35) " NAME
+            [ -n "$NAME" ] && NAME="${NAME//[[:space:]]/_}" || NAME=${NAME:-'warp'}
+            echo "$LICENSE" > /opt/warp-go/License
+            echo "$NAME" > /opt/warp-go/Device_Name
+            ;;
+          3 )
+            exit 0
+        esac
       fi
       TRACE4=$(curl -ks4m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | awk -F= '/^warp/{print $2}')
       TRACE6=$(curl -ks6m8 $WARP https://www.cloudflare.com/cdn-cgi/trace | awk -F= '/^warp/{print $2}')
       [[ "$TRACE4" =~ on|plus ]] && STATUS[0]=1 || STATUS[0]=0
       [[ "$TRACE6" =~ on|plus ]] && STATUS[1]=1 || STATUS[1]=0
     else
-      STATUS[0]=0; STATUS[1]=0  
+      STATUS[0]=0; STATUS[1]=0
     fi
 
     # 检查 STATUS[2]: client proxy / client warp, 在已安装 Client 的前提下，区分模式 Mode
@@ -265,7 +289,7 @@ check_warp() {
     fi
   fi
 
-  wgcf_warp() { wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/menu.sh && bash menu.sh; exit; }
+  warp() { wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/menu.sh && bash menu.sh; exit; }
   warp-go() { wget -N --no-check-certificate https://raw.githubusercontent.com/fscarmen/warp/main/warp-go.sh && bash warp-go.sh; exit; }
   p3terx() { bash <(curl -fsSL git.io/warp.sh) menu; exit; }
   misaka() { wget -N --no-check-certificate https://gitlab.com/Misaka-blog/warp-script/-/raw/main/warp.sh && bash warp.sh; exit; }
@@ -281,12 +305,12 @@ check_warp() {
   INSTALL_CHECK=("0 0 0 0" "1 1 1 1" "0 1 1 1" "1 0 1 1" "1 1 1 0" "1 1 0 1" "0 0 1 1" "0 1 1 0" "1 0 1 0" "0 1 0 1" "1 0 0 1" "1 1 0 0" "0 0 1 0" "0 0 0 1" "0 1 0 0" "1 0 0 0")
   SHOW=("\n $(text 4) \n" "\n $(text 53) \n" "\n $(text 47) \n" "\n $(text 50) \n" "\n $(text 52) \n" "\n $(text 51) \n" "\n $(text 45) \n" "\n $(text 6) \n" "\n $(text 49) \n" "\n $(text 46) \n" "\n $(text 48) \n" "\n $(text 23) \n" "\n $(text 37) \n" "\n $(text 38) \n")
   NUM=("0|1|2|3|4|5" "1|2|3|4|5|6" "1|2|3|4|5" "1|2|3|4|5" "1|2|3|4" "1|2|3|4" "1|2|3|4" "1|2|3" "1|2|3" "1|2|3" "1|2|3" "1|2" "1|2" "1|2")
-  DO1=("wgcf_warp" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_IPV4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_IPV6" "CASE_IPV4")
-  DO2=("warp-go" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_CLIENT6" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_IPV6" "CASE_CLIENT6" "CASE_WIREPROXY6")
-  DO3=("p3terx" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_IPV4" "CASE_IPV4" "CASE_CLIENT4" "CASE_IPV6" "CASE_IPV4" "CASE_CLIENT6" "CASE_IPV4")
-  DO4=("misaka" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_IPV6" "CASE_IPV6" "CASE_CLIENT6")
-  DO5=("ygkkk" "CASE_IPV4" "CASE_IPV6" "CASE_IPV4")
-  DO6=(" "  "CASE_IPV6")
+  DO1=("warp" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WIREPROXY4" "CASE_WARP4" "CASE_CLIENT4" "CASE_WIREPROXY4" "CASE_WARP6" "CASE_WARP4")
+  DO2=("warp-go" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_CLIENT6" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_WIREPROXY6" "CASE_WIREPROXY6" "CASE_WARP6" "CASE_CLIENT6" "CASE_WIREPROXY6")
+  DO3=("p3terx" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_CLIENT4" "CASE_WARP4" "CASE_WARP4" "CASE_CLIENT4" "CASE_WARP6" "CASE_WARP4" "CASE_CLIENT6" "CASE_WARP4")
+  DO4=("misaka" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_CLIENT6" "CASE_WARP6" "CASE_WARP6" "CASE_CLIENT6")
+  DO5=("ygkkk" "CASE_WARP4" "CASE_WARP6" "CASE_WARP4")
+  DO6=(" "  "CASE_WARP6")
   DO0=("exit")
 
   for ((f=0; f<${#INSTALL_CHECK[@]}; f++)); do
@@ -366,9 +390,9 @@ LOG_LIMIT="1000"
 PYTHON="$PYTHON"
 UNLOCK_STATUS='Yes 🎉'
 NOT_UNLOCK_STATUS='No 😰'
-LMC999=\$(curl -sSLm4 https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh)
-RESULT_TITLE=(\$(echo "\$LMC999" | grep "result.*netflix.com/title/" | sed "s/.*title\/\([^\"]*\).*/\1/"))
-REGION_TITLE=\$(echo "\$LMC999" | grep "region.*netflix.com/title/" | sed "s/.*title\/\([^\"]*\).*/\1/")
+LMC999=(\$(curl -sSLm4 https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh | awk -F 'title/' '/netflix.com\/title/{print \$2'}  | cut -d\" -f1))
+RESULT_TITLE=(\${LMC999[*]:0:2})
+REGION_TITLE=\${LMC999[2]}
 [[ ! \${RESULT_TITLE[0]} =~ ^[0-9]+$ ]] && RESULT_TITLE[0]='81280792'
 [[ ! \${RESULT_TITLE[1]} =~ ^[0-9]+$ ]] && RESULT_TITLE[1]='70143836'
 [[ ! "\$REGION_TITLE" =~ ^[0-9]+$ ]] && REGION_TITLE='80018499'
@@ -392,21 +416,24 @@ if [[ \$(pgrep -laf ^[/d]*bash.*warp_unlock | awk -F, '{a[\$2]++}END{for (i in a
 
   # api 注册账户,优先使用 warp-go 团队 api,后备使用官方 api 脚本
   registe_api() {
-    local REGISTE_FILE="\$1"
+    local REGISTE_FILE_PATH="\$1"
+    local LICENSE="\$2"
+    local NAME="\$3"
     local i=0; local j=5
-    until [ -e /opt/warp-go/\$REGISTE_FILE ]; do
+    until [ -s \$REGISTE_FILE_PATH ]; do
       ((i++)) || true
-      [ "\$i" -gt "\$j" ] && rm -f /opt/warp-go/warp.conf.tmp* && echo -e " Failed to register warp account. Script aborted. " && exit 1
-      if ! grep -sq 'PrivateKey' /opt/warp-go/\$REGISTE_FILE; then
+      [ "\$i" -gt "\$j" ] && rm -f \$REGISTE_FILE_PATH && echo -e " Failed to register warp account. Script aborted. " && exit 1
+      if ! grep -sq 'PrivateKey' \$REGISTE_FILE_PATH; then
         unset CF_API_REGISTE API_DEVICE_ID API_ACCESS_TOKEN API_PRIVATEKEY API_TYPE
-        rm -f /opt/warp-go/\$REGISTE_FILE
-        CF_API_REGISTE="\$(bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh | sed 's# > \$registe_path##g') -r)"
+        rm -f \$REGISTE_FILE_PATH
+        CF_API_REGISTE="\$(bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh | sed 's# > \$registe_path##g') --registe)"
         if grep -q 'private_key' <<< "\$CF_API_REGISTE"; then
           local API_DEVICE_ID=\$(expr "\$CF_API_REGISTE " | grep -m1 'id' | cut -d\" -f4)
           local API_ACCESS_TOKEN=\$(expr "\$CF_API_REGISTE " | grep '"token' | cut -d\" -f4)
           local API_PRIVATEKEY=\$(expr "\$CF_API_REGISTE " | grep 'private_key' | cut -d\" -f4)
           local API_TYPE=\$(expr "\$CF_API_REGISTE " | grep 'account_type' | cut -d\" -f4)
-          cat > /opt/warp-go/\$REGISTE_FILE << ABC
+          if [[ "\$REGISTE_FILE_PATH" =~ '/opt/warp-go' ]]; then
+            cat > \$REGISTE_FILE_PATH << ABC
 [Account]
 Device = \$API_DEVICE_ID
 PrivateKey = \$API_PRIVATEKEY
@@ -425,37 +452,73 @@ KeepAlive = 30
 # AllowedIPs = ::/0
 
 ABC
+
+          elif [[ "\$REGISTE_FILE_PATH" =~ '/etc/wireguard' ]]; then
+            expr "\$CF_API_REGISTE" > \$REGISTE_FILE_PATH
+          fi
+ 
+          # 如果文件有问题，则删除该注册文件
+          if grep -sqE 'Account|account_type' \$REGISTE_FILE_PATH; then
+            grep -sq Account \$REGISTE_FILE_PATH && echo -e "\n[Script]\nPostUp =\nPostDown =" >> \$REGISTE_FILE_PATH && sed -i 's/\r//' \$REGISTE_FILE_PATH
+          else
+            rm -f \$REGISTE_FILE_PATH
+          fi
+
+          # 如是 plus 账户，升级账户
+          if [[ -n "\$LICENSE" && -n "\$NAME" ]]; then
+            bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file \$REGISTE_FILE_PATH --license \$LICENSE >/dev/null 2>&1
+            bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file \$REGISTE_FILE_PATH --name \$NAME >/dev/null 2>&1
+          fi
         fi
       fi
-  
-      if grep -sq 'Account' /opt/warp-go/\$REGISTE_FILE; then
-        echo -e "\n[Script]\nPostUp =\nPostDown =" >> /opt/warp-go/\$REGISTE_FILE && sed -i 's/\r//' /opt/warp-go/\$REGISTE_FILE
-        [ -s /opt/warp-go/License ] && bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/\$REGISTE_FILE --license \$(cat /opt/warp-go/License) >/dev/null 2>&1
-        [ -s /opt/warp-go/Device_Name ] && bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/\$REGISTE_FILE --name \$(cat /opt/warp-go/Device_Name) >/dev/null 2>&1
-      else
-        rm -f /opt/warp-go/\$REGISTE_FILE
-      fi
-   done
+
+    done
   }
 
   warp_restart() {
-    if [[ \$(ip link show | awk -F': ' '{print $2}') =~ 'WARP' ]];then
-      cp -f /opt/warp-go/warp.conf{,.tmp1}
-      registe_api warp.conf.tmp2
-      [ -e /opt/warp-go/warp.conf.tmp2 ] && sleep 10
-      sed -i '1,6!d' /opt/warp-go/warp.conf.tmp2
-      tail -n +7 /opt/warp-go/warp.conf.tmp1 >> /opt/warp-go/warp.conf.tmp2
-      mv /opt/warp-go/warp.conf.tmp2 /opt/warp-go/warp.conf
-      bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/warp.conf.tmp1 --cancle >/dev/null 2>&1
-      rm -f /opt/warp-go/warp.conf.tmp*
-      systemctl restart warp-go
-      sleep 10
-    else
-      systemctl restart wg-quick@wgcf
-      sleep 2
-      [[ "\$(ss -nltp | awk -F\" '{print \$2}' | sed '/^$/d')" =~ 'dnsmasq' ]] && systemctl restart dnsmasq >/dev/null 2>&1
-      sleep 2
-    fi
+    INTERFACE=$(cut -d ' ' -f2 <<< "$WARP")
+    case "\$INTERFACE" in
+
+      # warp-go 处理方案
+      WARP )
+        [ -s /opt/warp-go/License ] && local LICENSE=\$(cat /opt/warp-go/License)
+        [[ -n "\$LICENSE" && -s /opt/warp-go/Device_Name ]] && local NAME=\$(cat /opt/warp-go/Device_Name)
+        cp -f /opt/warp-go/warp.conf{,.tmp1}
+        registe_api /opt/warp-go/warp.conf.tmp2 \$LICENSE \$NAME
+        sed -i '1,6!d' /opt/warp-go/warp.conf.tmp2
+        tail -n +7 /opt/warp-go/warp.conf.tmp1 >> /opt/warp-go/warp.conf.tmp2
+        mv /opt/warp-go/warp.conf.tmp2 /opt/warp-go/warp.conf
+        bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /opt/warp-go/warp.conf.tmp1 --cancle >/dev/null 2>&1
+        rm -f /opt/warp-go/warp.conf.tmp*
+        systemctl restart warp-go
+        sleep 10
+        ;;
+
+      # warp 处理方案
+      warp )
+        [ -s /etc/wireguard/license ] && local LICENSE=\$(cat /etc/wireguard/license)
+        [ -n "\$LICENSE" ] && grep -sq 'Device name' /etc/wireguard/info.log && local NAME=\$(grep -s 'Device name' /etc/wireguard/info.log | awk '{ print \$NF }')
+        mv -f /etc/wireguard/warp-account.conf{,.tmp}
+        wg-quick down warp >/dev/null 2>&1
+        registe_api /etc/wireguard/warp-account.conf \$LICENSE \$NAME
+        local PRIVATEKEY="\$(grep 'private_key' /etc/wireguard/warp-account.conf | cut -d\" -f4)"
+        local ADDRESS6="\$(grep '"v6.*"$' /etc/wireguard/warp-account.conf | cut -d\" -f4)"
+        local RESERVED="\$(grep 'client_id' /etc/wireguard/warp-account.conf | cut -d\" -f4 | base64 -d | xxd -p | fold -w2 | while read HEX; do printf '%d ' "0x\${HEX}"; done | awk '{print "["\$1", "\$2", "\$3"]"}')"
+        sed -i "s#\(PrivateKey[ ]\+=[ ]\+\).*#\1\$PRIVATEKEY#g; s#\(Address[ ]\+=[ ]\+\).*\(/128\)#\1\$ADDRESS6\2#g; s#\(.*Reserved[ ]\+=[ ]\+\).*#\1\$RESERVED#g" /etc/wireguard/warp.conf
+        bash <(curl -m8 -sSL https://raw.githubusercontent.com/fscarmen/warp/main/api.sh) --file /etc/wireguard/warp-account.conf.tmp --cancle >/dev/null 2>&1
+        rm -f /etc/wireguard/warp-account.conf.tmp
+        wg-quick up warp >/dev/null 2>&1
+        sleep 10
+        [[ "\$(ss -nltp | awk -F\" '{print \$2}' | sed '/^$/d')" =~ 'dnsmasq' ]] && ( systemctl restart dnsmasq >/dev/null 2>&1; sleep 2 )
+        ;;
+
+      # wgcf 处理方案
+      wgcf )
+        systemctl restart wg-quick@wgcf
+        sleep 2
+        [[ "\$(ss -nltp | awk -F\" '{print \$2}' | sed '/^$/d')" =~ 'dnsmasq' ]] && systemctl restart dnsmasq >/dev/null 2>&1
+        sleep 2
+    esac
     check_ip
   }
 

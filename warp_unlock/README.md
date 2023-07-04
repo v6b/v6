@@ -14,6 +14,8 @@ Born to make stream media unlock by WARP
 * * *
 
 ## 更新信息
+2023.7.4 1.13 Wireguard-go-reserved supports changing IP; Wireguard-go-reserved 支持更换 IP
+
 2023.6.28 1.12 Wireproxy dual-stack supports changing IP; Wireproxy 模式双栈支持更换 IP
 
 2023.6.26 1.11 1. Warp-go uses the official api to register and cancel accounts; 2. Client proxy mode dual-stack supports changing IP; 3. Client warp mode dual-stack supports changing IP 1. warp-go 使用官方 api 注册和注销账户; 2. Client proxy 模式双栈支持更换 IP; 3. Client warp 模式双栈支持更换 IP
