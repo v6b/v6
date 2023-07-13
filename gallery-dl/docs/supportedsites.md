@@ -482,12 +482,6 @@ Consider all sites to be NSFW unless otherwise known.
     <td></td>
 </tr>
 <tr>
-    <td>LINE BLOG</td>
-    <td>https://www.lineblog.me/</td>
-    <td>Blogs, Posts</td>
-    <td></td>
-</tr>
-<tr>
     <td>livedoor Blog</td>
     <td>http://blog.livedoor.jp/</td>
     <td>Blogs, Posts</td>
@@ -1007,12 +1001,6 @@ Consider all sites to be NSFW unless otherwise known.
     <td>もえぴりあ</td>
     <td>https://vanilla-rock.com/</td>
     <td>Posts, Tag Searches</td>
-    <td></td>
-</tr>
-<tr>
-    <td>半次元</td>
-    <td>https://bcy.net/</td>
-    <td>Posts, User Profiles</td>
     <td></td>
 </tr>
 
