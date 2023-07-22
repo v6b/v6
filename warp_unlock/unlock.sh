@@ -297,8 +297,8 @@ check_warp() {
 
   CASE_WARP4() { NIC="-ks4m8 $WARP"; RESTART="warp_restart"; }
   CASE_WARP6() { NIC="-ks6m8 $WARP"; RESTART="warp_restart"; }
-  CASE_CLIENT4() { NIC='-ks4m8 --interface CloudflareWARP' && RESTART="client_restart" && [ "$(warp-cli --accept-tos settings | awk '/^Mode/{print $2}')" = WarpProxy ] && NIC="-4 -sx socks5://127.0.0.1:$CLIENT_PORT"; }
-  CASE_CLIENT6() { NIC='-ks6m8 --interface CloudflareWARP' && RESTART="client_restart" && [ "$(warp-cli --accept-tos settings | awk '/^Mode/{print $2}')" = WarpProxy ] && NIC="-6 -sx socks5://127.0.0.1:$CLIENT_PORT"; }
+  CASE_CLIENT4() { NIC='-ks4m8 --interface CloudflareWARP' && RESTART="client_restart" && [ "$(warp-cli --accept-tos settings | awk '/Mode:/{for (i=0; i<NF; i++) if ($i=="Mode:") {print $(i+1)}}')" = WarpProxy ] && NIC="-4 -sx socks5://127.0.0.1:$CLIENT_PORT"; }
+  CASE_CLIENT6() { NIC='-ks6m8 --interface CloudflareWARP' && RESTART="client_restart" && [ "$(warp-cli --accept-tos settings | awk '/Mode:/{for (i=0; i<NF; i++) if ($i=="Mode:") {print $(i+1)}}')" = WarpProxy ] && NIC="-6 -sx socks5://127.0.0.1:$CLIENT_PORT"; }
   CASE_WIREPROXY4() { NIC="-ks4m8 -x socks5://127.0.0.1:$WIREPROXY_PORT"; RESTART="wireproxy_restart"; }
   CASE_WIREPROXY6() { NIC="-ks6m8 -x socks5://127.0.0.1:$WIREPROXY_PORT"; RESTART="wireproxy_restart"; }
 
@@ -523,7 +523,7 @@ ABC
   }
 
   client_restart() {
-    local CLIENT_MODE=\$(warp-cli --accept-tos settings | awk '/Mode/{print \$2}')
+    local CLIENT_MODE=\$(warp-cli --accept-tos settings | awk '/Mode:/{for (i=0; i<NF; i++) if (\$i=="Mode:") {print \$(i+1)}}')
     if [ "\$CLIENT_MODE" = 'Warp' ]; then
       [ "\$NIC" = '-ks4m8 --interface CloudflareWARP' ] && IP_RULE='-4' || IP_RULE='-6'
       warp-cli --accept-tos delete >/dev/null 2>&1
