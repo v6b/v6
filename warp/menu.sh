@@ -1794,8 +1794,8 @@ install() {
       KERNEL_OR_WIREGUARD_GO='wireguard kernel' && [ "$KERNEL_OR_WIREGUARD_GO_CHOOSE" = 2 ] && KERNEL_OR_WIREGUARD_GO='wireguard-go with reserved'
   esac
 
-  # Warp 工作模式: 全局或非全局，在 dnsmasq 方案下不选择
-  if [ "$ANEMONE" != 1 ]; then
+  # Warp 工作模式: 全局或非全局，在 dnsmasq / wireproxy 方案下不选择
+  if [[ ! $ANEMONE$OCTEEP =~ '1' ]]; then
     hint "\n $(text 182) \n" && reading " $(text 50) " GLOBAL_OR_NOT_CHOOSE
     GLOBAL_OR_NOT="$(text 184)" && [ "$GLOBAL_OR_NOT_CHOOSE" = 2 ] && GLOBAL_OR_NOT="$(text 185)"
   fi
@@ -2008,20 +2008,22 @@ EOF
       [ "$OCTEEP" != 1 ] && ${PACKAGE_INSTALL[int]} wireguard-tools
   esac
 
-  # 先判断是否一定要用 wireguard kernel，如果不是，修改 wg-quick 文件，以使用 wireguard-go reserved 版
-  if [ "$WIREGUARD_GO_ENABLE" = '1' ]; then
-    # 则根据 wireguard-tools 版本判断下载 wireguard-go reserved 版本: wg < v1.0.20210223 , wg-go-reserved = v0.0.20201118-reserved; wg >= v1.0.20210223 , wg-go-reserved = v0.0.20230223-reserved
-    local WIREGUARD_TOOLS_VERSION=$(wg --version | sed "s#.* v1\.0\.\([0-9]\+\) .*#\1#g")
-    [[ "$WIREGUARD_TOOLS_VERSION" -lt 20210223 ]] && local WIREGUARD_GO_VERSION=20201118 || local WIREGUARD_GO_VERSION=20230223
-    wget --no-check-certificate $CDN -O /usr/bin/wireguard-go https://raw.githubusercontent.com/fscarmen/warp/main/wireguard-go/wireguard-go-linux-$ARCHITECTURE-$WIREGUARD_GO_VERSION && chmod +x /usr/bin/wireguard-go
+  # 在不是 wireproxy 方案的前提下，先判断是否一定要用 wireguard kernel，如果不是，修改 wg-quick 文件，以使用 wireguard-go reserved 版
+  if [ "$OCTEEP" != 1 ]; then
+    if [ "$WIREGUARD_GO_ENABLE" = '1' ]; then
+      # 则根据 wireguard-tools 版本判断下载 wireguard-go reserved 版本: wg < v1.0.20210223 , wg-go-reserved = v0.0.20201118-reserved; wg >= v1.0.20210223 , wg-go-reserved = v0.0.20230223-reserved
+      local WIREGUARD_TOOLS_VERSION=$(wg --version | sed "s#.* v1\.0\.\([0-9]\+\) .*#\1#g")
+      [[ "$WIREGUARD_TOOLS_VERSION" -lt 20210223 ]] && local WIREGUARD_GO_VERSION=20201118 || local WIREGUARD_GO_VERSION=20230223
+      wget --no-check-certificate $CDN -O /usr/bin/wireguard-go https://raw.githubusercontent.com/fscarmen/warp/main/wireguard-go/wireguard-go-linux-$ARCHITECTURE-$WIREGUARD_GO_VERSION && chmod +x /usr/bin/wireguard-go
 
-    if [ "$KERNEL_ENABLE" = '1' ]; then
-      cp -f /usr/bin/wg-quick{,.origin}
-      cp -f /usr/bin/wg-quick{,.reserved}
-      grep -q '^#[[:space:]]*add_if' /usr/bin/wg-quick.reserved || sed -i '/add_if$/ {s/^/# /; N; s/\n/&\twireguard-go "$INTERFACE"\n/}' /usr/bin/wg-quick.reserved
-      [ "$KERNEL_OR_WIREGUARD_GO" = 'wireguard-go with reserved' ] && cp -f /usr/bin/wg-quick.reserved /usr/bin/wg-quick
-    else
-      grep -q '^#[[:space:]]*add_if' /usr/bin/wg-quick || sed -i '/add_if$/ {s/^/# /; N; s/\n/&\twireguard-go "$INTERFACE"\n/}' /usr/bin/wg-quick
+      if [ "$KERNEL_ENABLE" = '1' ]; then
+        cp -f /usr/bin/wg-quick{,.origin}
+        cp -f /usr/bin/wg-quick{,.reserved}
+        grep -q '^#[[:space:]]*add_if' /usr/bin/wg-quick.reserved || sed -i '/add_if$/ {s/^/# /; N; s/\n/&\twireguard-go "$INTERFACE"\n/}' /usr/bin/wg-quick.reserved
+        [ "$KERNEL_OR_WIREGUARD_GO" = 'wireguard-go with reserved' ] && cp -f /usr/bin/wg-quick.reserved /usr/bin/wg-quick
+      else
+        grep -q '^#[[:space:]]*add_if' /usr/bin/wg-quick || sed -i '/add_if$/ {s/^/# /; N; s/\n/&\twireguard-go "$INTERFACE"\n/}' /usr/bin/wg-quick
+      fi
     fi
   fi
 
