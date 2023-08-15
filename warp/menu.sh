@@ -557,7 +557,7 @@ ip_case() {
         ;;
       d )
         # 如在非全局模式，根据 AllowedIPs 的 v4、v6 情况再查 ip 信息；如在全局模式下则全部查
-        if grep -q '^Table' /etc/wireguard/warp.conf; then
+        if [ -e /etc/wireguard/warp.conf ] && grep -q '^Table' /etc/wireguard/warp.conf; then
           grep -q "^#.*0\.\0\/0" /etc/wireguard/warp.conf || fetch_4
           grep -q "^#.*\:\:\/0" /etc/wireguard/warp.conf || fetch_6
         else
@@ -1718,10 +1718,8 @@ EOF
   chmod +x /etc/wireguard/up /etc/wireguard/down
 
   # 修改 warp.conf 和 warp.conf 文件
-  sed -i "s/^Post.*/#&/g;/MTU/a\Table = off\nPostUp = /etc/wireguard/up\nPredown = /etc/wireguard/down" /etc/wireguard/warp.conf
-  sed -i "\$a PersistentKeepalive = 5" /etc/wireguard/warp.conf
+  sed -i "s/^Post.*/#&/g; /Table/s/#//g; /Table/a\PostUp = /etc/wireguard/up\nPredown = /etc/wireguard/down" /etc/wireguard/warp.conf
   [ "$m" = 0 ] && sed -i "2i server=2606:4700:4700::1111\nserver=2001:4860:4860::8888\nserver=2001:4860:4860::8844" /etc/dnsmasq.d/warp.conf
-  [ "$GLOBAL_OR_NOT" = "$(text 185)" ] && sed -i "/Table/s/#//g;/NonGlobal/s/#//g" /etc/wireguard/warp.conf
   ! grep -q 'warp' /etc/iproute2/rt_tables && echo '250   warp' >>/etc/iproute2/rt_tables
   systemctl disable systemd-resolved --now >/dev/null 2>&1 && sleep 2
   systemctl enable dnsmasq --now >/dev/null 2>&1 && sleep 2
@@ -1796,9 +1794,11 @@ install() {
       KERNEL_OR_WIREGUARD_GO='wireguard kernel' && [ "$KERNEL_OR_WIREGUARD_GO_CHOOSE" = 2 ] && KERNEL_OR_WIREGUARD_GO='wireguard-go with reserved'
   esac
 
-  # Warp 工作模式: 全局或非全局
+  # Warp 工作模式: 全局或非全局，在 dnsmasq 方案下不选择
+  if [ "$ANEMONE" != 1 ]; then
     hint "\n $(text 182) \n" && reading " $(text 50) " GLOBAL_OR_NOT_CHOOSE
-    GLOBAL_OR_NOT="$(text 184)" && [ "$GLOBAL_OR_NOT_CHOOSE" = 2 ] && GLOBAL_OR_NOT="$(text 185)" 
+    GLOBAL_OR_NOT="$(text 184)" && [ "$GLOBAL_OR_NOT_CHOOSE" = 2 ] && GLOBAL_OR_NOT="$(text 185)"
+  fi
 
   # WireProxy 禁止重复安装，自定义 Port
   if [ "$OCTEEP" = 1 ]; then
@@ -1933,6 +1933,7 @@ EOF
     best_endpoint
 
     # 修改配置文件
+    [ "$GLOBAL_OR_NOT" = "$(text 185)" ] && sed -i "/Table/s/#//g;/NonGlobal/s/#//g" /etc/wireguard/warp.conf
     [ -e /etc/wireguard/warp.conf ] && sed -i "s/MTU.*/MTU = $MTU/g; s/engage.*/$ENDPOINT/g" /etc/wireguard/warp.conf && info "\n $(text 81) \n"
   }&
 
