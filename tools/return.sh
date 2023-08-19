@@ -21,17 +21,18 @@ check_dependencies() {
 
 
 ARCHITECTURE="$(arch)"
-case $ARCHITECTURE in
-x86_64 )
-  FILE=nexttrace_linux_amd64
-  ;;
-aarch64 )
-  FILE=nexttrace_linux_arm64
-  ;;
-i386 )  
-  FILE=nexttrace_darwin_amd64
-  ;;
-* ) red " 只支持 AMD64、ARM64、Mac 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && exit 1
+case "$ARCHITECTURE" in
+  "x86_64" | "amd64" )
+    FILE=nexttrace_linux_amd64
+    ;;
+  "armv7l" | "armv8" | "armv8l" | "aarch64")
+    FILE=nexttrace_linux_arm64
+    ;;
+  "i386" | "i686")
+    FILE=nexttrace_darwin_amd64
+    ;;
+  * )
+    red " 本脚本只支持 AMD64、ARM64、i386 或者 i686 使用，问题反馈:[https://github.com/fscarmen/tools/issues] " && exit 1
 esac
 
 # 多方式判断操作系统，包括 macOS, Debian, Ubuntu, CentOS，如非以上系统，脚本提示并退出
@@ -123,13 +124,13 @@ fi
 
 # 查路由
 RESULT=$(sudo ./"$FILE" "$ip" -g cn 2>/dev/null)
-PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]@@g")
-PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms.*ms.*ms\)/\1/g')
+PART_1=$(echo "$RESULT" | grep '^[0-9]\{1,2\}[ ]\+[0-9a-f]' | awk '{$1="";$2="";print}' | sed "s@^[ ]\+@@g")
+PART_2=$(echo "$RESULT" | grep '\(.*ms\)\{3\}' | sed 's/.* \([0-9*].*ms\).*ms.*ms/\1/g')
 SPACE=' '
 for ((i=1; i<=$(echo "$PART_1" | wc -l); i++)); do
   [ "$i" -eq 10 ] && unset SPACE
-  green " ${i} ${SPACE}$(echo "$PART_1" | sed -n "${i}p") $(echo "$PART_2" | sed -n "${i}p") "
+  green " ${i} ${SPACE}$(echo "$PART_2" | sed -n "${i}p")\t$(echo "$PART_1" | sed -n "${i}p") "
 done
 
-# 执行完成，删除主程序
+# 执行完成，删除 nexttrace 主程序
 rm -f $FILE
