@@ -8,7 +8,7 @@ IP_API=("http://ip-api.com/json/" "https://api.ip.sb/geoip" "https://ifconfig.co
 ISP=("isp" "isp" "asn_org")
 IP=("query" "ip" "ip")
 
-# 自建 github cdn 反代网，用于不能直连 github 的机器。先直连 github，若部分大陆机器不能连接，寻找 github CDN
+# 自建 github cdn 反代网，用于不能直连 github 的机器
 CDN_URL=("cdn1.cloudflare.now.cc/proxy/" "cdn2.cloudflare.now.cc/https://" "cdn3.cloudflare.now.cc?url=https://" "cdn4.cloudflare.now.cc/proxy/https://" "cdn5.cloudflare.now.cc/" "cdn.spiritlhl.workers.dev/" "ghproxy.com/")
 
 # 环境变量用于在Debian或Ubuntu操作系统中设置非交互式（noninteractive）安装模式

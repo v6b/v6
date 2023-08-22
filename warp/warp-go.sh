@@ -1438,6 +1438,7 @@ NAME="$3"
 statistics_of_run-times
 select_language
 check_operating_system
+check_github_cdn
 check_arch
 check_dependencies
 check_install
@@ -1459,7 +1460,6 @@ esac
 
 # 主程序运行 2/3
 check_root_virt
-check_github_cdn
 
 # 设置部分后缀 2/3
 case "$OPTION" in
