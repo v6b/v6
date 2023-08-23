@@ -390,7 +390,7 @@ LOG_LIMIT="1000"
 PYTHON="$PYTHON"
 UNLOCK_STATUS='Yes 🎉'
 NOT_UNLOCK_STATUS='No 😰'
-LMC999=(\$(curl -sSLm4 https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh | awk -F 'title/' '/netflix.com\/title/{print \$2'}  | cut -d\" -f1))
+LMC999=(\$(curl -sSLm4 https://raw.githubusercontent.com/lmc999/RegionRestrictionCheck/main/check.sh | awk -F 'title/' '/netflix.com\/title/{print \$2}' | cut -d\" -f1))
 RESULT_TITLE=(\${LMC999[*]:0:2})
 REGION_TITLE=\${LMC999[2]}
 [[ ! \${RESULT_TITLE[0]} =~ ^[0-9]+$ ]] && RESULT_TITLE[0]='81280792'
