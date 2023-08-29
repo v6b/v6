@@ -35,9 +35,9 @@ fetch_account_information() {
   else
     read -rp " Input device id: " id
     local i=5
-    until [[ "$id" =~ ^[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}$ ]]; do
+    until [[ "$id" =~ ^(t\.)?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}$ ]]; do
       (( i-- )) || true
-      [ "$i" = 0 ] && echo " Input errors up to 5 times. The script is aborted. " && exit 1 || read -rp " Device id should be 36 characters, please re-enter (${i} times remaining): " id
+      [ "$i" = 0 ] && echo " Input errors up to 5 times. The script is aborted. " && exit 1 || read -rp " Device id should be 36 or 38 characters, please re-enter (${i} times remaining): " id
     done
 
     read -rp " Input api token: " token
