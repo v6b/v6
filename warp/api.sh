@@ -65,7 +65,7 @@ registe_account() {
   [[ "$(dirname "$registe_path")" != '.' ]] && mkdir -p $(dirname "$registe_path")
   install_id=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 22)
   fcm_token="${install_id}:APA91b$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 134)"
-  
+
   curl --request POST 'https://api.cloudflareclient.com/v0a2158/reg' \
   --silent \
   --location \
@@ -125,7 +125,7 @@ account_binding_devices() {
 # 添加或者更改设备名
 change_device_name() {
   [[ -z "$id" && -z "$token" ]] && fetch_account_information
-  
+
   curl --request PATCH "https://api.cloudflareclient.com/v0a2158/reg/${id}/account/reg/${id}" \
   --silent \
   --location \

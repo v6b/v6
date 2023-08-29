@@ -523,7 +523,7 @@ ip_info() {
 
   IP_TRACE=$(curl --retry 2 -ks${CHECK_46}m5 $INTERFACE_SOCK5 ${IP_API[3]} | grep warp | sed "s/warp=//g")
   if [ -n "$IP_TRACE" ]; then
-    IP_JSON=$(curl --retry 7 -ks${CHECK_46}m5 $INTERFACE_SOCK5 -A Mozilla $CHOOSE_IP_API)
+    IP_JSON=$(curl --retry 2 -ks${CHECK_46}m5 $INTERFACE_SOCK5 -A Mozilla $CHOOSE_IP_API)
     [[ -z "$IP_JSON" || "$IP_JSON" =~ 'error code' ]] && CHOOSE_IP_API=${IP_API[2]} && CHOOSE_IP_ISP=${ISP[2]} && CHOOSE_IP_KEY=${IP[2]} && IP_JSON=$(curl --retry 3 -ks${CHECK_46}m5 $INTERFACE_SOCK5 -A Mozilla $CHOOSE_IP_API)
 
     if [[ -n "$IP_JSON" && ! "$IP_JSON" =~ 'error code' ]]; then
@@ -1160,18 +1160,20 @@ net() {
   if [[ $(ip link show | awk -F': ' '{print $2}') =~ warp ]]; then
     grep -q '#Table' /etc/wireguard/warp.conf && GLOBAL_OR_NOT="$(text 184)" || GLOBAL_OR_NOT="$(text 185)"
     if grep -q '^AllowedIPs.*:\:\/0' /etc/wireguard/warp.conf; then
+      local NET_6_NONGLOBAL=1
       ip_case 6 warp non-global
     else
-      [[ "$LAN6" != "::1" && "$LAN6" =~ ^([a-f0-9]{1,4}:){2,4}[a-f0-9]{1,4} ]] && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && ip_case 6 warp
+      [[ "$LAN6" != "::1" && "$LAN6" =~ ^([a-f0-9]{1,4}:){2,4}[a-f0-9]{1,4} ]] && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && local NET_6_NONGLOBAL=0 && ip_case 6 warp
     fi
     if grep -q '^AllowedIPs.*0\.\0\/0' /etc/wireguard/warp.conf; then
+      local NET_4_NONGLOBAL=1
       ip_case 4 warp non-global
     else
-      [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && ip_case 4 warp
+      [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && local NET_4_NONGLOBAL=0 && ip_case 4 warp
     fi
   else
-    [[ "$LAN6" != "::1" && "$LAN6" =~ ^([a-f0-9]{1,4}:){2,4}[a-f0-9]{1,4} ]] && INET6=1 && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && IPV6=1 && STACK=-6 && ip_case 6 warp
-    [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && INET4=1 && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && IPV4=1 && STACK=-4 && ip_case 4 warp
+    [[ "$LAN6" != "::1" && "$LAN6" =~ ^([a-f0-9]{1,4}:){2,4}[a-f0-9]{1,4} ]] && INET6=1 && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && local NET_6_NONGLOBAL=0 && ip_case 6 warp
+    [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && INET4=1 && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && local NET_4_NONGLOBAL=0 && ip_case 4 warp
   fi
 
   until [[ "$TRACE4$TRACE6" =~ on|plus ]]; do
@@ -1179,20 +1181,22 @@ net() {
     hint " $(text_eval 12) "
     ${SYSTEMCTL_RESTART[int]} >/dev/null 2>&1
     ss -nltp | grep dnsmasq >/dev/null 2>&1 && systemctl restart dnsmasq >/dev/null 2>&1
-    if [ "$GLOBAL_OR_NOT" = "$(text 185)" ]; then
-      if grep -q '^AllowedIPs.*:\:\/0' /etc/wireguard/warp.conf; then
+
+    case "$NET_6_NONGLOBAL" in
+      0 )
+        ip_case 6 warp
+        ;;
+      1 )
         ip_case 6 warp non-global
-      else
-        [[ "$LAN6" != "::1" && "$LAN6" =~ ^([a-f0-9]{1,4}:){2,4}[a-f0-9]{1,4} ]] && $PING6 -c2 -w10 2606:4700:d0::a29f:c001 >/dev/null 2>&1 && ip_case 6 warp
-      fi
-      if grep -q '^AllowedIPs.*0\.\0\/0' /etc/wireguard/warp.conf; then
+    esac
+
+    case "$NET_4_NONGLOBAL" in
+      0 )
+        ip_case 4 warp
+        ;;
+      1 )
         ip_case 4 warp non-global
-      else
-        [[ "$LAN4" =~ ^([0-9]{1,3}\.){3} ]] && ping -c2 -W3 162.159.193.10 >/dev/null 2>&1 && ip_case 4 warp
-      fi
-    else
-      ip_case d warp
-    fi
+    esac
 
     if [ "$i" = "$j" ]; then
       # 如果 teams 升级状态，但多次未成功获取 warp IP ，将换回普通账户，如果成功，删除临时文件
