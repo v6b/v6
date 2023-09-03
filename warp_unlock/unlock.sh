@@ -122,7 +122,7 @@ C[52]="请选择刷 WARP IP 方式:\n 1. Client - IPv4\n 2. Client - IPv6\n 3. W
 E[53]="Please choose to brush WARP IP:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6\n 5. WARP - IPv4\n 6. WARP - IPv6"
 C[53]="请选择刷 WARP IP 方式:\n 1. WireProxy - IPv4\n 2. WireProxy - IPv6\n 3. Client - IPv4\n 4. Client - IPv6\n 5. WARP - IPv4\n 6. WARP - IPv6"
 
-# 自定义字体彩色，read 函数，友道翻译函数，安装依赖函数
+# 自定义字体彩色，read 函数
 red() { echo -e "\033[31m\033[01m$*\033[0m"; }
 error() { echo -e "\033[31m\033[01m$*\033[0m" && exit 1; }
 info() { echo -e "\033[32m\033[01m$*\033[0m"; }
@@ -130,7 +130,15 @@ hint() { echo -e "\033[33m\033[01m$*\033[0m"; }
 reading() { read -rp "$(info "$1")" "$2"; }
 text() { eval echo "\${${L}[$*]}"; }
 text_eval() { eval echo "\$(eval echo "\${${L}[$*]}")"; }
-translate() { [ -n "$1" ] && curl -ksm8 "http://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=$1" | cut -d \" -f18 2>/dev/null; }
+
+# 自定义友道或谷歌翻译函数
+# translate() { [ -n "$1" ] && curl -ksm8 "http://fanyi.youdao.com/translate?&doctype=json&type=EN2ZH_CN&i=${1//[[:space:]]/}" | cut -d \" -f18 2>/dev/null; }
+translate() {
+  [ -n "$@" ] && EN="$@"
+  ZH=$(curl -km8 -sSL "https://translate.google.com/translate_a/t?client=any_client_id_works&sl=en&tl=zh&q=${EN//[[:space:]]/}")
+  [[ "$ZH" =~ ^\[\".+\"\]$ ]] && cut -d \" -f2 <<< "$ZH"
+}
+
 check_dependencies() {
   for c in $*; do
     type -p $c >/dev/null 2>&1 || (hint " $(text_eval 7) " && ${PACKAGE_INSTALL[b]} $c 2>/dev/null) || (hint " $(text_eval 8) " && ${PACKAGE_UPDATE[b]} && ${PACKAGE_INSTALL[b]} $c 2>/dev/null)
@@ -316,7 +324,7 @@ check_warp() {
   for ((f=0; f<${#INSTALL_CHECK[@]}; f++)); do
     [[ "${STATUS[*]}" = "${INSTALL_CHECK[f]}" ]] && break
   done
-	
+
   # 默认只安装一种 WARP 形式时，不用选择。如两种或以上则让用户选择哪个方式的解锁
   CHOOSE2=1
   if grep -qvwE "14|15" <<< "$f"; then
@@ -456,7 +464,7 @@ ABC
           elif [[ "\$REGISTE_FILE_PATH" =~ '/etc/wireguard' ]]; then
             expr "\$CF_API_REGISTE" > \$REGISTE_FILE_PATH
           fi
- 
+
           # 如果文件有问题，则删除该注册文件
           if grep -sqE 'Account|account_type' \$REGISTE_FILE_PATH; then
             grep -sq Account \$REGISTE_FILE_PATH && echo -e "\n[Script]\nPostUp =\nPostDown =" >> \$REGISTE_FILE_PATH && sed -i 's/\r//' \$REGISTE_FILE_PATH
