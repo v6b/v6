@@ -8254,7 +8254,7 @@ manageReality() {
 installRealityScanner() {
     if [[ ! -f "/etc/v2ray-agent/xray/reality_scan/RealiTLScanner-linux-64" ]]; then
         version=$(curl -s https://api.github.com/repos/XTLS/RealiTLScanner/releases?per_page=1 | jq -r '.[]|.tag_name')
-        wget -c -q -P /etc/v2ray-agent/xray/ "https://github.com/XTLS/RealiTLScanner/releases/download/${version}/RealiTLScanner-linux-64"
+        wget -c -q -P /etc/v2ray-agent/xray/reality_scan/ "https://github.com/XTLS/RealiTLScanner/releases/download/${version}/RealiTLScanner-linux-64"
         chmod 655 /etc/v2ray-agent/xray/reality_scan/RealiTLScanner-linux-64
     fi
 }
@@ -8263,7 +8263,8 @@ realityScanner() {
     echoContent skyBlue "\n进度 1/1 : 扫描Reality域名"
     echoContent red "\n=============================================================="
     echoContent yellow "# 注意事项"
-    echoContent yellow "扫描完成后，请自行检查扫描网站结果内容是否合规，需个人承担风险\n"
+    echoContent yellow "扫描完成后，请自行检查扫描网站结果内容是否合规，需个人承担风险"
+    echoContent red "某些IDC不允许扫描操作，比如搬瓦工，其中风险请自行承担\n"
     echoContent yellow "1.扫描IPv4"
     echoContent yellow "2.扫描IPv6"
     echoContent red "=============================================================="
@@ -8273,6 +8274,12 @@ realityScanner() {
         type=4
     elif [[ "${realityScannerStatus}" == "2" ]]; then
         type=6
+    fi
+
+    read -r -p "某些IDC不允许扫描操作，比如搬瓦工，其中风险请自行承担，是否继续？[y/n]:" scanStatus
+
+    if [[ "${scanStatus}" != "y" ]]; then
+        exit 0
     fi
 
     publicIP=$(getPublicIP "${type}")
@@ -8468,7 +8475,7 @@ menu() {
     cd "$HOME" || exit
     echoContent red "\n=============================================================="
     echoContent green "作者：mack-a"
-    echoContent green "当前版本：v2.11.12"
+    echoContent green "当前版本：v2.11.14"
     echoContent green "Github：https://github.com/mack-a/v2ray-agent"
     echoContent green "描述：八合一共存脚本\c"
     showInstallStatus
