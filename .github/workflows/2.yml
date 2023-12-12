@@ -44,6 +44,26 @@ jobs:
         commit-message: Update
         clean: true
         single-commit: false
+  build3:
+    name: 3
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Git Clone Repository
+      run: |
+        git clone https://github.com/MHSanaei/3x-ui git3
+        cd git3 && mv .github github
+    - name: Deploy git3
+      uses: JamesIves/github-pages-deploy-action@v4.2.3
+      with:
+        git-config-name: v6b
+        git-config-email: 99478294+v6b@users.noreply.github.com
+        branch: main
+        folder: git3
+        target-folder: 3x-ui
+        commit-message: Update
+        clean: true
+        single-commit: false
     - name: Delete workflow runs
       uses: Mattraks/delete-workflow-runs@main
       with:
