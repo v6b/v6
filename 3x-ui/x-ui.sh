@@ -1059,7 +1059,7 @@ show_menu() {
 ————————————————
   ${green}1.${plain} Install
   ${green}2.${plain} Update
-  ${green}3.${plain} custom version
+  ${green}3.${plain} Custom Version
   ${green}4.${plain} Uninstall
 ————————————————
   ${green}5.${plain} Reset Username & Password & Secret Token
