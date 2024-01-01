@@ -627,6 +627,20 @@ Description
     `ssl.SSLContext.set_ciphers() <https://docs.python.org/3/library/ssl.html#ssl.SSLContext.set_ciphers>`__
 
 
+extractor.*.tls12
+-----------------
+Type
+    ``bool``
+Default
+    * ``true``
+    * ``false`` for ``patreon``, ``pixiv:series``
+Description
+    Allow selecting TLS 1.2 cipher suites.
+
+    Can be disabled to alter TLS fingerprints
+    and potentially bypass Cloudflare blocks.
+
+
 extractor.*.keywords
 --------------------
 Type
@@ -1064,6 +1078,25 @@ Description
     To use a different formatting for those values other than the default
     ``%Y-%m-%d %H:%M:%S``, put |strptime|_ formatting directives
     after a colon ``:``, for example ``{date:%Y%m%d}``.
+
+
+extractor.*.write-pages
+-----------------------
+Type
+    * ``bool``
+    * ``string``
+Default
+    ``false``
+Description
+    During data extraction,
+    write received HTTP request data
+    to enumerated files in the current working directory.
+
+    Special values:
+
+    * ``"all"``: Include HTTP request and response headers. Hide ``Authorization``, ``Cookie``, and ``Set-Cookie`` values.
+    * ``"ALL"``: Include all HTTP request and response headers.
+
 
 
 Extractor-specific Options
