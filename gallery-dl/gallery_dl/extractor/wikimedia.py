@@ -16,6 +16,7 @@ from .. import text
 class WikimediaExtractor(BaseExtractor):
     """Base class for wikimedia extractors"""
     basecategory = "wikimedia"
+    filename_fmt = "{filename} ({sha1[:8]}).{extension}"
     directory_fmt = ("{category}", "{page}")
     archive_fmt = "{sha1}"
     request_interval = (1.0, 2.0)
@@ -34,13 +35,18 @@ class WikimediaExtractor(BaseExtractor):
         prefix = pre.lower() if sep else None
 
         self.title = path = text.unquote(path)
-        self.subcategory = prefix
+        if prefix:
+            self.subcategory = prefix
 
         if prefix == "category":
             self.params = {
                 "generator": "categorymembers",
                 "gcmtitle" : path,
                 "gcmtype"  : "file",
+            }
+        elif prefix == "file":
+            self.params = {
+                "titles"   : path,
             }
         else:
             self.params = {
