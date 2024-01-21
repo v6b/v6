@@ -970,6 +970,7 @@ iplimit_main() {
         confirm "Proceed with Unbanning everyone from IP Limit jail?" "y"
         if [[ $? == 0 ]]; then
             fail2ban-client reload --restart --unban 3x-ipl
+            truncate -s 0 "${iplimit_banned_log_path}"
             echo -e "${green}All users Unbanned successfully.${plain}"
             iplimit_main
         else
@@ -998,9 +999,7 @@ install_iplimit() {
         # Check the OS and install necessary packages
         case "${release}" in
         ubuntu | debian)
-            wget -O fail2ban.deb https://github.com/fail2ban/fail2ban/releases/download/1.0.2/fail2ban_1.0.2-1.upstream1_all.deb
-            wget -O fail2ban.deb.asc https://github.com/fail2ban/fail2ban/releases/download/1.0.2/fail2ban_1.0.2-1.upstream1_all.deb.asc
-            dpkg -i fail2ban.deb
+            apt update && apt install fail2ban -y
             ;;
         centos | almalinux | rocky)
             yum update -y && yum install epel-release -y
