@@ -28,12 +28,10 @@ WORKDIR /app
 RUN apk add --no-cache --update \
   ca-certificates \
   tzdata \
-  fail2ban \
-  bash
+  fail2ban
 
 COPY --from=builder /app/build/ /app/
 COPY --from=builder /app/DockerEntrypoint.sh /app/
-COPY --from=builder /app/x-ui /usr/bin/x-ui
 
 # Configure fail2ban
 RUN rm -f /etc/fail2ban/jail.d/alpine-ssh.conf \
@@ -43,10 +41,7 @@ RUN rm -f /etc/fail2ban/jail.d/alpine-ssh.conf \
   && sed -i "s/#allowipv6 = auto/allowipv6 = auto/g" /etc/fail2ban/fail2ban.conf
 
 RUN chmod +x \
-  /app/DockerEntrypoint.sh \
-  /app/x-ui \
-  /usr/bin/x-ui
+  /app/DockerEntrypoint.sh 
 
 VOLUME [ "/etc/x-ui" ]
-CMD [ "./x-ui" ]
 ENTRYPOINT [ "/app/DockerEntrypoint.sh" ]
