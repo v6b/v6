@@ -123,7 +123,7 @@ config_after_install() {
             echo -e "${green}username:${usernameTemp}${plain}"
             echo -e "${green}password:${passwordTemp}${plain}"
             echo -e "###############################################"
-            echo -e "${red}if you forgot your login info,you can type x-ui and then type 7 to check after installation${plain}"
+            echo -e "${red}if you forgot your login info,you can type x-ui and then type 8 to check after installation${plain}"
         else
             echo -e "${red} this is your upgrade,will keep old settings,if you forgot your login info,you can type x-ui and then type 8 to check${plain}"
         fi
