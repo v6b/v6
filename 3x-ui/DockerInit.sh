@@ -21,13 +21,9 @@ case $1 in
         ARCH="arm32-v6"
         FNAME="armv6"
         ;;
-    armv5)
-        ARCH="arm32-v5"
-        FNAME="armv5"
-        ;;
     *)
-        ARCH="64"
-        FNAME="amd64"
+        ARCH="unknown"
+        FNAME="unknown"
         ;;
 esac
 
