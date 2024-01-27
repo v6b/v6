@@ -1,5 +1,4 @@
 name: Release 3X-UI for Docker
-
 on:
   push:
     tags:
@@ -7,26 +6,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build_and_push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Check out the code
         uses: actions/checkout@v4.1.1
-        with:
-          submodules: true
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ghcr.io/mhsanaei/3x-ui
-          tags: |
-            type=ref,event=branch
-            type=ref,event=tag
-            type=pep440,pattern={{version}}
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.0.0
 
@@ -37,14 +22,20 @@ jobs:
         uses: docker/login-action@v3.0.0
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5.5.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5.1.0
         with:
           context: .
-          push: true
-          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7,linux/arm/v6,linux/386
+          push: ${{ github.event_name != 'pull_request' }}
+          platforms: linux/amd64, linux/arm64/v8, linux/arm/v7, linux/arm/v6, linux/386
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
