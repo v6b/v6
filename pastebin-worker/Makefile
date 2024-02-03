@@ -22,16 +22,18 @@ rendered_preview_html = $(addprefix $(RENDERED_PREVIEW_DIR)/,$(target_html_files
 deploy_html = $(addprefix $(DEPLOY_DIR)/, $(target_html_files))
 deploy_preview_html = $(addprefix $(DEPLOY_PREVIEW_DIR)/, $(target_html_files))
 
+all: deploy
+
 html: $(all_html)
 
 test:
 	./test/test.sh
 
 deploy: $(deploy_html) $(source_js_files) $(JS_LOCK)
-	yarn wrangler publish
+	yarn wrangler deploy
 
 preview: $(deploy_preview_html) $(source_js_files) $(JS_LOCK)
-	yarn wrangler publish --env preview
+	yarn wrangler deploy --env preview
 
 clean:
 	rm -f $(all_html) $(all_html_deploy) $(all_html_preview) $(js_deploy) $(js_preview)
@@ -71,4 +73,4 @@ $(deploy_preview_html): $(DEPLOY_PREVIEW_DIR)/%.html: $(RENDERED_PREVIEW_DIR)/%.
 	@mkdir -p $(dir $@)
 	@touch $@
 
-.PHONY: html test deploy preview clean
+.PHONY: all html test deploy preview clean

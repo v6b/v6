@@ -1,17 +1,19 @@
 name = "pb"
 compatibility_date = "2023-01-28"
 
-account_id = "1ddaf86dbca12e8f4fcaa76f32bb707d"
 workers_dev = false
 main = "src/index.js"
-
-# config for default production environment
 vars = { ENVIRONMENT = "production" }
+
+# change the pattern to your domain name
 route = { pattern = "shz.al", custom_domain = true }
+
+# change the id to your KV id
 kv_namespaces = [
   { binding = "PB", id = "cc398e983a234aa19de5ea6af571a483" },
 ]
 
+# the following content is used for testing, may be removed if you do not need
 [env.preview]
 vars = { ENVIRONMENT = "preview" }
 route = { pattern = "pb-preview.shz.al", custom_domain = true }
