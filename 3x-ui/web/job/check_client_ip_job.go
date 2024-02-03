@@ -115,14 +115,13 @@ func (j *CheckClientIpJob) processLogFile() {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		acceptedRegx, _ := regexp.Compile(`accepted\s+(?:tcp|udp):(\d+\.\d+\.\d+\.\d+)(?::\d+)?`)
+		ipRegx, _ := regexp.Compile(`(\d+\.\d+\.\d+\.\d+).* accepted`)
 		emailRegx, _ := regexp.Compile(`email:.+`)
 
-		matchesAccepted := acceptedRegx.FindStringSubmatch(line)
-		if len(matchesAccepted) > 0 {
-			ip := matchesAccepted[1]
-
-			if isLocalIP(ip) {
+		matches := ipRegx.FindStringSubmatch(line)
+		if len(matches) > 1 {
+			ip := matches[1]
+			if ip == "127.0.0.1" || ip == "[::1]" {
 				continue
 			}
 
@@ -137,6 +136,7 @@ func (j *CheckClientIpJob) processLogFile() {
 					continue
 				}
 				InboundClientIps[matchesEmail] = append(InboundClientIps[matchesEmail], ip)
+
 			} else {
 				InboundClientIps[matchesEmail] = append(InboundClientIps[matchesEmail], ip)
 			}
@@ -180,16 +180,6 @@ func (j *CheckClientIpJob) processLogFile() {
 			j.checkError(err)
 		}
 	}
-}
-
-func isLocalIP(ip string) bool {
-	localIPs := []string{"127.0.0.1", "localhost", "::1", "8.8.8.8", "8.8.4.4", "1.1.1.1", "1.0.0.1", "1.1.1.3", "1.0.0.3"}
-	for _, local := range localIPs {
-		if ip == local {
-			return true
-		}
-	}
-	return false
 }
 
 func (j *CheckClientIpJob) checkError(e error) {
