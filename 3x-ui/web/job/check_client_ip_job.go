@@ -136,7 +136,6 @@ func (j *CheckClientIpJob) processLogFile() {
 					continue
 				}
 				InboundClientIps[matchesEmail] = append(InboundClientIps[matchesEmail], ip)
-
 			} else {
 				InboundClientIps[matchesEmail] = append(InboundClientIps[matchesEmail], ip)
 			}
