@@ -115,14 +115,19 @@ func (t *Tgbot) Start(i18nFS embed.FS) error {
 }
 
 func (t *Tgbot) NewBot(token string, proxyUrl string) (*telego.Bot, error) {
-	if proxyUrl == "" || !strings.HasPrefix(proxyUrl, "socks5://") {
-		logger.Warning("invalid socks5 url, start with default")
+	if proxyUrl == "" {
+		// No proxy URL provided, use default instance
+		return telego.NewBot(token)
+	}
+
+	if !strings.HasPrefix(proxyUrl, "socks5://") {
+		logger.Warning("Invalid socks5 URL, starting with default")
 		return telego.NewBot(token)
 	}
 
 	_, err := url.Parse(proxyUrl)
 	if err != nil {
-		logger.Warning("cant parse proxy url, use default instance for tgbot:", err)
+		logger.Warning("Can't parse proxy URL, using default instance for tgbot:", err)
 		return telego.NewBot(token)
 	}
 
@@ -1563,30 +1568,44 @@ func (t *Tgbot) sendBanLogs(chatId int64, dt bool) {
 
 	file, err := os.Open(xray.GetIPLimitBannedPrevLogPath())
 	if err == nil {
-		document := tu.Document(
-			tu.ID(chatId),
-			tu.File(file),
-		)
-		_, err = bot.SendDocument(document)
-		if err != nil {
-			logger.Error("Error in uploading backup: ", err)
+		// Check if the file is non-empty before attempting to upload
+		fileInfo, _ := file.Stat()
+		if fileInfo.Size() > 0 {
+			document := tu.Document(
+				tu.ID(chatId),
+				tu.File(file),
+			)
+			_, err = bot.SendDocument(document)
+			if err != nil {
+				logger.Error("Error in uploading IPLimitBannedPrevLog: ", err)
+			}
+		} else {
+			logger.Warning("IPLimitBannedPrevLog file is empty, not uploading.")
 		}
+		file.Close()
 	} else {
-		logger.Error("Error in opening db file for backup: ", err)
+		logger.Error("Error in opening IPLimitBannedPrevLog file for backup: ", err)
 	}
 
 	file, err = os.Open(xray.GetIPLimitBannedLogPath())
 	if err == nil {
-		document := tu.Document(
-			tu.ID(chatId),
-			tu.File(file),
-		)
-		_, err = bot.SendDocument(document)
-		if err != nil {
-			logger.Error("Error in uploading config.json: ", err)
+		// Check if the file is non-empty before attempting to upload
+		fileInfo, _ := file.Stat()
+		if fileInfo.Size() > 0 {
+			document := tu.Document(
+				tu.ID(chatId),
+				tu.File(file),
+			)
+			_, err = bot.SendDocument(document)
+			if err != nil {
+				logger.Error("Error in uploading IPLimitBannedLog: ", err)
+			}
+		} else {
+			logger.Warning("IPLimitBannedLog file is empty, not uploading.")
 		}
+		file.Close()
 	} else {
-		logger.Error("Error in opening config.json file for backup: ", err)
+		logger.Error("Error in opening IPLimitBannedLog file for backup: ", err)
 	}
 }
 
