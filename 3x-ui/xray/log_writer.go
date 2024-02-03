@@ -41,8 +41,6 @@ func (lw *LogWriter) Write(m []byte) (n int, err error) {
 				logger.Debug(msgBody)
 			case "Info":
 				logger.Info(msgBody)
-			case "Notice":
-				logger.Notice(msgBody)
 			case "Warning":
 				logger.Warning(msgBody)
 			case "Error":
