@@ -31,7 +31,7 @@ func (lw *LogWriter) Write(m []byte) (n int, err error) {
 		// Find level in []
 		startIndex := strings.Index(messageBody, "[")
 		endIndex := strings.Index(messageBody, "]")
-		if startIndex != -1 && endIndex != -1 {
+		if startIndex != -1 && endIndex != -1 && startIndex < endIndex {
 			level := strings.TrimSpace(messageBody[startIndex+1 : endIndex])
 			msgBody := "XRAY: " + strings.TrimSpace(messageBody[endIndex+1:])
 
@@ -41,6 +41,8 @@ func (lw *LogWriter) Write(m []byte) (n int, err error) {
 				logger.Debug(msgBody)
 			case "Info":
 				logger.Info(msgBody)
+			case "Notice":
+				logger.Notice(msgBody)
 			case "Warning":
 				logger.Warning(msgBody)
 			case "Error":

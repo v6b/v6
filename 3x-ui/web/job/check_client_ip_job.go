@@ -1,7 +1,9 @@
 package job
 
 import (
+	"bufio"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -97,21 +99,22 @@ func (j *CheckClientIpJob) processLogFile() {
 		return
 	}
 
-	data, err := os.ReadFile(accessLogPath)
-	InboundClientIps := make(map[string][]string)
+	file, err := os.Open(accessLogPath)
 	j.checkError(err)
+	defer file.Close()
 
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
-		ipRegx, _ := regexp.Compile(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`)
+	InboundClientIps := make(map[string][]string)
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		acceptedRegx, _ := regexp.Compile(`accepted\s+(?:tcp:)?(\d+\.\d+\.\d+\.\d+)(?::\d+)?`)
 		emailRegx, _ := regexp.Compile(`email:.+`)
 
-		matchesIp := ipRegx.FindString(line)
-		if len(matchesIp) > 0 {
-			ip := string(matchesIp)
-			if ip == "127.0.0.1" || ip == "1.1.1.1" {
-				continue
-			}
+		matchesAccepted := acceptedRegx.FindStringSubmatch(line)
+		if len(matchesAccepted) > 0 {
+			ip := matchesAccepted[1]
 
 			matchesEmail := emailRegx.FindString(line)
 			if matchesEmail == "" {
@@ -124,12 +127,13 @@ func (j *CheckClientIpJob) processLogFile() {
 					continue
 				}
 				InboundClientIps[matchesEmail] = append(InboundClientIps[matchesEmail], ip)
-
 			} else {
 				InboundClientIps[matchesEmail] = append(InboundClientIps[matchesEmail], ip)
 			}
 		}
 	}
+
+	j.checkError(scanner.Err())
 
 	shouldCleanLog := false
 
@@ -141,7 +145,6 @@ func (j *CheckClientIpJob) processLogFile() {
 		} else {
 			shouldCleanLog = j.updateInboundClientIps(inboundClientIps, clientEmail, ips)
 		}
-
 	}
 
 	// added delay before cleaning logs to reduce chance of logging IP that already has been banned
@@ -151,12 +154,16 @@ func (j *CheckClientIpJob) processLogFile() {
 		// copy access log to persistent file
 		logAccessP, err := os.OpenFile(xray.GetAccessPersistentLogPath(), os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
 		j.checkError(err)
-		input, err := os.ReadFile(accessLogPath)
-		j.checkError(err)
-		if _, err := logAccessP.Write(input); err != nil {
-			j.checkError(err)
-		}
 		defer logAccessP.Close()
+
+		// reopen the access log file for reading
+		file, err := os.Open(accessLogPath)
+		j.checkError(err)
+		defer file.Close()
+
+		// copy access log content to persistent file
+		_, err = io.Copy(logAccessP, file)
+		j.checkError(err)
 
 		// clean access log
 		if err := os.Truncate(xray.GetAccessLogPath(), 0); err != nil {
