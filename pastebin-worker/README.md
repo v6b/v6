@@ -40,7 +40,7 @@ Requirements:
 
 **Step 2**. Clone the repository and enter the directory. Run `yarn` to install dependencies.
 
-**Step 3**. Modify entries in `wrangler.toml` according to your own account information (routes, kv namespace ids are what you need to modify).
+**Step 3**. Modify entries in `wrangler.toml` according to your own account information (routes, kv namespace id are what you need to modify, do not touch the binding name).
 
 > [!NOTE]
 > Ensure that the domain in your routes configuration is hosted on your Cloudflare account.
