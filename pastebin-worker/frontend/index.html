@@ -14,6 +14,7 @@
     <h1>Yet Another Pastebin</h1>
     <p>This is an open source pastebin deployed on Cloudflare Workers. </p>
     <p><b>Usage</b>: paste any text here, submit, then share it with URL. </p>
+    <p><b>Warning</b>: only for temporary share, files will be deleted without notice!</p>
     <p>Refer to <a href='{{REPO}}'>GitHub</a> for more details.</p>
 
     <div id='paste-input-panel'>
@@ -40,7 +41,7 @@
     <div id='paste-setting-panel'>
         <h2>Settings</h2>
         <div id='paste-expiration-panel' class='paste-setting-subitem-panel'>
-            <input list='expiration-choices' type='number' min='60' step='1' name='paste-expiration'
+            <input list='expiration-choices' type='number' min='60' step='1' name='paste-expiration' value="604800"
                    id='paste-expiration-input' placeholder='Expiration (secs)'>
             <datalist id='expiration-choices'>
                 <option value='60'>1 minute</option>
@@ -50,7 +51,7 @@
                 <option value='604800'>1 week</option>
                 <option value='2592000'>1 month</option>
             </datalist>
-            <label class='small-label' for='paste-expiration-input'>Delete your paste after a period of time. </label>
+            <label class='small-label' for='paste-expiration-input'>Delete your paste after a period of time (secs). </label>
         </div>
         <div id='paste-passwd-panel' class='paste-setting-subitem-panel'>
             <input type='text' spellcheck='false' name='paste-expiration' id='paste-passwd-input' placeholder='Password'>
