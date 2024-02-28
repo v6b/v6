@@ -1,5 +1,7 @@
 # 3X-UI
 
+<p align="center"><img src="./media/3X-UI.png"></p>
+
 **An Advanced Web Panel • Built on Xray Core**
 
 [![](https://img.shields.io/github/v/release/mhsanaei/3x-ui.svg)](https://github.com/MHSanaei/3x-ui/releases)
@@ -25,10 +27,10 @@ bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.
 
 ## Install Custom Version
 
-To install your desired version, add the version to the end of the installation command. e.g., ver `v2.2.0`:
+To install your desired version, add the version to the end of the installation command. e.g., ver `v2.2.1`:
 
 ```
-bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) v2.2.0
+bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) v2.2.1
 ```
 
 ## SSL Certificate
@@ -212,6 +214,7 @@ Our platform offers compatibility with a diverse range of architectures and devi
 - Vietnamese
 - Spanish
 - Indonesian 
+- Ukrainian
 
 
 ## Features
