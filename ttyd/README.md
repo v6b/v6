@@ -34,6 +34,7 @@ ttyd is a simple command-line tool for sharing terminal over the web.
 ## Install on Linux
 
 - Binary version (recommended): download from the [releases](https://github.com/tsl0922/ttyd/releases) page
+- [Brew.sh](https://docs.brew.sh/Homebrew-on-Linux) : `brew install ttyd`
 - Install the snap: `sudo snap install ttyd --classic`
 - Build from source (debian/ubuntu):
     ```bash
@@ -79,6 +80,7 @@ OPTIONS:
     -O, --check-origin      Do not allow websocket connection from different origin
     -m, --max-clients       Maximum clients to support (default: 0, no limit)
     -o, --once              Accept only one client and exit on disconnection
+    -q, --exit-no-conn      Exit on all clients disconnection
     -B, --browser           Open terminal with the default system browser
     -I, --index             Custom index.html path
     -b, --base-path         Expected base path for requests coming from a reverse proxy (eg: /mounted/here, max length: 128)
