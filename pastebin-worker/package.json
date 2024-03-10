@@ -7,9 +7,8 @@
   "main": "dist/worker.js",
   "type": "module",
   "scripts": {
-    "test": "webpack --mode=development && mocha",
-    "build": "webpack --mode=production",
-    "serve": "miniflare --live-reload"
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --var BASE_URL:http://localhost:8787 --port 8787"
   },
   "author": "SharzyL <me@sharzy.in>",
   "license": "MIT",
@@ -24,7 +23,7 @@
     "remark-html": "^15.0.1",
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
-    "wrangler": "^3.0.0"
+    "wrangler": "^3.32.0"
   },
   "dependencies": {
     "assert": "^2.0.0",

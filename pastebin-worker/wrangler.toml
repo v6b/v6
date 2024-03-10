@@ -3,23 +3,37 @@ compatibility_date = "2023-01-28"
 
 workers_dev = false
 main = "src/index.js"
-vars = { ENVIRONMENT = "production" }
 
-# change the pattern to your domain name
-route = { pattern = "shz.al", custom_domain = true }
-
-# change the id to your KV id
-kv_namespaces = [
-  { binding = "PB", id = "cc398e983a234aa19de5ea6af571a483" },
+rules = [
+  { type = "Text", globs = [ "*.html", "*.client.js", "*.md", "*.css" ], fallthrough = true }
 ]
 
-# the following content is used for testing, may be removed if you do not need
-[env.preview]
-vars = { ENVIRONMENT = "preview" }
-route = { pattern = "pb-preview.shz.al", custom_domain = true }
-minify = false
+#----------------------------------------
+# lines below are what you should modify
+#----------------------------------------
 
-kv_namespaces = [
-  { binding = "PB", id = "f56ae0043abd4bb4ab61c52071bd9c7f" }
-]
+[[routes]]
+# Refer to https://developers.cloudflare.com/workers/wrangler/configuration/#routes
+pattern = "shz.al"
+custom_domain = true
+
+[[kv_namespaces]]
+binding = "PB"  # do not touch this
+id = "cc398e983a234aa19de5ea6af571a483"  # id of your KV namespace
+
+[vars]
+# must be consistent with your routes
+BASE_URL = "https://shz.al"
+
+# url to repo, displayed in index page
+REPO = "https://github.com/SharzyL/pastebin-worker"
+
+# url to favicon
+FAVICON = "https://sharzy.in/favicon-32x32.png"
+
+# the name displayed in TOS
+TOS_MAINTAINER = "Sharzy"
+
+# the email displayed in TOS
+TOS_MAIL = "pb@shz.al"
 

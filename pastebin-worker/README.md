@@ -1,8 +1,8 @@
 # Pastebin-worker
 
-This is a pastebin that can be deployed on Cloudflare workers. Try it on [shz.al](https://shz.al).
+This is a pastebin that can be deployed on Cloudflare workers. Try it on [shz.al](https://shz.al). 
 
-**Philosophy**: effortless deployment, friendly CLI usage, rich functionality.
+**Philosophy**: effortless deployment, friendly CLI usage, rich functionality. 
 
 **Features**:
 
@@ -17,58 +17,44 @@ This is a pastebin that can be deployed on Cloudflare workers. Try it on [shz.al
 
 ## Usage
 
-1. You can post, update, delete your paste directly on the website (such as [shz.al](https://shz.al)).
+1. You can post, update, delete your paste directly on the website (such as [shz.al](https://shz.al)). 
 
-2. It also provides a convenient HTTP API to use. See [API reference](doc/api.md) for details. You can easily call API via command line (using `curl` or similar tools).
+2. It also provides a convenient HTTP API to use. See [API reference](doc/api.md) for details. You can easily call API via command line (using `curl` or similar tools). 
 
 3. [pb](/scripts) is a bash script to make it easier to use on command line.
 
 ## Limitations
 
-1. If deployed on the Cloudflare Worker free-tier plan, the service allows at most 100,000 reads and 1000 writes, 1000 deletes per day.
-2. Due to the size limit of Cloudflare KV storage, the size of each paste is bounded under 25 MiB.
+1. If deployed on Cloudflare Worker free-tier plan, the service allows at most 100,000 reads and 1000 writes, 1000 deletes per day. 
+2. Due to the size limit of Cloudflare KV storage, the size of each paste is bounded under 25 MB. 
 
 ## Deploy
 
-You are free to deploy the pastebin on your own domain if you host your domain on Cloudflare.
+You are free to deploy the pastebin on your own domain if you host your domain on Cloudflare. 
 
-Requirements:
-1. \*nix environment with bash and basic cli programs. Try cygwin, WSL or something if using Windows.
-2. GNU `make` and `yarn`
+1. Install `node` and `yarn`.
 
-**Step 1**. Create a KV namespaces on Cloudflare workers dashboard and remember its namespace ID.
+2. Create a KV namespace on Cloudflare workers dashboard, remember its ID.
 
-**Step 2**. Clone the repository and enter the directory. Run `yarn` to install dependencies.
+3. Clone the repository and enter the directory. Login to your Cloudflare account with `wrangler login`.
 
-**Step 3**. Modify entries in `wrangler.toml` according to your own account information (routes, kv namespace id are what you need to modify, do not touch the binding name).
+4. Modify entries in `wrangler.toml`. Its comments will tell you how.
 
-> [!NOTE]
-> Ensure that the domain in your routes configuration is hosted on your Cloudflare account.
+5. Deploy and enjoy!
 
-**Step 4**. Modify the contents in `config.json`: `BASE_URL` is the URL of your site (no trailing slash); `FAVICON` is the URL to the favicon you want to use on your site.
-
-**Step 5**. Run `make deploy` and enjoy.
-
-The command `make deploy` does the following things:
-
-1. generate the HTML file for frontend pages.
-2. Upload these HTML file to your KV store.
-3. Build and upload the JavaScript file for the Cloudflare worker.
+```shell
+$ yarn install
+$ yarn deploy
+```
 
 ## Auth
 
-If you want a private deployment (only you can upload paste, but everyone can read the paste), add the following entry to your `config.json` (other configurations also contained in the outmost brace):
+If you want a private deployment (only you can upload paste, but everyone can read the paste), add the following entry to your `wrangler.toml`.
 
-```json
-{
-  "basicAuth": {
-    "enabled": true,
-    "passwd": {
-      "admin1": "this-is-passwd-1",
-      "admin2": "this-is-passwd-2"
-    }
-  }
-}
+```toml
+[vars.BASIC_AUTH]
+user1 = "passwd1"
+user2 = "passwd2"
 ```
 
 Now every access to PUT or POST request, and every access to the index page, requires an HTTP basic auth with the user-password pair listed above. For example: 

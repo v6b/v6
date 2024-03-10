@@ -1,28 +1,25 @@
-import { WorkerError, parsePath, parseExpiration, genRandStr, decode, params } from "./common.js";
+import { WorkerError, parsePath, parseExpiration, genRandStr, decode, params, encodeRFC5987ValueChars, getDispFilename } from "./common.js";
 import { handleOptions, corsWrapResponse } from './cors.js'
 import { makeHighlight } from "./highlight.js"
 import { parseFormdata, getBoundary } from "./parseFormdata.js"
-import { staticPageMap } from './staticPages.js'
+import { getStaticPage } from './staticPages.js'
 import { makeMarkdown } from "./markdown.js";
-import conf_production from '../config.json'
-import conf_preview from '../config.preview.json'
-
-const conf = globalThis.ENVIRONMENT === "preview" ? conf_preview : conf_production
 
 import { getType } from "mime/lite.js"
 import {verifyAuth} from "./auth.js";
 
-addEventListener("fetch", (event) => {
-  const { request } = event
-  return event.respondWith(handleRequest(request))
-})
+export default {
+  async fetch(request, env, ctx) {
+    return await handleRequest(request, env, ctx)
+  }
+}
 
-async function handleRequest(request) {
+async function handleRequest(request, env, ctx) {
   try {
     if (request.method === "OPTIONS") {
       return handleOptions(request)
     } else {
-      const response = await handleNormalRequest(request)
+      const response = await handleNormalRequest(request, env, ctx)
       if (response.status !== 302 && response.headers !== undefined) {  // because Cloudflare do not allow modifying redirect headers
         response.headers.set("Access-Control-Allow-Origin", "*")
       }
@@ -38,22 +35,22 @@ async function handleRequest(request) {
   }
 }
 
-async function handleNormalRequest(request) {
+async function handleNormalRequest(request, env, ctx) {
   if (request.method === "POST") {
-    return await handlePostOrPut(request, false)
+    return await handlePostOrPut(request, env, ctx, false)
   } else if (request.method === "GET") {
-    return await handleGet(request)
+    return await handleGet(request, env, ctx)
   } else if (request.method === "DELETE") {
-    return await handleDelete(request)
+    return await handleDelete(request, env, ctx)
   } else if (request.method === "PUT") {
-    return await handlePostOrPut(request, true)
+    return await handlePostOrPut(request, env, ctx, true)
   } else {
     throw new WorkerError(405, "method not allowed")
   }
 }
 
-async function handlePostOrPut(request, isPut) {
-  const authResponse = verifyAuth(request)
+async function handlePostOrPut(request, env, ctx, isPut) {
+  const authResponse = verifyAuth(request, env)
   if (authResponse !== null) {
     return authResponse
   }
@@ -76,7 +73,7 @@ async function handlePostOrPut(request, isPut) {
     throw new WorkerError(400, `bad usage, please use 'multipart/form-data' instead of ${contentType}`)
   }
   const content = form.get("c") && form.get("c").content
-  const filename = form.get("c") && form.get("c").fields.filename
+  const filename = form.get("c") && getDispFilename(form.get("c").fields)
   const name = form.get("n") && decode(form.get("n").content)
   const isPrivate = form.get("p") !== undefined
   const passwd = form.get("s") && decode(form.get("s").content)
@@ -123,7 +120,7 @@ async function handlePostOrPut(request, isPut) {
 
   if (isPut) {
     const { short, passwd } = parsePath(url.pathname)
-    const item = await PB.getWithMetadata(short)
+    const item = await env.PB.getWithMetadata(short)
     if (item.value === null) {
       throw new WorkerError(404, `paste of name '${short}' is not found`)
     } else {
@@ -132,7 +129,7 @@ async function handlePostOrPut(request, isPut) {
         throw new WorkerError(403, `incorrect password for paste '${short}`)
       } else {
         return makeResponse(
-          await createPaste(content, isPrivate, expirationSeconds, short, date, passwd, filename),
+          await createPaste(env, content, isPrivate, expirationSeconds, short, date, passwd, filename),
         )
       }
     }
@@ -140,33 +137,34 @@ async function handlePostOrPut(request, isPut) {
     let short = undefined
     if (name !== undefined) {
       short = "~" + name
-      if ((await PB.get(short)) !== null)
+      if ((await env.PB.get(short)) !== null)
         throw new WorkerError(409, `name '${name}' is already used`)
     }
     return makeResponse(await createPaste(
-      content, isPrivate, expirationSeconds, short, undefined, passwd, filename
+      env, content, isPrivate, expirationSeconds, short, undefined, passwd, filename
     ))
   }
 }
 
-async function handleGet(request) {
+async function handleGet(request, env, ctx) {
   const url = new URL(request.url)
-  const { role, short, ext, passwd } = parsePath(url.pathname)
-  if (staticPageMap.has(url.pathname)) {
+  const { role, short, ext, passwd, filename } = parsePath(url.pathname)
+
+  const staticPageContent = getStaticPage(url.pathname, env)
+  if (staticPageContent) {
     // access to all static pages requires auth
-    const authResponse = verifyAuth(request)
+    const authResponse = verifyAuth(request, env)
     if (authResponse !== null) {
       return authResponse
     }
-    const item = await PB.get(staticPageMap.get(url.pathname))
-    return new Response(item, {
+    return new Response(staticPageContent, {
       headers: { "content-type": "text/html;charset=UTF-8" }
     })
   }
 
   // return the editor for admin URL
   if (passwd.length > 0) {
-    const item = await PB.get('index')
+    const item = await env.PB.get('index')
     return new Response(item, {
       headers: { "content-type": "text/html;charset=UTF-8" }
     })
@@ -174,7 +172,12 @@ async function handleGet(request) {
 
   const mime = url.searchParams.get("mime") || getType(ext) || "text/plain"
 
-  const item = await PB.getWithMetadata(short, { type: "arrayBuffer" })
+  const disp = url.searchParams.has("a") ? "attachment" : "inline"
+
+  const item = await env.PB.getWithMetadata(short, { type: "arrayBuffer" })
+
+  // determine filename with priority: url path > meta
+  const returnFilename = filename || (item.metadata && item.metadata.filename)
 
   // when paste is not found
   if (item.value === null) {
@@ -185,8 +188,10 @@ async function handleGet(request) {
   if (role === "u") {
     return Response.redirect(decode(item.value), 302)
   }
+
+  // handle article (render as markdown)
   if (role === "a") {
-    const md = await makeMarkdown(decode(item.value))
+    const md = makeMarkdown(decode(item.value))
     return new Response(md, {
       headers: { "content-type": `text/html;charset=UTF-8` },
     })
@@ -199,31 +204,36 @@ async function handleGet(request) {
       headers: { "content-type": `text/html;charset=UTF-8` },
     })
   } else {
-    return new Response(item.value, {
-      headers: { "content-type": `${mime};charset=UTF-8` },
-    })
+
+    // handle default
+    const headers = { "content-type": `${mime};charset=UTF-8` }
+    if (returnFilename) {
+      const encodedFilename = encodeRFC5987ValueChars(returnFilename)
+      headers["content-disposition"] = `${disp}; filename*=UTF-8''${encodedFilename}`
+    } else {
+      headers["content-disposition"] = `${disp}`
+    }
+    return new Response(item.value, { headers })
   }
 }
 
-async function handleDelete(request) {
+async function handleDelete(request, env, ctx) {
   const url = new URL(request.url)
-  console.log(request.url)
   const { short, passwd } = parsePath(url.pathname)
-  const item = await PB.getWithMetadata(short)
-  console.log(item, passwd)
+  const item = await env.PB.getWithMetadata(short)
   if (item.value === null) {
     throw new WorkerError(404, `paste of name '${short}' not found`)
   } else {
     if (passwd !== item.metadata.passwd) {
       throw new WorkerError(403, `incorrect password for paste '${short}`)
     } else {
-      await PB.delete(short)
+      await env.PB.delete(short)
       return new Response("the paste will be deleted in seconds")
     }
   }
 }
 
-async function createPaste(content, isPrivate, expire, short, date, passwd, filename) {
+async function createPaste(env, content, isPrivate, expire, short, date, passwd, filename) {
   date = date || new Date().toISOString()
   passwd = passwd || genRandStr(params.ADMIN_PATH_LEN)
   const short_len = isPrivate ? params.PRIVATE_RAND_LEN : params.RAND_LEN
@@ -231,29 +241,30 @@ async function createPaste(content, isPrivate, expire, short, date, passwd, file
   if (short === undefined) {
     while (true) {
       short = genRandStr(short_len)
-      if ((await PB.get(short)) === null) break
+      if ((await env.PB.get(short)) === null) break
     }
   }
 
-  await PB.put(short, content, {
+  await env.PB.put(short, content, {
     expirationTtl: expire,
     metadata: {
       postedAt: date,
-      passwd: passwd
+      passwd: passwd,
+      filename: filename,
     },
   })
-  let accessUrl = conf.BASE_URL + '/' + short
-  const adminUrl = conf.BASE_URL + '/' + short + params.SEP + passwd
+  let accessUrl = env.BASE_URL + '/' + short
+  const adminUrl = env.BASE_URL + '/' + short + params.SEP + passwd
   return {
     url: accessUrl,
-    suggestUrl: suggestUrl(content, filename, short),
+    suggestUrl: suggestUrl(content, filename, short, env.BASE_URL),
     admin: adminUrl,
     isPrivate: isPrivate,
-    expire: expire,
+    expire: expire || null,
   }
 }
 
-function suggestUrl(content, filename, short) {
+function suggestUrl(content, filename, short, baseUrl) {
   function isUrl(text) {
     try {
       new URL(text)
@@ -263,15 +274,11 @@ function suggestUrl(content, filename, short) {
     }
   }
 
-  if (isUrl(decode(content))) {
-    return `${conf.BASE_URL}/u/${short}`
-  }
   if (filename) {
-    const dotIdx = filename.lastIndexOf('.')
-    if (dotIdx > 0) {
-      const ext = filename.slice(dotIdx + 1)
-      return `${conf.BASE_URL}/${short}.${ext}`
-    }
+    return `${baseUrl}/${short}/${filename}`
+  } else if (isUrl(decode(content))) {
+    return `${baseUrl}/u/${short}`
+  } else {
+    return null
   }
-  return null
 }
