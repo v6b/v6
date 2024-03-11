@@ -296,8 +296,8 @@
                                 <setting-list-item type="text" title='{{ i18n "pages.settings.subURI"}}' desc='{{ i18n "pages.settings.subURIDesc"}}' v-model="allSetting.subJsonURI" placeholder="(http|https)://domain[:port]/path/"></setting-list-item>
                                 <setting-list-item type="switch" title='{{ i18n "pages.settings.fragment"}}' desc='{{ i18n "pages.settings.fragmentDesc"}}' v-model="fragment"></setting-list-item>
                             </a-list>
-                            <a-collapse>
-                                <a-collapse-panel header='{{ i18n "pages.settings.fragment"}}' v-if="fragment">
+                            <a-collapse v-if="fragment">
+                                <a-collapse-panel header='{{ i18n "pages.settings.fragment"}}'>
                                     <a-list-item style="padding: 20px">
                                         <a-row>
                                             <a-col :lg="24" :xl="12">
