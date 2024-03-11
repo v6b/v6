@@ -51,7 +51,14 @@ const OutboundDomainStrategies = [
     "AsIs",
     "UseIP",
     "UseIPv4",
-    "UseIPv6"
+    "UseIPv6",
+    "UseIPv6v4",
+    "UseIPv4v6",
+    "ForceIP",
+    "ForceIPv6v4",
+    "ForceIPv6",
+    "ForceIPv4v6",
+    "ForceIPv4"
 ];
 
 const WireguardDomainStrategy = [
@@ -349,6 +356,34 @@ class RealityStreamSettings extends CommonClass {
         };
     }
 };
+class SockoptStreamSettings extends CommonClass {
+    constructor(dialerProxy = "", tcpFastOpen = false, tcpKeepAliveInterval = 0, tcpNoDelay = false) {
+        super();
+        this.dialerProxy = dialerProxy;
+        this.tcpFastOpen = tcpFastOpen;
+        this.tcpKeepAliveInterval = tcpKeepAliveInterval;
+        this.tcpNoDelay = tcpNoDelay;
+    }
+
+    static fromJson(json = {}) {
+        if (Object.keys(json).length === 0) return undefined;
+        return new SockoptStreamSettings(
+            json.dialerProxy,
+            json.tcpFastOpen,
+            json.tcpKeepAliveInterval,
+            json.tcpNoDelay,
+        );
+    }
+
+    toJson() {
+        return {
+            dialerProxy: this.dialerProxy,
+            tcpFastOpen: this.tcpFastOpen,
+            tcpKeepAliveInterval: this.tcpKeepAliveInterval,
+            tcpNoDelay: this.tcpNoDelay,
+        };
+    }
+}
 
 class StreamSettings extends CommonClass {
     constructor(network='tcp',
@@ -385,6 +420,14 @@ class StreamSettings extends CommonClass {
         return this.security === "reality";
     }
 
+    get sockoptSwitch() {
+        return this.sockopt != undefined;
+    }
+
+    set sockoptSwitch(value) {
+        this.sockopt = value ? new SockoptStreamSettings() : undefined;
+    }
+
     static fromJson(json={}) {
         return new StreamSettings(
             json.network,
@@ -415,6 +458,7 @@ class StreamSettings extends CommonClass {
             quicSettings: network === 'quic' ? this.quic.toJson() : undefined,
             grpcSettings: network === 'grpc' ? this.grpc.toJson() : undefined,
             httpupgradeSettings: network === 'httpupgrade' ? this.httpupgrade.toJson() : undefined,
+            sockopt: this.sockopt != undefined ? this.sockopt.toJson() : undefined,
         };
     }
 }
