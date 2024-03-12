@@ -11,6 +11,9 @@
         <a-form-item label='{{ i18n "pages.xray.outbound.tag" }}' has-feedback :validate-status="outModal.duplicateTag? 'warning' : 'success'">
             <a-input v-model.trim="outbound.tag" @change="outModal.check()" placeholder='{{ i18n "pages.xray.outbound.tagDesc" }}'></a-input>
         </a-form-item>
+        <a-form-item label='{{ i18n "pages.xray.outbound.sendThrough" }}'>
+            <a-input v-model="outbound.sendThrough"></a-input>
+        </a-form-item>
 
 <!-- freedom settings-->
 <template v-if="outbound.protocol === Protocols.Freedom">
@@ -252,6 +255,7 @@
                 <a-select-option value="wechat-video">WeChat</a-select-option>
                 <a-select-option value="dtls">DTLS 1.2</a-select-option>
                 <a-select-option value="wireguard">WireGuard</a-select-option>
+                <a-select-option value="dns">DNS</a-select-option>
             </a-select>
         </a-form-item>
         <a-form-item label='{{ i18n "password" }}'>
