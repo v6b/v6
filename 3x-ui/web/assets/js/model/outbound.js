@@ -547,6 +547,10 @@ class Outbound extends CommonClass {
         return [Protocols.VMess, Protocols.VLESS, Protocols.Trojan, Protocols.Shadowsocks].includes(this.protocol);
     }
 
+    canEnableMux() {
+        return [Protocols.VMess, Protocols.VLESS, Protocols.Trojan, Protocols.Shadowsocks, Protocols.HTTP, Protocols.Socks].includes(this.protocol);
+    }
+
     hasVnext() {
         return [Protocols.VMess, Protocols.VLESS].includes(this.protocol);
     }
@@ -708,7 +712,7 @@ class Outbound extends CommonClass {
         let data = link.split('?');
         if(data.length != 2) return null;
 
-        const regex = /([^@]+):\/\/([^@]+)@([^:]+):(\d+)\?(.*)$/;
+        const regex = /([^@]+):\/\/([^@]+)@(.+):(\d+)\?(.*)$/;
         const match = link.match(regex);
 
         if (!match) return null;
