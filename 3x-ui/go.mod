@@ -10,7 +10,7 @@ require (
 	github.com/mymmrac/telego v0.29.1
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
-	github.com/pelletier/go-toml/v2 v2.1.1
+	github.com/pelletier/go-toml/v2 v2.2.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/shirou/gopsutil/v3 v3.24.2
 	github.com/valyala/fasthttp v1.52.0
@@ -19,7 +19,7 @@ require (
 	golang.org/x/text v0.14.0
 	google.golang.org/grpc v1.62.1
 	gorm.io/driver/sqlite v1.5.5
-	gorm.io/gorm v1.25.7
+	gorm.io/gorm v1.25.8
 )
 
 require (
