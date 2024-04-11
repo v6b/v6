@@ -1,22 +1,23 @@
-import {unified} from 'unified'
-import remarkParse from 'remark-parse'
-import remarkGfm from 'remark-gfm'
-import remarkRehype from 'remark-rehype'
-import rehypeStringify from 'rehype-stringify'
-import {toString} from 'mdast-util-to-string'
+import { unified } from "unified"
+import remarkParse from "remark-parse"
+import remarkGfm from "remark-gfm"
+import remarkRehype from "remark-rehype"
+import rehypeStringify from "rehype-stringify"
+import { toString } from "mdast-util-to-string"
 
-import {escapeHtml} from './common.js'
+import { VFileMessage } from "vfile-message"
+import { escapeHtml } from "./common.js"
 
 const descriptionLimit = 200
 const defaultTitle = "Untitled"
 
 function getMetadata(options) {
   return (tree) => {
-    if (tree.children.length == 0) return
+    if (tree.children.length === 0) return
 
     const firstChild = tree.children[0]
     // if the document begins with a h1, set its content as the title
-    if (firstChild.type == 'heading' && firstChild.depth === 1) {
+    if (firstChild.type === "heading" && firstChild.depth === 1) {
       options.result.title = escapeHtml(toString(firstChild))
 
       if (tree.children.length > 1) {
@@ -32,6 +33,28 @@ function getMetadata(options) {
   }
 }
 
+// When `unified` runs process(value), it converts `value` to vFile class if `value` does not look like a vFile.
+// However, the constructor of vFile calls proc.cwd, which is not provided in vite runtime
+// To avoid vFile complaining “proc.cwd is not a function”, we use a fake vFile class that stringifies as usual but
+// never calls proc.cwd.
+// FUCK JAVASCRIPT
+class vFileShim {
+  constructor(value) {
+    this.value = value
+    this.messages = []
+    this.message = (reason, place, origin) => {
+      const msg = new VFileMessage(reason, place, origin)
+      msg.fatal = false
+      this.messages.push(msg)
+      return msg
+    }
+  }
+
+  toString() {
+    return this.value
+  }
+}
+
 export function makeMarkdown(content) {
   const metadata = { title: defaultTitle, description: "" }
   const convertedHtml = unified()
@@ -40,7 +63,7 @@ export function makeMarkdown(content) {
     .use(getMetadata, { result: metadata })  // result is written to `metadata` variable
     .use(remarkRehype)
     .use(rehypeStringify)
-    .processSync(content)
+    .processSync(new vFileShim(content))
 
   return `<!DOCTYPE html>
 <html lang='en'>
